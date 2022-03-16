@@ -46,13 +46,18 @@ public class mechanumdrive extends LinearOpMode {
         left_front_pow = gamepad1.left_stick_y;
         right_back_pow = gamepad1.right_stick_y;
         right_front_pow = gamepad1.right_stick_y;
-        if (gamepad1.right_trigger != 0) {
+        
+        //The Triggers range from 0 to 1.
+        //Is Right_Trigger held down enough?
+        if (gamepad1.right_trigger > 0.05) {
           right_front_pow = gamepad1.right_trigger * -1;
           right_back_pow = gamepad1.right_trigger * -1;
           left_front_pow = gamepad1.right_trigger * -1;
           left_back_pow = gamepad1.right_trigger * -1;
         }
-        if (gamepad1.left_trigger != 0) {
+        
+        //Is Left_Trigger held down enough?
+        if (gamepad1.left_trigger > 0.05) {
           left_front_pow = gamepad1.left_trigger * -1;
           left_back_pow = gamepad1.left_trigger * -1;
           right_back_pow = gamepad1.left_trigger * -1;
@@ -62,6 +67,10 @@ public class mechanumdrive extends LinearOpMode {
         right_back_pow = (float) (right_back_pow * 0.4);
         left_front_pow = (float) (left_front_pow * 0.4);
         left_back_pow = (float) (left_back_pow * 0.4);
+        
+        
+        //Set power of motors to their corresponding variables
+        
         // The Y axis of a joystick ranges from -1 in its topmost position
         // to +1 in its bottommost position. We negate this value so that
         // the topmost position corresponds to maximum forward power.
