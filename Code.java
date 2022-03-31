@@ -30,12 +30,13 @@ public class mechanumdrive extends LinearOpMode {
 
     
     
-    telemetry.add("righttrigger", gamepad1.right_trigger);
-    telemetry.add("lefttrigger", gamepad1.left_trigger);
-    telemetry.add("leftstickx", gamepad1.left_stick_x);
-    telemetry.add("leftsticky", gamepad1.left_stick_y);
-    telemetry.add("rightstickx", gamepad1.right_stick_x);
-    telemetry.add("rightsticky", gamepad1.right_stick_y);
+    telemetry.addData("righttrigger", gamepad1.right_trigger);
+    telemetry.addData("lefttrigger", gamepad1.left_trigger);
+    telemetry.addData("leftstickx", gamepad1.left_stick_x);
+    telemetry.addData("leftsticky", gamepad1.left_stick_y);
+    telemetry.addData("rightstickx", gamepad1.right_stick_x);
+    telemetry.addData("rightsticky", gamepad1.right_stick_y);
+    telemetry.update();
     // Reverse one of the drive motors.
     // You will have to determine which motor to reverse for your robot.
     // In this example, the right motor was reversed so that positive
