@@ -28,6 +28,14 @@ public class mechanumdrive extends LinearOpMode {
     rightback = hardwareMap.get(DcMotor.class, "right/back");
     rightfront = hardwareMap.get(DcMotor.class, "right/front");
 
+    
+    
+    telemetry.add("righttrigger", gamepad1.right_trigger);
+    telemetry.add("lefttrigger", gamepad1.left_trigger);
+    telemetry.add("leftstickx", gamepad1.left_stick_x);
+    telemetry.add("leftsticky", gamepad1.left_stick_y);
+    telemetry.add("rightstickx", gamepad1.right_stick_x);
+    telemetry.add("rightsticky", gamepad1.right_stick_y);
     // Reverse one of the drive motors.
     // You will have to determine which motor to reverse for your robot.
     // In this example, the right motor was reversed so that positive
