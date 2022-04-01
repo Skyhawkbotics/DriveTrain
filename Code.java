@@ -30,13 +30,9 @@ public class mechanumdrive extends LinearOpMode {
 
     
     
-    telemetry.addData("righttrigger", gamepad1.right_trigger);
-    telemetry.addData("lefttrigger", gamepad1.left_trigger);
-    telemetry.addData("leftstickx", gamepad1.left_stick_x);
-    telemetry.addData("leftsticky", gamepad1.left_stick_y);
-    telemetry.addData("rightstickx", gamepad1.right_stick_x);
-    telemetry.addData("rightsticky", gamepad1.right_stick_y);
-    telemetry.update();
+    
+    
+    
     // Reverse one of the drive motors.
     // You will have to determine which motor to reverse for your robot.
     // In this example, the right motor was reversed so that positive
@@ -51,6 +47,16 @@ public class mechanumdrive extends LinearOpMode {
       // Put run blocks here.
       while (opModeIsActive()) {
         // Put loop blocks here.
+        
+    telemetry.addData("righttrigger", gamepad1.right_trigger);
+    telemetry.addData("lefttrigger", gamepad1.left_trigger);
+    telemetry.addData("leftstickx", gamepad1.left_stick_x);
+    telemetry.addData("leftsticky", gamepad1.left_stick_y);
+    telemetry.addData("rightstickx", gamepad1.right_stick_x);
+    telemetry.addData("rightsticky", gamepad1.right_stick_y);
+    telemetry.update();
+        
+        
         left_back_pow = gamepad1.left_stick_y;
         left_front_pow = gamepad1.left_stick_y;
         right_back_pow = gamepad1.right_stick_y;
@@ -59,23 +65,23 @@ public class mechanumdrive extends LinearOpMode {
         //The Triggers range from 0 to 1.
         //Is Right_Trigger held down enough?
         if (gamepad1.right_trigger > 0.05) {
-          right_front_pow = gamepad1.right_trigger * -1;
+          right_front_pow = gamepad1.right_trigger * 1;
           right_back_pow = gamepad1.right_trigger * -1;
           left_front_pow = gamepad1.right_trigger * -1;
-          left_back_pow = gamepad1.right_trigger * -1;
+          left_back_pow = gamepad1.right_trigger * 1;
         }
         
         //Is Left_Trigger held down enough?
         if (gamepad1.left_trigger > 0.05) {
-          left_front_pow = gamepad1.left_trigger * -1;
+          left_front_pow = gamepad1.left_trigger * 1;
           left_back_pow = gamepad1.left_trigger * -1;
-          right_back_pow = gamepad1.left_trigger * -1;
+          right_back_pow = gamepad1.left_trigger * 1;
           right_front_pow = gamepad1.left_trigger * -1;
         }
-        right_front_pow = (float) (right_front_pow * 0.4);
-        right_back_pow = (float) (right_back_pow * 0.4);
-        left_front_pow = (float) (left_front_pow * 0.4);
-        left_back_pow = (float) (left_back_pow * 0.4);
+        right_front_pow = (float) (right_front_pow * 0.45);
+        right_back_pow = (float) (right_back_pow * 0.45);
+        left_front_pow = (float) (left_front_pow * 0.45);
+        left_back_pow = (float) (left_back_pow * 0.61);
         
         
         //Set power of motors to their corresponding variables
@@ -94,4 +100,3 @@ public class mechanumdrive extends LinearOpMode {
       }
     }
   }
-}
