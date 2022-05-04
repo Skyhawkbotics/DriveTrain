@@ -1,32 +1,50 @@
+
+  
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+//import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+//import com.qualcomm.robotcore.hardware.DistanceSensor;
 
 @TeleOp(name = "mechanumdrive (Blocks to Java)")
 public class mechanumdrive extends LinearOpMode {
 
+  private ElapsedTime     runtime = new ElapsedTime();
   private DcMotor leftback;
   private DcMotor leftfront;
   private DcMotor rightback;
   private DcMotor rightfront;
-
+  private DcMotorEx _pseudo_arm;
+  //private DistanceSensor distance;
   /**
    * This function is executed when this Op Mode is selected from the Driver Station.
    */
   @Override
   public void runOpMode() {
+    
     float left_back_pow;
     float left_front_pow;
     float right_back_pow;
     float right_front_pow;
+    float arm_desiredangle = 0;
+    float armrotate_desiredangle = 0;
+    double last_time = runtime.seconds();
+
 
     leftback = hardwareMap.get(DcMotor.class, "left/back");
     leftfront = hardwareMap.get(DcMotor.class, "left/front");
     rightback = hardwareMap.get(DcMotor.class, "right/back");
     rightfront = hardwareMap.get(DcMotor.class, "right/front");
+    _pseudo_arm = hardwareMap.get(DcMotorEx.class, "_pseudo_arm");
+    armrotater = hardwareMap.get(DcMotorEx.class, "armrotater");
+
+    //distance = hardwareMap.get(DistanceSensor.class, "Distance");
 
     
     
@@ -42,20 +60,48 @@ public class mechanumdrive extends LinearOpMode {
     // In this example, the right motor was reversed so that positive
     // applied power makes it move the robot in the forward direction.
     leftfront.setDirection(DcMotorSimple.Direction.REVERSE);
+    
+    _pseudo_arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    _pseudo_arm.setTargetPosition(Help.degreesToTick(0));
+
+    _pseudo_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        
+    _pseudo_arm.setVelocity(1800);
     waitForStart();
+    
     if (opModeIsActive()) {
       // Put run blocks here.
       while (opModeIsActive()) {
         // Put loop blocks here.
-        
-    telemetry.addData("righttrigger", gamepad1.right_trigger);
-    telemetry.addData("lefttrigger", gamepad1.left_trigger);
-    telemetry.addData("leftstickx", gamepad1.left_stick_x);
-    telemetry.addData("leftsticky", gamepad1.left_stick_y);
-    telemetry.addData("rightstickx", gamepad1.right_stick_x);
-    telemetry.addData("rightsticky", gamepad1.right_stick_y);
-    telemetry.update();
-        
+        double now_time = runtime.seconds();
+        if (gamepad1.dpad_down) {
+          arm_desiredangle-=1200 * (now_time-last_time);
+        } 
+        if (gamepad1.dpad_up) {
+          arm_desiredangle+=1200 * (now_time-last_time);
+        }
+         if (gamepad1.dpad_right) {
+          arm_desiredangle-=1200 * (now_time-last_time);
+        } 
+        if (gamepad1.dpad_left) {
+          arm_desiredangle+=1200 * (now_time-last_time);
+        }
+        if (arm_desiredangle < 0) { 
+          arm_desiredangle = 0;
+        }
+        if (arm_desiredangle > 1400) {
+          arm_desiredangle = 1400;
+        }
+        last_time = now_time;
+        telemetry.addData("righttrigger", gamepad1.right_trigger);
+        telemetry.addData("lefttrigger", gamepad1.left_trigger);
+        telemetry.addData("leftstickx", gamepad1.left_stick_x);
+        telemetry.addData("leftsticky", gamepad1.left_stick_y);
+        telemetry.addData("rightstickx", gamepad1.right_stick_x);
+        telemetry.addData("rightsticky", gamepad1.right_stick_y);
+        telemetry.addData("arm_desiredangle", arm_desiredangle);
+        //telemetry.addData("arm_floor_distance", distance.getDistance(DistanceUnit.CM));
+        telemetry.update();
         
         left_back_pow = gamepad1.left_stick_y;
         left_front_pow = gamepad1.left_stick_y;
@@ -83,7 +129,6 @@ public class mechanumdrive extends LinearOpMode {
         left_front_pow = (float) (left_front_pow * 0.45);
         left_back_pow = (float) (left_back_pow * 0.61);
         
-        
         //Set power of motors to their corresponding variables
         
         // The Y axis of a joystick ranges from -1 in its topmost position
@@ -96,7 +141,28 @@ public class mechanumdrive extends LinearOpMode {
         // the topmost position corresponds to maximum forward power.
         leftfront.setPower(left_front_pow);
         rightfront.setPower(right_front_pow);
+        
+        
+        _pseudo_arm.setTargetPosition(Help.degreesToTick(arm_desiredangle));
+        
+        
+        
         telemetry.update();
       }
     }
+    
   }
+}
+
+class Help {
+  public static int degreesToTick (int degrees) {
+      int tickDegreeRatio = 5;
+
+      return degrees/tickDegreeRatio;
+  }
+  public static int degreesToTick (float degrees) {
+      int tickDegreeRatio = 5;
+
+      return (int) degrees/tickDegreeRatio;
+  }
+}
