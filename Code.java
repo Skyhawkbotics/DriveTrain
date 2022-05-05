@@ -21,6 +21,7 @@ public class mechanumdrive extends LinearOpMode {
   private DcMotor rightback;
   private DcMotor rightfront;
   private DcMotorEx _pseudo_arm;
+  private DcMotorEx armrotater;
   //private DistanceSensor distance;
   /**
    * This function is executed when this Op Mode is selected from the Driver Station.
@@ -67,6 +68,14 @@ public class mechanumdrive extends LinearOpMode {
     _pseudo_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         
     _pseudo_arm.setVelocity(1800);
+    
+    armrotater.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    armrotater.setTargetPosition(Help.degreesToTick(0));
+
+    armrotater.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    
+    armrotater.setVelocity(60);
+
     waitForStart();
     
     if (opModeIsActive()) {
@@ -81,16 +90,24 @@ public class mechanumdrive extends LinearOpMode {
           arm_desiredangle+=1200 * (now_time-last_time);
         }
          if (gamepad1.dpad_right) {
-          arm_desiredangle-=1200 * (now_time-last_time);
+          armrotate_desiredangle-=40 * (now_time-last_time);
         } 
         if (gamepad1.dpad_left) {
-          arm_desiredangle+=1200 * (now_time-last_time);
+          armrotate_desiredangle+=40 * (now_time-last_time);
         }
+        //Boundaries of the arm lengther
         if (arm_desiredangle < 0) { 
           arm_desiredangle = 0;
         }
         if (arm_desiredangle > 1400) {
           arm_desiredangle = 1400;
+        }
+        //Boundaries of the arm vertical rotation
+        if (arm_desiredangle > 100) {
+          arm_desiredangle = 100;
+        }
+        if (arm_desiredangle < 0) {
+          arm_desiredangle = 0;
         }
         last_time = now_time;
         telemetry.addData("righttrigger", gamepad1.right_trigger);
