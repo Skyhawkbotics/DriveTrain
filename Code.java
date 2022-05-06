@@ -74,7 +74,7 @@ public class mechanumdrive extends LinearOpMode {
 
     armrotater.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     
-    armrotater.setVelocity(60);
+    armrotater.setVelocity(1200);
 
     waitForStart();
     
@@ -90,10 +90,10 @@ public class mechanumdrive extends LinearOpMode {
           arm_desiredangle+=1200 * (now_time-last_time);
         }
          if (gamepad1.dpad_right) {
-          armrotate_desiredangle-=40 * (now_time-last_time);
+          armrotate_desiredangle-=800 * (now_time-last_time);
         } 
         if (gamepad1.dpad_left) {
-          armrotate_desiredangle+=40 * (now_time-last_time);
+          armrotate_desiredangle+=800 * (now_time-last_time);
         }
         //Boundaries of the arm lengther
         if (arm_desiredangle < 0) { 
@@ -103,11 +103,11 @@ public class mechanumdrive extends LinearOpMode {
           arm_desiredangle = 1400;
         }
         //Boundaries of the arm vertical rotation
-        if (arm_desiredangle > 100) {
-          arm_desiredangle = 100;
+        if (armrotate_desiredangle > 3000) {
+          armrotate_desiredangle = 3000;
         }
-        if (arm_desiredangle < 0) {
-          arm_desiredangle = 0;
+        if (armrotate_desiredangle < 0) {
+          armrotate_desiredangle = 0;
         }
         last_time = now_time;
         telemetry.addData("righttrigger", gamepad1.right_trigger);
@@ -117,6 +117,7 @@ public class mechanumdrive extends LinearOpMode {
         telemetry.addData("rightstickx", gamepad1.right_stick_x);
         telemetry.addData("rightsticky", gamepad1.right_stick_y);
         telemetry.addData("arm_desiredangle", arm_desiredangle);
+        telemetry.addData("armrotate_desiredangle", armrotate_desiredangle);
         //telemetry.addData("arm_floor_distance", distance.getDistance(DistanceUnit.CM));
         telemetry.update();
         
@@ -161,7 +162,8 @@ public class mechanumdrive extends LinearOpMode {
         
         
         _pseudo_arm.setTargetPosition(Help.degreesToTick(arm_desiredangle));
-        
+        armrotater.setTargetPosition(Help.degreesToTick(armrotate_desiredangle));
+
         
         
         telemetry.update();
