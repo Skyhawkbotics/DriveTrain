@@ -184,4 +184,23 @@ class Help {
 
       return (int) degrees/tickDegreeRatio;
   }
+  
+  public static void limitDegrees(String name, float degrees) {
+    if (name == "armrotater") {
+      if (degrees > 3000) {
+        degrees = 3000;
+      }
+      else if (degrees < 0) {
+        degrees = 0;
+      }
+    ]
+    else if (name == "_pseudo_arm") {
+      if (arm_desiredangle < 0) { 
+        arm_desiredangle = 0;
+      }
+      if (arm_desiredangle > 1400) {
+        arm_desiredangle = 1400;
+      }
+    }
+  }
 }
