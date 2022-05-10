@@ -1,8 +1,9 @@
-
+//arm slides down, please fix!!!!!!!!!!!!
   
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
@@ -22,6 +23,8 @@ public class mechanumdrive extends LinearOpMode {
   private DcMotor rightfront;
   private DcMotorEx _pseudo_arm;
   private DcMotorEx armrotater;
+  private Servo claw;
+
   //private DistanceSensor distance;
   /**
    * This function is executed when this Op Mode is selected from the Driver Station.
@@ -35,6 +38,7 @@ public class mechanumdrive extends LinearOpMode {
     float right_front_pow;
     float arm_desiredangle = 0;
     float armrotate_desiredangle = 0;
+    double claw_desiredangle = 0;
     double last_time = runtime.seconds();
 
 
@@ -44,6 +48,8 @@ public class mechanumdrive extends LinearOpMode {
     rightfront = hardwareMap.get(DcMotor.class, "right/front");
     _pseudo_arm = hardwareMap.get(DcMotorEx.class, "_pseudo_arm");
     armrotater = hardwareMap.get(DcMotorEx.class, "armrotater");
+    claw = hardwareMap.get(Servo.class, "claw");
+    
 
     //distance = hardwareMap.get(DistanceSensor.class, "Distance");
 
@@ -67,7 +73,7 @@ public class mechanumdrive extends LinearOpMode {
 
     _pseudo_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         
-    _pseudo_arm.setVelocity(1800);
+    _pseudo_arm.setVelocity(150);
     
     armrotater.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     armrotater.setTargetPosition(Help.degreesToTick(0));
@@ -84,23 +90,29 @@ public class mechanumdrive extends LinearOpMode {
         // Put loop blocks here.
         double now_time = runtime.seconds();
         if (gamepad1.dpad_down) {
-          arm_desiredangle-=1200 * (now_time-last_time);
+          arm_desiredangle-=100 * (now_time-last_time);
         } 
         if (gamepad1.dpad_up) {
-          arm_desiredangle+=1200 * (now_time-last_time);
+          arm_desiredangle+=100 * (now_time-last_time);
         }
-         if (gamepad1.dpad_right) {
+         if (gamepad1.a) {
           armrotate_desiredangle-=800 * (now_time-last_time);
         } 
-        if (gamepad1.dpad_left) {
+        if (gamepad1.y) {
           armrotate_desiredangle+=800 * (now_time-last_time);
+        }
+        if (gamepad1.x) {
+          claw_desiredangle += 1 * (now_time-last_time);
+        }
+        if (gamepad1.b) {
+          claw_desiredangle -= 1 * (now_time-last_time);
         }
         //Boundaries of the arm lengther
         if (arm_desiredangle < 0) { 
-          arm_desiredangle = 0;
+          //arm_desiredangle = 0;
         }
-        if (arm_desiredangle > 1400) {
-          arm_desiredangle = 1400;
+        if (arm_desiredangle > 100) {
+          //arm_desiredangle = 100;
         }
         //Boundaries of the arm vertical rotation
         if (armrotate_desiredangle > 3000) {
@@ -108,6 +120,13 @@ public class mechanumdrive extends LinearOpMode {
         }
         if (armrotate_desiredangle < 0) {
           armrotate_desiredangle = 0;
+        }
+        // Boundaries of the claw
+        if (claw_desiredangle < 0) {
+          claw_desiredangle = 0;
+        }
+        if (claw_desiredangle > 0.85) {
+          claw_desiredangle = 0.85;
         }
         last_time = now_time;
         telemetry.addData("righttrigger", gamepad1.right_trigger);
@@ -118,6 +137,8 @@ public class mechanumdrive extends LinearOpMode {
         telemetry.addData("rightsticky", gamepad1.right_stick_y);
         telemetry.addData("arm_desiredangle", arm_desiredangle);
         telemetry.addData("armrotate_desiredangle", armrotate_desiredangle);
+        telemetry.addData("claw_desiredangle", claw_desiredangle);
+        telemetry.addData("arm_position", _pseudo_arm.getCurrentPosition());
         //telemetry.addData("arm_floor_distance", distance.getDistance(DistanceUnit.CM));
         telemetry.update();
         
@@ -159,10 +180,11 @@ public class mechanumdrive extends LinearOpMode {
         // the topmost position corresponds to maximum forward power.
         leftfront.setPower(left_front_pow);
         rightfront.setPower(right_front_pow);
-        
+        claw.setPosition(claw_desiredangle);
         
         _pseudo_arm.setTargetPosition(Help.degreesToTick(arm_desiredangle));
-        armrotater.setTargetPosition(Help.degreesToTick(armrotate_desiredangle));
+        armrotater.setTargetPosition(-Help.degreesToTick(armrotate_desiredangle));
+        
 
         
         
