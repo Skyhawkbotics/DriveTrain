@@ -1,4 +1,4 @@
-//arm slides down, please fix!!!!!!!!!!!!
+
   
 package org.firstinspires.ftc.teamcode;
 
@@ -67,33 +67,30 @@ public class mechanumdrive extends LinearOpMode {
     // In this example, the right motor was reversed so that positive
     // applied power makes it move the robot in the forward direction.
     leftfront.setDirection(DcMotorSimple.Direction.REVERSE);
-    
     _pseudo_arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-    _pseudo_arm.setTargetPosition(Help.degreesToTick(0));
-
-    _pseudo_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        
-    _pseudo_arm.setVelocity(150);
-    
     armrotater.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    _pseudo_arm.setTargetPosition(Help.degreesToTick(0));
     armrotater.setTargetPosition(Help.degreesToTick(0));
-
+    _pseudo_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     armrotater.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-    
+    _pseudo_arm.setVelocity(3);
     armrotater.setVelocity(1200);
+
+    
 
     waitForStart();
     
     if (opModeIsActive()) {
       // Put run blocks here.
       while (opModeIsActive()) {
+
         // Put loop blocks here.
         double now_time = runtime.seconds();
         if (gamepad1.dpad_down) {
-          arm_desiredangle-=100 * (now_time-last_time);
+          arm_desiredangle-=2 * (now_time-last_time);
         } 
         if (gamepad1.dpad_up) {
-          arm_desiredangle+=100 * (now_time-last_time);
+          arm_desiredangle+=2 * (now_time-last_time);
         }
          if (gamepad1.a) {
           armrotate_desiredangle-=800 * (now_time-last_time);
@@ -111,8 +108,8 @@ public class mechanumdrive extends LinearOpMode {
         if (arm_desiredangle < 0) { 
           //arm_desiredangle = 0;
         }
-        if (arm_desiredangle > 100) {
-          //arm_desiredangle = 100;
+        if (arm_desiredangle > 1600) {
+          //arm_desiredangle = 1600;
         }
         //Boundaries of the arm vertical rotation
         if (armrotate_desiredangle > 3000) {
@@ -138,7 +135,7 @@ public class mechanumdrive extends LinearOpMode {
         telemetry.addData("arm_desiredangle", arm_desiredangle);
         telemetry.addData("armrotate_desiredangle", armrotate_desiredangle);
         telemetry.addData("claw_desiredangle", claw_desiredangle);
-        telemetry.addData("arm_position", _pseudo_arm.getCurrentPosition());
+        //telemetry.addData("arm_position", _pseudo_arm.getCurrentPosition());
         //telemetry.addData("arm_floor_distance", distance.getDistance(DistanceUnit.CM));
         telemetry.update();
         
@@ -180,8 +177,8 @@ public class mechanumdrive extends LinearOpMode {
         // the topmost position corresponds to maximum forward power.
         leftfront.setPower(left_front_pow);
         rightfront.setPower(right_front_pow);
-        claw.setPosition(claw_desiredangle);
-        
+        //claw.setPosition(claw_desiredangle);
+        //_pseudo_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         _pseudo_arm.setTargetPosition(Help.degreesToTick(arm_desiredangle));
         armrotater.setTargetPosition(-Help.degreesToTick(armrotate_desiredangle));
         
@@ -205,24 +202,5 @@ class Help {
       int tickDegreeRatio = 5;
 
       return (int) degrees/tickDegreeRatio;
-  }
-  
-  public static void limitDegrees(String name, float degrees) {
-    if (name == "armrotater") {
-      if (degrees > 3000) {
-        degrees = 3000;
-      }
-      else if (degrees < 0) {
-        degrees = 0;
-      }
-    ]
-    else if (name == "_pseudo_arm") {
-      if (arm_desiredangle < 0) { 
-        arm_desiredangle = 0;
-      }
-      if (arm_desiredangle > 1400) {
-        arm_desiredangle = 1400;
-      }
-    }
   }
 }
