@@ -24,6 +24,7 @@ public class mechanumdrive extends LinearOpMode {
   private DcMotorEx _pseudo_arm;
   private DcMotorEx armrotater;
   private Servo claw;
+  private Servo clawrotater;
 
   //private DistanceSensor distance;
   /**
@@ -38,8 +39,14 @@ public class mechanumdrive extends LinearOpMode {
     float right_front_pow;
     float arm_desiredangle = 0;
     float armrotate_desiredangle = 0;
-    double claw_desiredangle = 0;
+    double claw_desiredangle = 0.28;
+    double clawrotate_desiredangle = 0.5;
+    
     double last_time = runtime.seconds();
+    
+    
+    double clawrotate_last_time = runtime.seconds();
+    boolean clawrotating = false;
 
 
     leftback = hardwareMap.get(DcMotor.class, "left/back");
@@ -49,7 +56,8 @@ public class mechanumdrive extends LinearOpMode {
     _pseudo_arm = hardwareMap.get(DcMotorEx.class, "_pseudo_arm");
     armrotater = hardwareMap.get(DcMotorEx.class, "armrotater");
     claw = hardwareMap.get(Servo.class, "claw");
-    
+    clawrotater = hardwareMap.get(Servo.class, "clawrotater");
+    double clawrotate_position = 0;//clawrotater.getPosition();
 
     //distance = hardwareMap.get(DistanceSensor.class, "Distance");
 
@@ -73,9 +81,8 @@ public class mechanumdrive extends LinearOpMode {
     armrotater.setTargetPosition(Help.degreesToTick(0));
     _pseudo_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     armrotater.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-    _pseudo_arm.setVelocity(3);
+    _pseudo_arm.setVelocity(900);
     armrotater.setVelocity(1200);
-
     
 
     waitForStart();
@@ -87,10 +94,10 @@ public class mechanumdrive extends LinearOpMode {
         // Put loop blocks here.
         double now_time = runtime.seconds();
         if (gamepad1.dpad_down) {
-          arm_desiredangle-=2 * (now_time-last_time);
+          arm_desiredangle-=600 * (now_time-last_time);
         } 
         if (gamepad1.dpad_up) {
-          arm_desiredangle+=2 * (now_time-last_time);
+          arm_desiredangle+=600 * (now_time-last_time);
         }
          if (gamepad1.a) {
           armrotate_desiredangle-=800 * (now_time-last_time);
@@ -99,17 +106,27 @@ public class mechanumdrive extends LinearOpMode {
           armrotate_desiredangle+=800 * (now_time-last_time);
         }
         if (gamepad1.x) {
-          claw_desiredangle += 1 * (now_time-last_time);
+          claw_desiredangle += 0.5 * (now_time-last_time);
         }
         if (gamepad1.b) {
-          claw_desiredangle -= 1 * (now_time-last_time);
+          claw_desiredangle -= 0.5 * (now_time-last_time);
+        }
+        if (gamepad1.dpad_left && ((now_time-clawrotate_last_time) > 0.5 && !clawrotating)) {
+          clawrotate_desiredangle += 0.5;
+          clawrotate_last_time = now_time;
+          clawrotating = true;
+        }
+        if (gamepad1.dpad_right && ((now_time-clawrotate_last_time) > 0.5 && !clawrotating)) {
+          clawrotate_desiredangle -= 0.5;
+          clawrotate_last_time = now_time;
+          clawrotating = true;
         }
         //Boundaries of the arm lengther
         if (arm_desiredangle < 0) { 
-          //arm_desiredangle = 0;
+          arm_desiredangle = 0;
         }
         if (arm_desiredangle > 1600) {
-          //arm_desiredangle = 1600;
+          arm_desiredangle = 1400;
         }
         //Boundaries of the arm vertical rotation
         if (armrotate_desiredangle > 3000) {
@@ -119,11 +136,23 @@ public class mechanumdrive extends LinearOpMode {
           armrotate_desiredangle = 0;
         }
         // Boundaries of the claw
-        if (claw_desiredangle < 0) {
-          claw_desiredangle = 0;
+        if (claw_desiredangle < 0.28) {
+          claw_desiredangle = 0.28;
         }
         if (claw_desiredangle > 0.85) {
           claw_desiredangle = 0.85;
+        }
+        // Boundaries of the claw rotate servo
+        if (clawrotate_desiredangle == 0 && ((now_time-clawrotate_last_time) > 0.4) && clawrotating) {
+          clawrotate_desiredangle = 0.5;
+          clawrotating = false;
+        }
+        if (clawrotate_desiredangle == 1 && ((now_time-clawrotate_last_time) > 0.4) && clawrotating) {
+          clawrotate_desiredangle = 0.5;
+          clawrotating = false;
+        }
+        if (gamepad1.left_bumper) {
+          clawrotate_desiredangle = 0.5;
         }
         last_time = now_time;
         telemetry.addData("righttrigger", gamepad1.right_trigger);
@@ -135,6 +164,8 @@ public class mechanumdrive extends LinearOpMode {
         telemetry.addData("arm_desiredangle", arm_desiredangle);
         telemetry.addData("armrotate_desiredangle", armrotate_desiredangle);
         telemetry.addData("claw_desiredangle", claw_desiredangle);
+        telemetry.addData("clawrotate_Desiredangle", clawrotate_desiredangle);
+        telemetry.addData("claw_pos", clawrotate_position);
         //telemetry.addData("arm_position", _pseudo_arm.getCurrentPosition());
         //telemetry.addData("arm_floor_distance", distance.getDistance(DistanceUnit.CM));
         telemetry.update();
@@ -177,7 +208,8 @@ public class mechanumdrive extends LinearOpMode {
         // the topmost position corresponds to maximum forward power.
         leftfront.setPower(left_front_pow);
         rightfront.setPower(right_front_pow);
-        //claw.setPosition(claw_desiredangle);
+        claw.setPosition(claw_desiredangle);
+        clawrotater.setPosition(clawrotate_desiredangle);
         //_pseudo_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         _pseudo_arm.setTargetPosition(Help.degreesToTick(arm_desiredangle));
         armrotater.setTargetPosition(-Help.degreesToTick(armrotate_desiredangle));
