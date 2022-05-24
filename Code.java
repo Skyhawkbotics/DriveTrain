@@ -219,7 +219,7 @@ public class mechanumdrive extends LinearOpMode {
         
         //Set position of arm and claw motors to their corresponding variables.
         
-        claw.setPosition(grip_);
+        claw.setPosition(claw_grip_desiredangle);
         clawrotater.setPosition(claw_rotate_desiredangle);
         arm_extender.setTargetPosition(Help.degreesToTick(arm_extender_desiredangle));
         armrotater.setTargetPosition(-Help.degreesToTick(arm_rotate_desiredangle));
