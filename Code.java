@@ -1,5 +1,7 @@
+/*
+Packages and Imports used for the code.
+*/
 
-  
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -13,18 +15,23 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 //import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 //import com.qualcomm.robotcore.hardware.DistanceSensor;
 
+
+/*
+Code Starts Here.
+*/
+
 @TeleOp(name = "mechanumdrive (Blocks to Java)")
 public class mechanumdrive extends LinearOpMode {
 
   private ElapsedTime     runtime = new ElapsedTime();
-  private DcMotor leftback;
-  private DcMotor leftfront;
-  private DcMotor rightback;
-  private DcMotor rightfront;
-  private DcMotorEx _pseudo_arm;
-  private DcMotorEx armrotater;
+  private DcMotor wheel_leftback;
+  private DcMotor wheel_leftfront;
+  private DcMotor wheel_rightback;
+  private DcMotor wheel_rightfront;
+  private DcMotorEx arm_extender;
+  private DcMotorEx arm_rotater;
   private Servo claw;
-  private Servo clawrotater;
+  private Servo claw_rotater;
 
   //private DistanceSensor distance;
   /**
@@ -33,32 +40,29 @@ public class mechanumdrive extends LinearOpMode {
   @Override
   public void runOpMode() {
     
-    float left_back_pow;
-    float left_front_pow;
-    float right_back_pow;
-    float right_front_pow;
-    float arm_desiredangle = 0;
-    float armrotate_desiredangle = 0;
-    double claw_desiredangle = 0.28;
-    double clawrotate_desiredangle = 0.5;
+    float wheel_leftback_Pow;
+    float wheel_leftfront_Pow;
+    float wheel_rightback_Pow;
+    float wheel_rightfront_Pow;
+    float arm_extender_desiredangle = 0;
+    float arm_rotate_desiredangle = 0;
+    double claw_grip_desiredangle = 0.28;
+    double claw_rotate_desiredangle = 0.5;
     
     double last_time = runtime.seconds();
+    double claw_rotate_last_time = runtime.seconds();
     
-    
-    double clawrotate_last_time = runtime.seconds();
     boolean clawrotating = false;
 
 
-    leftback = hardwareMap.get(DcMotor.class, "left/back");
-    leftfront = hardwareMap.get(DcMotor.class, "left/front");
-    rightback = hardwareMap.get(DcMotor.class, "right/back");
-    rightfront = hardwareMap.get(DcMotor.class, "right/front");
-    _pseudo_arm = hardwareMap.get(DcMotorEx.class, "_pseudo_arm");
-    armrotater = hardwareMap.get(DcMotorEx.class, "armrotater");
+    wheel_leftback = hardwareMap.get(DcMotor.class, "left/back");
+    wheel_leftfront = hardwareMap.get(DcMotor.class, "left/front");
+    wheel_rightback = hardwareMap.get(DcMotor.class, "right/back");
+    wheel_rightfront = hardwareMap.get(DcMotor.class, "right/front");
+    arm_extender = hardwareMap.get(DcMotorEx.class, "_pseudo_arm");
+    arm_rotater = hardwareMap.get(DcMotorEx.class, "armrotater");
     claw = hardwareMap.get(Servo.class, "claw");
-    clawrotater = hardwareMap.get(Servo.class, "clawrotater");
-    double clawrotate_position = 0;//clawrotater.getPosition();
-
+    claw_rotater = hardwareMap.get(Servo.class, "clawrotater");
     //distance = hardwareMap.get(DistanceSensor.class, "Distance");
 
     
@@ -66,95 +70,103 @@ public class mechanumdrive extends LinearOpMode {
     
     
     
-    // Reverse one of the drive motors.
-    // You will have to determine which motor to reverse for your robot.
-    // In this example, the right motor was reversed so that positive
-    // applied power makes it move the robot in the forward direction.
-    leftback.setDirection(DcMotorSimple.Direction.REVERSE);
-    // You will have to determine which motor to reverse for your robot.
-    // In this example, the right motor was reversed so that positive
-    // applied power makes it move the robot in the forward direction.
-    leftfront.setDirection(DcMotorSimple.Direction.REVERSE);
-    _pseudo_arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-    armrotater.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-    _pseudo_arm.setTargetPosition(Help.degreesToTick(0));
-    armrotater.setTargetPosition(Help.degreesToTick(0));
-    _pseudo_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-    armrotater.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-    _pseudo_arm.setVelocity(900);
-    armrotater.setVelocity(1200);
+    //--These wheels are reversed for desired results--//
+    wheel_leftback.setDirection(DcMotorSimple.Direction.REVERSE);
+    wheel_leftfront.setDirection(DcMotorSimple.Direction.REVERSE);
+    //--//
     
+    //--Set up the arm motors--//
+    arm_extender.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    arm_rotater.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    arm_extender.setTargetPosition(Help.degreesToTick(0));
+    arm_rotater.setTargetPosition(Help.degreesToTick(0));
+    arm_extender.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    arm_rotater.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    arm_extender.setVelocity(900);
+    arm_rotater.setVelocity(1200);
+    //--//
 
     waitForStart();
     
     if (opModeIsActive()) {
-      // Put run blocks here.
+      // Start the loop
       while (opModeIsActive()) {
-
-        // Put loop blocks here.
+        //now_time, the time since the start of the program and is used to find time differentials between loop iterations
         double now_time = runtime.seconds();
+        
+        ////----INPUTS----////
+        
+        //dpad down/up: 
         if (gamepad1.dpad_down) {
-          arm_desiredangle-=600 * (now_time-last_time);
+          arm_extender_desiredangle-=600 * (now_time-last_time);
         } 
         if (gamepad1.dpad_up) {
-          arm_desiredangle+=600 * (now_time-last_time);
+          arm_extender_desiredangle+=600 * (now_time-last_time);
         }
+        
+        
          if (gamepad1.a) {
-          armrotate_desiredangle-=800 * (now_time-last_time);
+          arm_rotater_desiredangle-=800 * (now_time-last_time);
         } 
         if (gamepad1.y) {
-          armrotate_desiredangle+=800 * (now_time-last_time);
+          arm_rotater_desiredangle+=800 * (now_time-last_time);
         }
         if (gamepad1.x) {
-          claw_desiredangle += 0.5 * (now_time-last_time);
+          claw_grip_desiredangle += 0.5 * (now_time-last_time);
         }
         if (gamepad1.b) {
-          claw_desiredangle -= 0.5 * (now_time-last_time);
+          claw_grip_desiredangle -= 0.5 * (now_time-last_time);
         }
-        if (gamepad1.dpad_left && ((now_time-clawrotate_last_time) > 0.5 && !clawrotating)) {
-          clawrotate_desiredangle += 0.5;
-          clawrotate_last_time = now_time;
-          clawrotating = true;
+        if (gamepad1.dpad_left && ((now_time-claw_rotate_last_time) > 0.5 && !claw_rotating)) {
+          claw_rotate_desiredangle += 0.5;
+          claw_rotate_last_time = now_time;
+          claw_rotating = true;
         }
-        if (gamepad1.dpad_right && ((now_time-clawrotate_last_time) > 0.5 && !clawrotating)) {
-          clawrotate_desiredangle -= 0.5;
-          clawrotate_last_time = now_time;
-          clawrotating = true;
+        if (gamepad1.dpad_right && ((now_time-claw_rotate_last_time) > 0.5 && !claw_rotating)) {
+          claw_rotate_desiredangle -= 0.5;
+          claw_rotate_last_time = now_time;
+          claw_rotating = true;
         }
-        //Boundaries of the arm lengther
-        if (arm_desiredangle < 0) { 
-          arm_desiredangle = 0;
+        
+        ////----BOUNDARIES----////
+        
+        
+        if (arm_extender_desiredangle < 0) { 
+          arm_extender_desiredangle = 0;
         }
-        if (arm_desiredangle > 1600) {
-          arm_desiredangle = 1400;
+        else if (arm_extender_desiredangle > 1600) {
+          arm_extender_desiredangle = 1400;
         }
+        
         //Boundaries of the arm vertical rotation
-        if (armrotate_desiredangle > 3000) {
-          armrotate_desiredangle = 3000;
+        if (arm_rotate_desiredangle > 3000) {
+          arm_rotate_desiredangle = 3000;
         }
-        if (armrotate_desiredangle < 0) {
-          armrotate_desiredangle = 0;
+        else if (arm_rotate_desiredangle < 0) {
+          arm_rotate_desiredangle = 0;
         }
+        
         // Boundaries of the claw
-        if (claw_desiredangle < 0.28) {
-          claw_desiredangle = 0.28;
+        if (claw_grip_desiredangle < 0.28) {
+          claw_grip_desiredangle = 0.28;
         }
-        if (claw_desiredangle > 0.85) {
-          claw_desiredangle = 0.85;
+        else if (claw_grip_desiredangle > 0.85) {
+          claw_grip_desiredangle = 0.85;
         }
+        
         // Boundaries of the claw rotate servo
-        if (clawrotate_desiredangle == 0 && ((now_time-clawrotate_last_time) > 0.4) && clawrotating) {
-          clawrotate_desiredangle = 0.5;
-          clawrotating = false;
+        if (claw_rotate_desiredangle == 0 && ((now_time-claw_rotate_last_time) > 0.4) && claw_rotating) {
+          claw_rotate_desiredangle = 0.5;
+          claw_rotating = false;
         }
-        if (clawrotate_desiredangle == 1 && ((now_time-clawrotate_last_time) > 0.4) && clawrotating) {
-          clawrotate_desiredangle = 0.5;
-          clawrotating = false;
+        if (claw_rotate_desiredangle == 1 && ((now_time-claw_rotate_last_time) > 0.4) && claw_rotating) {
+          claw_rotate_desiredangle = 0.5;
+          claw_rotating = false;
         }
-        if (gamepad1.left_bumper) {
-          clawrotate_desiredangle = 0.5;
-        }
-        last_time = now_time;
+        last_time = now_time; //To find time differentials between loops.
+        
+        ////----VARIABLE MONITORING----////
+        
         telemetry.addData("righttrigger", gamepad1.right_trigger);
         telemetry.addData("lefttrigger", gamepad1.left_trigger);
         telemetry.addData("leftstickx", gamepad1.left_stick_x);
@@ -170,49 +182,47 @@ public class mechanumdrive extends LinearOpMode {
         //telemetry.addData("arm_floor_distance", distance.getDistance(DistanceUnit.CM));
         telemetry.update();
         
-        left_back_pow = gamepad1.left_stick_y;
-        left_front_pow = gamepad1.left_stick_y;
-        right_back_pow = gamepad1.right_stick_y;
-        right_front_pow = gamepad1.right_stick_y;
+        ////----WHEEL DRIVING----////
+        
+        leftback_pow = gamepad1.left_stick_y;
+        leftfront_pow = gamepad1.left_stick_y;
+        rightback_pow = gamepad1.right_stick_y;
+        rightfront_pow = gamepad1.right_stick_y;
         
         //The Triggers range from 0 to 1.
         //Is Right_Trigger held down enough?
         if (gamepad1.right_trigger > 0.05) {
-          right_front_pow = gamepad1.right_trigger * 1;
-          right_back_pow = gamepad1.right_trigger * -1;
-          left_front_pow = gamepad1.right_trigger * -1;
-          left_back_pow = gamepad1.right_trigger * 1;
+          rightfront_pow = gamepad1.right_trigger * 1;
+          rightback_pow = gamepad1.right_trigger * -1;
+          leftfront_pow = gamepad1.right_trigger * -1;
+          leftback_pow = gamepad1.right_trigger * 1;
         }
         
         //Is Left_Trigger held down enough?
         if (gamepad1.left_trigger > 0.05) {
-          left_front_pow = gamepad1.left_trigger * 1;
-          left_back_pow = gamepad1.left_trigger * -1;
-          right_back_pow = gamepad1.left_trigger * 1;
-          right_front_pow = gamepad1.left_trigger * -1;
+          leftfront_pow = gamepad1.left_trigger * 1;
+          leftback_pow = gamepad1.left_trigger * -1;
+          rightback_pow = gamepad1.left_trigger * 1;
+          rightfront_pow = gamepad1.left_trigger * -1;
         }
-        right_front_pow = (float) (right_front_pow * 0.45);
-        right_back_pow = (float) (right_back_pow * 0.45);
-        left_front_pow = (float) (left_front_pow * 0.45);
-        left_back_pow = (float) (left_back_pow * 0.61);
+        rightfront_pow = (float) (rightfront_pow * 0.45);
+        rightback_pow = (float) (rightback_pow * 0.45);
+        leftfront_pow = (float) (leftfront_pow * 0.45);
+        leftback_pow = (float) (leftback_pow * 0.61);
         
         //Set power of motors to their corresponding variables
         
-        // The Y axis of a joystick ranges from -1 in its topmost position
-        // to +1 in its bottommost position. We negate this value so that
-        // the topmost position corresponds to maximum forward power.
-        leftback.setPower(left_back_pow);
-        rightback.setPower(right_back_pow);
-        // The Y axis of a joystick ranges from -1 in its topmost position
-        // to +1 in its bottommost position. We negate this value so that
-        // the topmost position corresponds to maximum forward power.
-        leftfront.setPower(left_front_pow);
-        rightfront.setPower(right_front_pow);
-        claw.setPosition(claw_desiredangle);
-        clawrotater.setPosition(clawrotate_desiredangle);
-        //_pseudo_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        _pseudo_arm.setTargetPosition(Help.degreesToTick(arm_desiredangle));
-        armrotater.setTargetPosition(-Help.degreesToTick(armrotate_desiredangle));
+        wheel_leftback.setPower(left_back_pow);
+        wheel_rightback.setPower(right_back_pow);
+        wheel_leftfront.setPower(left_front_pow);
+        wheel_rightfront.setPower(right_front_pow);
+        
+        //Set position of arm and claw motors to their corresponding variables.
+        
+        claw.setPosition(grip_);
+        clawrotater.setPosition(claw_rotate_desiredangle);
+        arm_extender.setTargetPosition(Help.degreesToTick(arm_extender_desiredangle));
+        armrotater.setTargetPosition(-Help.degreesToTick(arm_rotate_desiredangle));
         
 
         
