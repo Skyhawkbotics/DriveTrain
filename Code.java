@@ -39,7 +39,7 @@ public class mechanumdrive extends LinearOpMode {
    */
   @Override
   public void runOpMode() {
-    
+    double everything_universalscale = 1;
     double wheel_universalscale = 0.8;
     float wheel_leftback_pow;
     float wheel_leftfront_pow;
@@ -97,35 +97,42 @@ public class mechanumdrive extends LinearOpMode {
         
         ////----INPUTS----////
         
+        if (gamepad1.left_bumper) {
+          everything_universalscale = 0.4;
+        }
+        else {
+          everything_universalscale = 1;
+        }
+        
         //dpad left/right
         if (gamepad1.dpad_right) {
-          arm_extender_desiredangle-=500 * (now_time-last_time);
+          arm_extender_desiredangle-=500 * (now_time-last_time) * everything_universalscale;
         } 
         if (gamepad1.dpad_left) {
-          arm_extender_desiredangle+=450 * (now_time-last_time);
+          arm_extender_desiredangle+=450 * (now_time-last_time)  * everything_universalscale;
         }
         if (gamepad1.dpad_down) {
-          arm_rotate_desiredangle-=800 * (now_time-last_time);
+          arm_rotate_desiredangle-=800 * (now_time-last_time) * everything_universalscale;
         } 
         if (gamepad1.dpad_up) {
-          arm_rotate_desiredangle+=800 * (now_time-last_time);
+          arm_rotate_desiredangle+=800 * (now_time-last_time) * everything_universalscale;
         }
         
         
         if (gamepad1.b) {
-          claw_grip_desiredangle += 0.5 * (now_time-last_time);
+          claw_grip_desiredangle += 0.5 * (now_time-last_time) * everything_universalscale;
         }
         if (gamepad1.x) {
-          claw_grip_desiredangle -= 0.5 * (now_time-last_time);
+          claw_grip_desiredangle -= 0.5 * (now_time-last_time) * everything_universalscale;
         }
         
         if (gamepad1.y && ((now_time-claw_rotate_last_time) > 0.2 && !claw_rotating)) {
-          claw_rotate_desiredangle -= 0.3;
+          claw_rotate_desiredangle -= 0.3 * everything_universalscale;
           claw_rotate_last_time = now_time;
           claw_rotating = true;
         }
         if (gamepad1.a && ((now_time-claw_rotate_last_time) > 0.2 && !claw_rotating)) {
-          claw_rotate_desiredangle += 0.3;
+          claw_rotate_desiredangle += 0.3 * everything_universalscale;
           claw_rotate_last_time = now_time;
           claw_rotating = true;
         }
@@ -157,11 +164,11 @@ public class mechanumdrive extends LinearOpMode {
         }
         
         // Boundaries of the claw rotate servo
-        if (claw_rotate_desiredangle == 0.2 && ((now_time-claw_rotate_last_time) > 0.18) && claw_rotating) {
+        if (claw_rotate_desiredangle < 0.5 && ((now_time-claw_rotate_last_time) > 0.18) && claw_rotating) {
           claw_rotate_desiredangle = 0.5;
           claw_rotating = false;
         }
-        if (claw_rotate_desiredangle == 0.8 && ((now_time-claw_rotate_last_time) > 0.18) && claw_rotating) {
+        if (claw_rotate_desiredangle > 0.5 && ((now_time-claw_rotate_last_time) > 0.18) && claw_rotating) {
           claw_rotate_desiredangle = 0.5;
           claw_rotating = false;
         }
@@ -207,10 +214,10 @@ public class mechanumdrive extends LinearOpMode {
           wheel_rightback_pow = gamepad1.left_trigger * 1;
           wheel_rightfront_pow = gamepad1.left_trigger * -1;
         }
-        wheel_rightfront_pow = (float) (wheel_rightfront_pow * 0.45 * wheel_universalscale);
-        wheel_rightback_pow = (float) (wheel_rightback_pow * 0.45 * wheel_universalscale);
-        wheel_leftfront_pow = (float) (wheel_leftfront_pow * 0.45 * wheel_universalscale);
-        wheel_leftback_pow = (float) (wheel_leftback_pow * 0.61 * wheel_universalscale);
+        wheel_rightfront_pow = (float) (wheel_rightfront_pow * 0.45 * wheel_universalscale * everything_universalscale);
+        wheel_rightback_pow = (float) (wheel_rightback_pow * 0.45 * wheel_universalscale * everything_universalscale);
+        wheel_leftfront_pow = (float) (wheel_leftfront_pow * 0.45 * wheel_universalscale * everything_universalscale);
+        wheel_leftback_pow = (float) (wheel_leftback_pow * 0.61 * wheel_universalscale * everything_universalscale);
         
         //Set power of motors to their corresponding variables
         
