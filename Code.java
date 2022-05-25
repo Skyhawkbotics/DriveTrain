@@ -40,11 +40,11 @@ public class mechanumdrive extends LinearOpMode {
   @Override
   public void runOpMode() {
     
-    float wheel_universalscale = 0.8;
-    float wheel_leftback_Pow;
-    float wheel_leftfront_Pow;
-    float wheel_rightback_Pow;
-    float wheel_rightfront_Pow;
+    double wheel_universalscale = 0.8;
+    float wheel_leftback_pow;
+    float wheel_leftfront_pow;
+    float wheel_rightback_pow;
+    float wheel_rightfront_pow;
     float arm_extender_desiredangle = 0;
     float arm_rotate_desiredangle = 0;
     double claw_grip_desiredangle = 0.28;
@@ -53,7 +53,7 @@ public class mechanumdrive extends LinearOpMode {
     double last_time = runtime.seconds();
     double claw_rotate_last_time = runtime.seconds();
     
-    boolean clawrotating = false;
+    boolean claw_rotating = false;
 
 
     wheel_leftback = hardwareMap.get(DcMotor.class, "left/back");
@@ -83,8 +83,8 @@ public class mechanumdrive extends LinearOpMode {
     arm_rotater.setTargetPosition(Help.degreesToTick(0));
     arm_extender.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     arm_rotater.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-    arm_extender.setVelocity(600);
-    arm_rotater.setVelocity(750);
+    arm_extender.setVelocity(750);
+    arm_rotater.setVelocity(1200);
     //--//
 
     waitForStart();
@@ -99,16 +99,16 @@ public class mechanumdrive extends LinearOpMode {
         
         //dpad left/right
         if (gamepad1.dpad_right) {
-          arm_extender_desiredangle-=400 * (now_time-last_time);
+          arm_extender_desiredangle-=500 * (now_time-last_time);
         } 
         if (gamepad1.dpad_left) {
-          arm_extender_desiredangle+=400 * (now_time-last_time);
+          arm_extender_desiredangle+=450 * (now_time-last_time);
         }
         if (gamepad1.dpad_down) {
-          arm_rotater_desiredangle-=500 * (now_time-last_time);
+          arm_rotate_desiredangle-=800 * (now_time-last_time);
         } 
         if (gamepad1.dpad_up) {
-          arm_rotater_desiredangle+=500 * (now_time-last_time);
+          arm_rotate_desiredangle+=800 * (now_time-last_time);
         }
         
         
@@ -120,12 +120,12 @@ public class mechanumdrive extends LinearOpMode {
         }
         
         if (gamepad1.y && ((now_time-claw_rotate_last_time) > 0.2 && !claw_rotating)) {
-          claw_rotate_desiredangle += 0.3;
+          claw_rotate_desiredangle -= 0.3;
           claw_rotate_last_time = now_time;
           claw_rotating = true;
         }
         if (gamepad1.a && ((now_time-claw_rotate_last_time) > 0.2 && !claw_rotating)) {
-          claw_rotate_desiredangle -= 0.3;
+          claw_rotate_desiredangle += 0.3;
           claw_rotate_last_time = now_time;
           claw_rotating = true;
         }
@@ -157,11 +157,11 @@ public class mechanumdrive extends LinearOpMode {
         }
         
         // Boundaries of the claw rotate servo
-        if (claw_rotate_desiredangle == 0 && ((now_time-claw_rotate_last_time) > 0.18) && claw_rotating) {
+        if (claw_rotate_desiredangle == 0.2 && ((now_time-claw_rotate_last_time) > 0.18) && claw_rotating) {
           claw_rotate_desiredangle = 0.5;
           claw_rotating = false;
         }
-        if (claw_rotate_desiredangle == 1 && ((now_time-claw_rotate_last_time) > 0.18) && claw_rotating) {
+        if (claw_rotate_desiredangle == 0.8 && ((now_time-claw_rotate_last_time) > 0.18) && claw_rotating) {
           claw_rotate_desiredangle = 0.5;
           claw_rotating = false;
         }
@@ -175,56 +175,56 @@ public class mechanumdrive extends LinearOpMode {
         telemetry.addData("leftsticky", gamepad1.left_stick_y);
         telemetry.addData("rightstickx", gamepad1.right_stick_x);
         telemetry.addData("rightsticky", gamepad1.right_stick_y);
-        telemetry.addData("arm_desiredangle", arm_desiredangle);
-        telemetry.addData("armrotate_desiredangle", armrotate_desiredangle);
-        telemetry.addData("claw_desiredangle", claw_desiredangle);
-        telemetry.addData("clawrotate_Desiredangle", clawrotate_desiredangle);
-        telemetry.addData("claw_pos", clawrotate_position);
+        telemetry.addData("arm_desiredangle", arm_extender_desiredangle);
+        telemetry.addData("armrotate_desiredangle", arm_rotate_desiredangle);
+        telemetry.addData("claw_desiredangle", claw_grip_desiredangle);
+        telemetry.addData("clawrotate_Desiredangle", claw_rotate_desiredangle);
+        //telemetry.addData("claw_pos", clawrotate_position);
         //telemetry.addData("arm_position", _pseudo_arm.getCurrentPosition());
         //telemetry.addData("arm_floor_distance", distance.getDistance(DistanceUnit.CM));
         telemetry.update();
         
         ////----WHEEL DRIVING----////
         
-        leftback_pow = gamepad1.left_stick_y;
-        leftfront_pow = gamepad1.left_stick_y;
-        rightback_pow = gamepad1.right_stick_y;
-        rightfront_pow = gamepad1.right_stick_y;
+        wheel_leftback_pow = gamepad1.left_stick_y;
+        wheel_leftfront_pow = gamepad1.left_stick_y;
+        wheel_rightback_pow = gamepad1.right_stick_y;
+        wheel_rightfront_pow = gamepad1.right_stick_y;
         
         //The Triggers range from 0 to 1.
         //Is Right_Trigger held down enough?
         if (gamepad1.right_trigger > 0.05) {
-          rightfront_pow = gamepad1.right_trigger * 1;
-          rightback_pow = gamepad1.right_trigger * -1;
-          leftfront_pow = gamepad1.right_trigger * -1;
-          leftback_pow = gamepad1.right_trigger * 1;
+          wheel_rightfront_pow = gamepad1.right_trigger * 1;
+          wheel_rightback_pow = gamepad1.right_trigger * -1;
+          wheel_leftfront_pow = gamepad1.right_trigger * -1;
+          wheel_leftback_pow = gamepad1.right_trigger * 1;
         }
         
         //Is Left_Trigger held down enough?
         if (gamepad1.left_trigger > 0.05) {
-          leftfront_pow = gamepad1.left_trigger * 1;
-          leftback_pow = gamepad1.left_trigger * -1;
-          rightback_pow = gamepad1.left_trigger * 1;
-          rightfront_pow = gamepad1.left_trigger * -1;
+          wheel_leftfront_pow = gamepad1.left_trigger * 1;
+          wheel_leftback_pow = gamepad1.left_trigger * -1;
+          wheel_rightback_pow = gamepad1.left_trigger * 1;
+          wheel_rightfront_pow = gamepad1.left_trigger * -1;
         }
-        rightfront_pow = (float) (rightfront_pow * 0.45 * wheel_universalscale);
-        rightback_pow = (float) (rightback_pow * 0.45 * wheel_universalscale);
-        leftfront_pow = (float) (leftfront_pow * 0.45 * wheel_universalscale);
-        leftback_pow = (float) (leftback_pow * 0.61 * wheel_universalscale);
+        wheel_rightfront_pow = (float) (wheel_rightfront_pow * 0.45 * wheel_universalscale);
+        wheel_rightback_pow = (float) (wheel_rightback_pow * 0.45 * wheel_universalscale);
+        wheel_leftfront_pow = (float) (wheel_leftfront_pow * 0.45 * wheel_universalscale);
+        wheel_leftback_pow = (float) (wheel_leftback_pow * 0.61 * wheel_universalscale);
         
         //Set power of motors to their corresponding variables
         
-        wheel_leftback.setPower(left_back_pow);
-        wheel_rightback.setPower(right_back_pow);
-        wheel_leftfront.setPower(left_front_pow);
-        wheel_rightfront.setPower(right_front_pow);
+        wheel_leftback.setPower(wheel_leftback_pow);
+        wheel_rightback.setPower(wheel_rightback_pow);
+        wheel_leftfront.setPower(wheel_leftfront_pow);
+        wheel_rightfront.setPower(wheel_rightfront_pow);
         
         //Set position of arm and claw motors to their corresponding variables.
         
         claw.setPosition(claw_grip_desiredangle);
-        clawrotater.setPosition(claw_rotate_desiredangle);
+        claw_rotater.setPosition(claw_rotate_desiredangle);
         arm_extender.setTargetPosition(Help.degreesToTick(arm_extender_desiredangle));
-        armrotater.setTargetPosition(-Help.degreesToTick(arm_rotate_desiredangle));
+        arm_rotater.setTargetPosition(-Help.degreesToTick(arm_rotate_desiredangle));
         
 
         
