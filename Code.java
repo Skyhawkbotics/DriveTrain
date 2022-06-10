@@ -23,7 +23,10 @@ Code Starts Here.
 @TeleOp(name = "mechanumdrive (Blocks to Java)")
 public class mechanumdrive extends LinearOpMode {
 
+  //Clock
   private ElapsedTime     runtime = new ElapsedTime();
+  
+  //Create Motor Variables
   private DcMotor wheel_leftback;
   private DcMotor wheel_leftfront;
   private DcMotor wheel_rightback;
@@ -32,29 +35,31 @@ public class mechanumdrive extends LinearOpMode {
   private DcMotorEx arm_rotater;
   private Servo claw;
   private Servo claw_rotater;
-
+  
+  //time at which the claw rotates for per movement. Modified when restarting the robot.
   double CLAW_ROTATE_TIME = 0.18;
-    
-  double everything_universalscale = 1;
-  double wheel_universalscale = 0.8;
-  double wheel_equalizerscale = 0;
+  
+  double everything_universalscale = 1;  //Multiplier for angle/power
+  double wheel_universalscale = 0.8; //Multiplier for power for wheels
+  double wheel_equalizerscale = 0; //How much the difference between two sides of the wheel should be evened by (0-1)
   float wheel_leftback_pow;
   float wheel_leftfront_pow;
   float wheel_rightback_pow;
   float wheel_rightfront_pow;
-  float arm_extender_desiredangle = 0;
-  float arm_rotate_desiredangle = 0;
-  double claw_grip_desiredangle = 0.28;
-  double claw_rotate_desiredangle = 0.5;
+  float arm_extender_desiredangle = 0; // 0 to 1300 | retracted to fully extended
+  float arm_rotate_desiredangle = 0; // 0 to 3500 | lowered to fully raised
+  double claw_grip_desiredangle = 0.28; // 0.28 to 0.85 | closed to fully opened
+  double claw_rotate_desiredangle = 0.5; // >0.5 to <0.5 | move up or move down
   
-  double claw_rotate_position = 0;
+  double claw_rotate_position = 0; // Increases or decreases based on how much movement the claw makes | Utilized for finding how much to readjust the claw by to reset it.
   
-  double last_time = runtime.seconds();
-  double claw_rotate_last_time = runtime.seconds();
-  double reset_last_time = runtime.seconds();
-  boolean stopreset_soon = false;
+  double last_time = runtime.seconds(); //Used to find how much time has elapsed per iteration in the runtime loop.
+  double claw_rotate_last_time = runtime.seconds(); //Last time the claw moved
+  double reset_last_time = runtime.seconds(); //Last time the robot has reset
   
-  boolean claw_rotating = false;
+  boolean stopreset_soon = false; //Is the robot trying to reset all the motors? (Except wheels)
+  
+  boolean claw_rotating = false; //Is the claw moving?
 
 
   //private DistanceSensor distance;
@@ -65,7 +70,7 @@ public class mechanumdrive extends LinearOpMode {
   public void runOpMode() {
     
 
-
+    //Initalize Motors and Servos
     wheel_leftback = hardwareMap.get(DcMotor.class, "left/back");
     wheel_leftfront = hardwareMap.get(DcMotor.class, "left/front");
     wheel_rightback = hardwareMap.get(DcMotor.class, "right/back");
@@ -96,10 +101,10 @@ public class mechanumdrive extends LinearOpMode {
     arm_extender.setVelocity(750);
     arm_rotater.setVelocity(1200);
     //--//
-    
+    /*
     double arm_extenderVelocity = arm_extender.getVelocity();
     double arm_rotaterVelocity = arm_rotater.getVelocity();
-
+    */
     waitForStart();
     
     if (opModeIsActive()) {
@@ -112,7 +117,7 @@ public class mechanumdrive extends LinearOpMode {
         
         if (gamepad1.left_bumper) {
           everything_universalscale = 0.4;
-          wheel_universalscale = 0.5;
+          wheel_universalscale = 0.3;
         }
         else {
           everything_universalscale = 1;
@@ -124,24 +129,6 @@ public class mechanumdrive extends LinearOpMode {
         }
         else {
           wheel_equalizerscale = 0;
-        }
-        
-        if (now_time - reset_last_time > 4 && stopreset_soon) {
-          stopreset_soon = false;
-        }
-        else if (now_time - reset_last_time < 4 && stopreset_soon){
-          arm_extender_desiredangle-=500 * (now_time-last_time);
-          arm_rotate_desiredangle-=300 * (now_time-last_time) * everything_universalscale;
-        }
-        
-        if (gamepad1.start && !stopreset_soon) {
-          stopreset_soon = true;
-          
-          claw_grip_desiredangle = 0.28;
-          clawMove(1,claw_rotate_position, now_time);
-          claw_rotate_position = 0;
-          
-          reset_last_time = runtime.seconds();
         }
         
         //dpad left/right
@@ -165,22 +152,6 @@ public class mechanumdrive extends LinearOpMode {
         if (gamepad1.x) {
           claw_grip_desiredangle -= 0.5 * (now_time-last_time) * everything_universalscale;
         }
-        /*
-        if (gamepad1.y && ((now_time-claw_rotate_last_time) > 0.2 && !claw_rotating)) {
-          claw_rotate_desiredangle -= 0.3 * everything_universalscale;
-          claw_rotate_last_time = now_time;
-          claw_rotating = true;
-          
-          claw_rotate_position -= 1;
-        }
-        if (gamepad1.a && ((now_time-claw_rotate_last_time) > 0.2 && !claw_rotating)) {
-          claw_rotate_desiredangle += 0.3 * everything_universalscale;
-          claw_rotate_last_time = now_time;
-          claw_rotating = true;
-          
-          claw_rotate_position += 1;
-        }
-        */
         
         if (gamepad1.y && ((now_time-claw_rotate_last_time) > 0.2 && !claw_rotating)) {
           clawMove(1,1, now_time);
@@ -223,6 +194,26 @@ public class mechanumdrive extends LinearOpMode {
           claw_rotate_desiredangle = 0.5;
           claw_rotating = false;
         }
+        
+        //--All things related to resetting the motors--//
+        if (now_time - reset_last_time > 4 && stopreset_soon) {
+          stopreset_soon = false;
+        }
+        else if (now_time - reset_last_time < 4 && stopreset_soon){
+          arm_extender_desiredangle-=500 * (now_time-last_time);
+          arm_rotate_desiredangle-=300 * (now_time-last_time) * everything_universalscale;
+        }
+        
+        if (gamepad1.start && !stopreset_soon) {
+          stopreset_soon = true;
+          
+          claw_grip_desiredangle = 0.28;
+          clawMove(1,claw_rotate_position, now_time);
+          claw_rotate_position = 0;
+          
+          reset_last_time = runtime.seconds();
+        }
+        
         last_time = now_time; //To find time differentials between loops.
         
         ////----VARIABLE MONITORING----////
