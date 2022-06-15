@@ -20,6 +20,14 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 Code Starts Here.
 */
 
+/*
+Hello future programmer. My name is Kevin Vu and initially wrote this code.
+It is not very readable and some of the design decisions I made are very questionable.
+
+| For the movement of the claw, look at the gamepadInputHandling() claw section and the clawMove() section.
+| now_time-last_time is used to find time inbetween loops and normalize degrees per loop to degrees per second.
+*/
+
 @TeleOp(name = "mechanumdrive (Blocks to Java)")
 public class mechanumdrive extends LinearOpMode {
 
@@ -115,85 +123,9 @@ public class mechanumdrive extends LinearOpMode {
         
         ////----INPUTS----////
         
-        if (gamepad1.left_bumper) {
-          everything_universalscale = 0.4;
-          wheel_universalscale = 0.3;
-        }
-        else {
-          everything_universalscale = 1;
-          wheel_universalscale = 0.8;
-        }
-        
-        if (gamepad1.right_bumper) {
-          wheel_equalizerscale = 0.3;
-        }
-        else {
-          wheel_equalizerscale = 0;
-        }
-        
-        //dpad left/right
-        if (gamepad1.dpad_right) {
-          arm_extender_desiredangle-=500 * (now_time-last_time) * everything_universalscale;
-        } 
-        if (gamepad1.dpad_left) {
-          arm_extender_desiredangle+=450 * (now_time-last_time)  * everything_universalscale;
-        }
-        if (gamepad1.dpad_down) {
-          arm_rotate_desiredangle-=800 * (now_time-last_time) * everything_universalscale;
-        } 
-        if (gamepad1.dpad_up) {
-          arm_rotate_desiredangle+=800 * (now_time-last_time) * everything_universalscale;
-        }
+        gamepadInputHandling();
         
         
-        if (gamepad1.b) {
-          claw_grip_desiredangle += 0.5 * (now_time-last_time) * everything_universalscale;
-        }
-        if (gamepad1.x) {
-          claw_grip_desiredangle -= 0.5 * (now_time-last_time) * everything_universalscale;
-        }
-        
-        if (gamepad1.y && ((now_time-claw_rotate_last_time) > 0.2 && !claw_rotating)) {
-          clawMove(1,1, now_time);
-        }
-        if (gamepad1.a && ((now_time-claw_rotate_last_time) > 0.2 && !claw_rotating)) {
-          clawMove(-1,1, now_time);
-        }
-        ////----BOUNDARIES----////
-        
-        
-        if (arm_extender_desiredangle < 0) { 
-          arm_extender_desiredangle = 0;
-        }
-        else if (arm_extender_desiredangle > 1300) {
-          arm_extender_desiredangle = 1300;
-        }
-        
-        //Boundaries of the arm vertical rotation
-        if (arm_rotate_desiredangle > 3500) {
-          arm_rotate_desiredangle = 3500;
-        }
-        else if (arm_rotate_desiredangle < 0) {
-          arm_rotate_desiredangle = 0;
-        }
-        
-        // Boundaries of the claw
-        if (claw_grip_desiredangle < 0.28) {
-          claw_grip_desiredangle = 0.28;
-        }
-        else if (claw_grip_desiredangle > 0.85) {
-          claw_grip_desiredangle = 0.85;
-        }
-        
-        // Boundaries of the claw rotate servo
-        if (claw_rotate_desiredangle < 0.5 && ((now_time-claw_rotate_last_time) > CLAW_ROTATE_TIME) && claw_rotating) {
-          claw_rotate_desiredangle = 0.5;
-          claw_rotating = false;
-        }
-        if (claw_rotate_desiredangle > 0.5 && ((now_time-claw_rotate_last_time) > CLAW_ROTATE_TIME) && claw_rotating) {
-          claw_rotate_desiredangle = 0.5;
-          claw_rotating = false;
-        }
         
         //--All things related to resetting the motors--//
         if (now_time - reset_last_time > 4 && stopreset_soon) {
@@ -289,6 +221,87 @@ public class mechanumdrive extends LinearOpMode {
     
   }
   
+  public void gamepadInputHandling() {
+    if (gamepad1.left_bumper) {
+        everything_universalscale = 0.4;
+        wheel_universalscale = 0.3;
+      }
+      else {
+        everything_universalscale = 1;
+        wheel_universalscale = 0.8;
+      }
+
+      if (gamepad1.right_bumper) {
+        wheel_equalizerscale = 0.3;
+      }
+      else {
+        wheel_equalizerscale = 0;
+      }
+
+      //dpad left/right
+      if (gamepad1.dpad_right) {
+        arm_extender_desiredangle-=500 * (now_time-last_time) * everything_universalscale;
+      } 
+      else if (gamepad1.dpad_left) {
+        arm_extender_desiredangle+=450 * (now_time-last_time)  * everything_universalscale;
+      }
+      if (gamepad1.dpad_down) {
+        arm_rotate_desiredangle-=800 * (now_time-last_time) * everything_universalscale;
+      } 
+      else if (gamepad1.dpad_up) {
+        arm_rotate_desiredangle+=800 * (now_time-last_time) * everything_universalscale;
+      }
+
+
+      if (gamepad1.b) {
+        claw_grip_desiredangle += 0.5 * (now_time-last_time) * everything_universalscale;
+      }
+      else if (gamepad1.x) {
+        claw_grip_desiredangle -= 0.5 * (now_time-last_time) * everything_universalscale;
+      }
+
+      if (gamepad1.y && ((now_time-claw_rotate_last_time) > 0.2 && !claw_rotating)) {
+        clawMove(1,1, now_time);
+      }
+      else if (gamepad1.a && ((now_time-claw_rotate_last_time) > 0.2 && !claw_rotating)) {
+        clawMove(-1,1, now_time);
+      }
+      ////----BOUNDARIES----////
+
+
+      if (arm_extender_desiredangle < 0) { 
+        arm_extender_desiredangle = 0;
+      }
+      else if (arm_extender_desiredangle > 1300) {
+        arm_extender_desiredangle = 1300;
+      }
+
+      //Boundaries of the arm vertical rotation
+      if (arm_rotate_desiredangle > 3500) {
+        arm_rotate_desiredangle = 3500;
+      }
+      else if (arm_rotate_desiredangle < 0) {
+        arm_rotate_desiredangle = 0;
+      }
+
+      // Boundaries of the claw
+      if (claw_grip_desiredangle < 0.28) {
+        claw_grip_desiredangle = 0.28;
+      }
+      else if (claw_grip_desiredangle > 0.85) {
+        claw_grip_desiredangle = 0.85;
+      }
+      // Boundaries of the claw rotate servo
+      if (claw_rotate_desiredangle < 0.5 && ((now_time-claw_rotate_last_time) > CLAW_ROTATE_TIME) && claw_rotating) {
+        claw_rotate_desiredangle = 0.5;
+        claw_rotating = false;
+      }
+      if (claw_rotate_desiredangle > 0.5 && ((now_time-claw_rotate_last_time) > CLAW_ROTATE_TIME) && claw_rotating) {
+        claw_rotate_desiredangle = 0.5;
+        claw_rotating = false;
+      }
+  }
+  
   public void clawMove(int mult, double iterations, double now_time){
     if (iterations == 1) {
       claw_rotate_desiredangle -= 0.3 * everything_universalscale * mult;
@@ -306,6 +319,8 @@ public class mechanumdrive extends LinearOpMode {
     
     CLAW_ROTATE_TIME = 0.18 * iterations;
   }
+  
+  
 }
 
 class Help {
