@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-import java.lang.math;
+import java.lang.Math;
 
 /*
 Code Starts Here.
@@ -78,7 +78,7 @@ public class mechanumdrive extends LinearOpMode {
     whl_RF = hardwareMap.get(DcMotor.class, "right/front");
     arm_EXT = hardwareMap.get(DcMotorEx.class, "arm_extender");
     arm_ROT = hardwareMap.get(DcMotorEx.class, "arm_rotater");
-    claw_grip = hardwareMap.get(Servo.class, "claw_grip");
+    claw_GRIP = hardwareMap.get(Servo.class, "claw_grip");
     wrist_ROT = hardwareMap.get(Servo.class, "wrist_ROT");
     
     //--These wheels are reversed for desired results--//
@@ -155,7 +155,7 @@ public class mechanumdrive extends LinearOpMode {
         float drv_stick_y = gamepad1.left_stick_y;
         float drv_stick_x = gamepad1.left_stick_x;
 
-        if (math.abs(gamepad1.left_stick_y) > math.abs(gamepad1.left_stick_x)) {
+        if (Math.abs(gamepad1.left_stick_y) > Math.abs(gamepad1.left_stick_x)) {
           whl_LB_percent = drv_stick_y;
           whl_LF_percent = drv_stick_y;
           whl_RB_percent = drv_stick_y;
@@ -186,10 +186,10 @@ public class mechanumdrive extends LinearOpMode {
         
         //Set position of arm and claw motors to their corresponding variables.
         
-        claw.setPosition(claw_grip_desiredangle);
-        claw_rotater.setPosition(claw_rotate_desiredangle);
-        arm_extender.setTargetPosition(-Help.degreesToTick(arm_extender_desiredangle));
-        arm_rotater.setTargetPosition(-Help.degreesToTick(arm_rotate_desiredangle));
+        //claw.setPosition(claw_grip_desiredangle);
+        //claw_rotater.setPosition(claw_rotate_desiredangle);
+        //arm_extender.setTargetPosition(-Help.degreesToTick(arm_extender_desiredangle));
+        //arm_rotater.setTargetPosition(-Help.degreesToTick(arm_rotate_desiredangle));
         
 
         
@@ -235,26 +235,26 @@ public class mechanumdrive extends LinearOpMode {
 
     //dpad up/down claw open/close
     if (gamepad1.dpad_up) {
-      claw_GRIP_angle += 0.5 * (now_time-last_time) * everything_universalscale;
+      claw_GRIP_angle += 0.5 * (now_time-last_time);
     }
     else if (gamepad1.dpad_down) {
-      claw_GRIP_angle -= 0.5 * (now_time-last_time) * everything_universalscale;
+      claw_GRIP_angle -= 0.5 * (now_time-last_time);
     }
 
     // Y A arm ROT up down
     if (gamepad1.y) {
-      arm_ROT_angle-=800 * (now_time-last_time) * everything_universalscale;
+      arm_ROT_angle-=800 * (now_time-last_time);
     } 
     else if (gamepad1.a) {
-      arm_ROT_angle+=800 * (now_time-last_time) * everything_universalscale;
+      arm_ROT_angle+=800 * (now_time-last_time);
     }
 
     // B X arm EXT forward back
     if (gamepad1.b) {
-      arm_EXT_angle-=500 * (now_time-last_time) * everything_universalscale;
+      arm_EXT_angle-=500 * (now_time-last_time);
     } 
     else if (gamepad1.x) {
-      arm_EXT_angle+=450 * (now_time-last_time)  * everything_universalscale;
+      arm_EXT_angle+=450 * (now_time-last_time);
     }
 
     
@@ -287,10 +287,10 @@ public class mechanumdrive extends LinearOpMode {
 
   }
   public void whl_corrections() {
-      whl_RF_percent = (float) (whl_RF_percent * 0.45 * wheel_universalscale);
-      whl_RB_percent = (float) (whl_RB_percent * 0.45 * wheel_universalscale);
-      whl_LF_percent = (float) (whl_LF_percent * 0.45 * wheel_universalscale);
-      whl_LB_percent = (float) (whl_LB_percent * 0.61 * wheel_universalscale);
+      whl_RF_percent = (float) (whl_RF_percent * 0.45);
+      whl_RB_percent = (float) (whl_RB_percent * 0.45 );
+      whl_LF_percent = (float) (whl_LF_percent * 0.45);
+      whl_LB_percent = (float) (whl_LB_percent * 0.61);
   }
   
   
