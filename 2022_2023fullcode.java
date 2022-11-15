@@ -107,7 +107,7 @@ public class mechanumdrive extends LinearOpMode {
         double now_time = runtime.seconds();
         
         ////----INPUTS----////
-        gamepadInputHandling();
+        gamepadInputHandling(now_time);
         
         
         
@@ -202,7 +202,7 @@ public class mechanumdrive extends LinearOpMode {
     
   }
   
-  public void gamepadInputHandling() {
+  public void gamepadInputHandling(double now_time) {
     /*
     if (gamepad1.left_bumper) {
       everything_universalscale = 0.4;
@@ -221,11 +221,11 @@ public class mechanumdrive extends LinearOpMode {
     }*/
 
     //dpad left/right wrist rotation
-    if (gamepad1.dpad_left && ((now_time-claw_rotate_last_time) > 0.2)) {
+    if (gamepad1.dpad_left) {
       wrist_ROT_percent = 0.8
       wrist_ROT_pos += (now_time-last_time);
     }
-    else if (gamepad1.dpad_right && ((now_time-claw_rotate_last_time) > 0.2)) {
+    else if (gamepad1.dpad_right) {
       wrist_ROT_percent = 0.3
       wrist_ROT_pos -= (now_time-last_time);
     }
@@ -261,28 +261,28 @@ public class mechanumdrive extends LinearOpMode {
     ////----BOUNDARIES----////
 
 
-    if (arm_extender_desiredangle < 0) { 
-      arm_extender_desiredangle = 0;
+    if (arm_EXT_angle < 0) { 
+      arm_EXT_angle = 0;
       
     }
-    else if (arm_extender_desiredangle > 1300) {
-      arm_extender_desiredangle = 1300;
+    else if (arm_EXT_angle > 1300) {
+      arm_EXT_angle = 1300;
     }
 
     //Boundaries of the arm vertical rotation
-    if (arm_rotate_desiredangle > 3500) {
-      arm_rotate_desiredangle = 3500;
+    if (arm_ROT_angle > 3500) {
+      arm_ROT_angle = 3500;
     }
-    else if (arm_rotate_desiredangle < 0) {
-      arm_rotate_desiredangle = 0;
+    else if (arm_ROT_angle < 0) {
+      arm_ROT_angle = 0;
     }
 
     // Boundaries of the claw
-    if (claw_grip_desiredangle < 0.28) {
-      claw_grip_desiredangle = 0.28;
+    if (claw_GRIP_angle < 0.28) {
+      claw_GRIP_angle = 0.28;
     }
-    else if (claw_grip_desiredangle > 0.85) {
-      claw_grip_desiredangle = 0.85;
+    else if (claw_GRIP_angle > 0.85) {
+      claw_GRIP_angle = 0.85;
     }
 
   }
