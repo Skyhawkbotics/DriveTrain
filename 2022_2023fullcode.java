@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-import java.lang.math
+import java.lang.math;
 
 /*
 Code Starts Here.
@@ -156,10 +156,10 @@ public class mechanumdrive extends LinearOpMode {
         float drv_stick_x = gamepad1.left_stick_x
 
         if (math.abs(gamepad1.left_stick_y) > math.abs(gamepad1.left_stick_x)) {
-          whl_LB_percent = drv_stick_y
-          whl_LF_percent = drv_stick_y
-          whl_RB_percent = drv_stick_y
-          whl_RF_percent = drv_stick_y
+          whl_LB_percent = drv_stick_y;
+          whl_LF_percent = drv_stick_y;
+          whl_RB_percent = drv_stick_y;
+          whl_RF_percent = drv_stick_y;
         }
         else {
           if (drv_stick_x > 0) {
@@ -222,15 +222,15 @@ public class mechanumdrive extends LinearOpMode {
 
     //dpad left/right wrist rotation
     if (gamepad1.dpad_left) {
-      wrist_ROT_percent = 0.8
+      wrist_ROT_percent = 0.8;
       wrist_ROT_pos += (now_time-last_time);
     }
     else if (gamepad1.dpad_right) {
-      wrist_ROT_percent = 0.3
+      wrist_ROT_percent = 0.3;
       wrist_ROT_pos -= (now_time-last_time);
     }
     else {
-      wrist_ROT_percent = 0.5
+      wrist_ROT_percent = 0.5;
     }
 
     //dpad up/down claw open/close
