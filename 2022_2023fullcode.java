@@ -152,8 +152,8 @@ public class mechanumdrive extends LinearOpMode {
         whl_RB_percent = gamepad1.right_stick_y;
         whl_RF_percent = gamepad1.right_stick_y;
         */
-        float drv_stick_y = gamepad1.left_stick_y
-        float drv_stick_x = gamepad1.left_stick_x
+        float drv_stick_y = gamepad1.left_stick_y;
+        float drv_stick_x = gamepad1.left_stick_x;
 
         if (math.abs(gamepad1.left_stick_y) > math.abs(gamepad1.left_stick_x)) {
           whl_LB_percent = drv_stick_y;
