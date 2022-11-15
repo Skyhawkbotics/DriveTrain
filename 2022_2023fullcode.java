@@ -76,10 +76,10 @@ public class mechanumdrive extends LinearOpMode {
     whl_LF = hardwareMap.get(DcMotor.class, "left/front");
     whl_RB = hardwareMap.get(DcMotor.class, "right/back");
     whl_RF = hardwareMap.get(DcMotor.class, "right/front");
-    arm_EXT = hardwareMap.get(DcMotorEx.class, "arm_extender");
-    arm_ROT = hardwareMap.get(DcMotorEx.class, "arm_rotater");
-    claw_GRIP = hardwareMap.get(Servo.class, "claw_grip");
-    wrist_ROT = hardwareMap.get(Servo.class, "wrist_ROT");
+    //arm_EXT = hardwareMap.get(DcMotorEx.class, "arm_extender");
+    //arm_ROT = hardwareMap.get(DcMotorEx.class, "arm_rotater");
+    //claw_GRIP = hardwareMap.get(Servo.class, "claw_grip");
+    //wrist_ROT = hardwareMap.get(Servo.class, "wrist_ROT");
     
     //--These wheels are reversed for desired results--//
     whl_LB.setDirection(DcMotorSimple.Direction.REVERSE);
