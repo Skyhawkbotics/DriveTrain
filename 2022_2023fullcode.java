@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
+import java.lang.math
 
 /*
 Code Starts Here.
@@ -59,13 +60,10 @@ public class mechanumdrive extends LinearOpMode {
   double wrist_ROT_pos = 0; // Increases or decreases based on how much movement the claw makes | Utilized for finding how much to readjust the claw by to reset it.
   
   double last_time = runtime.seconds(); //Used to find how much time has elapsed per iteration in the runtime loop.
-  double claw_rotate_last_time = runtime.seconds(); //Last time the claw moved
   double reset_last_time = runtime.seconds(); //Last time the robot has reset
   
   boolean stopreset_soon = false; //Is the robot trying to reset all the motors? (Except wheels)
   
-  boolean claw_rotating = false; //Is the claw moving?
-
 
   //private DistanceSensor distance;
   /**
@@ -89,14 +87,14 @@ public class mechanumdrive extends LinearOpMode {
     //--//
     
     //--Set up the arm motors--//
-    arm_extender.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-    arm_rotater.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-    arm_extender.setTargetPosition(Help.degreesToTick(0));
-    arm_rotater.setTargetPosition(Help.degreesToTick(0));
-    arm_extender.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-    arm_rotater.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-    arm_extender.setVelocity(750);
-    arm_rotater.setVelocity(1200);
+    arm_EXT.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    arm_ROT.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    arm_EXT.setTargetPosition(Help.degreesToTick(0));
+    arm_ROT.setTargetPosition(Help.degreesToTick(0));
+    arm_EXT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    arm_ROT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    arm_EXT.setVelocity(750);
+    arm_ROT.setVelocity(1200);
     //--//
     /*
     */
@@ -113,7 +111,8 @@ public class mechanumdrive extends LinearOpMode {
         
         
         
-        //--All things related to resetting the motors--//
+        //--All things related to resetting the motors--// DEPRECATED FOR NOW
+        /*
         if (now_time - reset_last_time > 4 && stopreset_soon) {
           stopreset_soon = false;
         }
@@ -131,7 +130,7 @@ public class mechanumdrive extends LinearOpMode {
           
           reset_last_time = runtime.seconds();
         }
-        
+        */
         last_time = now_time; //To find time differentials between loops.
         
         ////----VARIABLE MONITORING----////
@@ -142,48 +141,44 @@ public class mechanumdrive extends LinearOpMode {
         telemetry.addData("leftsticky", gamepad1.left_stick_y);
         telemetry.addData("rightstickx", gamepad1.right_stick_x);
         telemetry.addData("rightsticky", gamepad1.right_stick_y);
-        telemetry.addData("arm_desiredangle", arm_extender_desiredangle);
-        telemetry.addData("armrotate_desiredangle", arm_rotate_desiredangle);
-        telemetry.addData("claw_desiredangle", claw_grip_desiredangle);
-        telemetry.addData("clawrotate_Desiredangle", claw_rotate_desiredangle);
-        telemetry.addData("clawrotate_position", claw_rotate_position);
-        telemetry.addData("stopreset", stopreset_soon);
+        telemetry.addData("arm_desiredangle", arm_EXT_angle);
+        telemetry.addData("armrotate_desiredangle", arm_ROT_angle);
         telemetry.update();
         
         ////----WHEEL DRIVING----////
-        
-        float difference = (gamepad1.left_stick_y - gamepad1.right_stick_y) * (float) wheel_equalizerscale;
-        
-        whl_LB_percent = gamepad1.left_stick_y -difference;
-        whl_LF_percent = gamepad1.left_stick_y - difference;
-        whl_RB_percent = gamepad1.right_stick_y + difference;
-        whl_RF_percent = gamepad1.right_stick_y + difference;
-        
-        
-        
-        //The Triggers range from 0 to 1.
-        //Is Right_Trigger held down enough?
-        if (gamepad1.right_trigger > 0.05) {
-          whl_RF_percent = gamepad1.right_trigger * 1;
-          whl_RB_percent = gamepad1.right_trigger * -1;
-          whl_LF_percent = gamepad1.right_trigger * -1;
-          whl_LB_percent = gamepad1.right_trigger * 1;
+        /*
+        whl_LB_percent = gamepad1.left_stick_y;
+        whl_LF_percent = gamepad1.left_stick_y;
+        whl_RB_percent = gamepad1.right_stick_y;
+        whl_RF_percent = gamepad1.right_stick_y;
+        */
+        float drv_stick_y = gamepad1.left_stick_y
+        float drv_stick_x = gamepad1.left_stick_x
+
+        if (math.abs(gamepad1.left_stick_y) > math.abs(gamepad1.left_stick_x)) {
+          whl_LB_percent = drv_stick_y
+          whl_LF_percent = drv_stick_y
+          whl_RB_percent = drv_stick_y
+          whl_RF_percent = drv_stick_y
         }
-        
-        //Is Left_Trigger held down enough?
-        if (gamepad1.left_trigger > 0.05) {
-          whl_LF_percent = gamepad1.left_trigger * 1;
-          whl_LB_percent = gamepad1.left_trigger * -1;
-          whl_RB_percent = gamepad1.left_trigger * 1;
-          whl_RF_percent = gamepad1.left_trigger * -1;
+        else {
+          if (drv_stick_x > 0) {
+            whl_RF_percent = gamepad1.right_trigger * 1;
+            whl_RB_percent = gamepad1.right_trigger * -1;
+            whl_LF_percent = gamepad1.right_trigger * -1;
+            whl_LB_percent = gamepad1.right_trigger * 1;
+          }
+          
+          if (drv_stick_x < 0) {
+            whl_LF_percent = gamepad1.left_trigger * 1;
+            whl_LB_percent = gamepad1.left_trigger * -1;
+            whl_RB_percent = gamepad1.left_trigger * 1;
+            whl_RF_percent = gamepad1.left_trigger * -1;
+          }
         }
-        whl_RF_percent = (float) (whl_RF_percent * 0.45 * wheel_universalscale);
-        whl_RB_percent = (float) (whl_RB_percent * 0.45 * wheel_universalscale);
-        whl_LF_percent = (float) (whl_LF_percent * 0.45 * wheel_universalscale);
-        whl_LB_percent = (float) (whl_LB_percent * 0.61 * wheel_universalscale);
+        whl_corrections(); // Corrects/Adjusts power for correct results
         
         //Set power of motors to their corresponding variables
-        
         whl_LB.setPower(whl_LB_percent);
         whl_RB.setPower(whl_RB_percent);
         whl_LF.setPower(whl_LF_percent);
@@ -226,39 +221,40 @@ public class mechanumdrive extends LinearOpMode {
     }*/
 
     //dpad left/right wrist rotation
+    if (gamepad1.dpad_left && ((now_time-claw_rotate_last_time) > 0.2)) {
+      wrist_ROT_percent = 0.8
+      wrist_ROT_pos += (now_time-last_time);
+    }
+    else if (gamepad1.dpad_right && ((now_time-claw_rotate_last_time) > 0.2)) {
+      wrist_ROT_percent = 0.3
+      wrist_ROT_pos -= (now_time-last_time);
+    }
+    else {
+      wrist_ROT_percent = 0.5
+    }
 
     //dpad up/down claw open/close
+    if (gamepad1.dpad_up) {
+      claw_GRIP_angle += 0.5 * (now_time-last_time) * everything_universalscale;
+    }
+    else if (gamepad1.dpad_down) {
+      claw_GRIP_angle -= 0.5 * (now_time-last_time) * everything_universalscale;
+    }
 
     // Y A arm ROT up down
+    if (gamepad1.y) {
+      arm_ROT_angle-=800 * (now_time-last_time) * everything_universalscale;
+    } 
+    else if (gamepad1.a) {
+      arm_ROT_angle+=800 * (now_time-last_time) * everything_universalscale;
+    }
 
     // B X arm EXT forward back
-
-    if (gamepad1.dpad_right) {
-      arm_extender_desiredangle-=500 * (now_time-last_time) * everything_universalscale;
-    } 
-    else if (gamepad1.dpad_left) {
-      arm_extender_desiredangle+=450 * (now_time-last_time)  * everything_universalscale;
-    }
-    if (gamepad1.dpad_down) {
-      arm_rotate_desiredangle-=800 * (now_time-last_time) * everything_universalscale;
-    } 
-    else if (gamepad1.dpad_up) {
-      arm_rotate_desiredangle+=800 * (now_time-last_time) * everything_universalscale;
-    }
-
-
     if (gamepad1.b) {
-      claw_grip_desiredangle += 0.5 * (now_time-last_time) * everything_universalscale;
-    }
+      arm_EXT_angle-=500 * (now_time-last_time) * everything_universalscale;
+    } 
     else if (gamepad1.x) {
-      claw_grip_desiredangle -= 0.5 * (now_time-last_time) * everything_universalscale;
-    }
-
-    if (gamepad1.y && ((now_time-claw_rotate_last_time) > 0.2 && !claw_rotating)) {
-      clawMove(1,1, now_time);
-    }
-    else if (gamepad1.a && ((now_time-claw_rotate_last_time) > 0.2 && !claw_rotating)) {
-      clawMove(-1,1, now_time);
+      arm_EXT_angle+=450 * (now_time-last_time)  * everything_universalscale;
     }
 
     
@@ -267,6 +263,7 @@ public class mechanumdrive extends LinearOpMode {
 
     if (arm_extender_desiredangle < 0) { 
       arm_extender_desiredangle = 0;
+      
     }
     else if (arm_extender_desiredangle > 1300) {
       arm_extender_desiredangle = 1300;
@@ -287,33 +284,13 @@ public class mechanumdrive extends LinearOpMode {
     else if (claw_grip_desiredangle > 0.85) {
       claw_grip_desiredangle = 0.85;
     }
-    // Boundaries of the claw rotate servo
-    if (claw_rotate_desiredangle < 0.5 && ((now_time-claw_rotate_last_time) > CLAW_ROTATE_TIME) && claw_rotating) {
-      claw_rotate_desiredangle = 0.5;
-      claw_rotating = false;
-    }
-    if (claw_rotate_desiredangle > 0.5 && ((now_time-claw_rotate_last_time) > CLAW_ROTATE_TIME) && claw_rotating) {
-      claw_rotate_desiredangle = 0.5;
-      claw_rotating = false;
-    }
+
   }
-  
-  public void clawMove(int mult, double iterations, double now_time){
-    if (iterations == 1) {
-      claw_rotate_desiredangle -= 0.3 * everything_universalscale * mult;
-    }
-    else {
-      claw_rotate_desiredangle += 0.3 * everything_universalscale * Help.numSign(iterations);
-    }
-    claw_rotate_last_time = now_time;
-    claw_rotating = true;
-    
-    
-    if (iterations == 1) {
-     claw_rotate_position += 1 * mult * everything_universalscale;
-    }
-    
-    CLAW_ROTATE_TIME = 0.18 * iterations;
+  public void whl_corrections() {
+      whl_RF_percent = (float) (whl_RF_percent * 0.45 * wheel_universalscale);
+      whl_RB_percent = (float) (whl_RB_percent * 0.45 * wheel_universalscale);
+      whl_LF_percent = (float) (whl_LF_percent * 0.45 * wheel_universalscale);
+      whl_LB_percent = (float) (whl_LB_percent * 0.61 * wheel_universalscale);
   }
   
   
