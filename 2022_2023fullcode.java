@@ -170,12 +170,11 @@ public class mechanumdrive extends LinearOpMode {
             whl_LB_percent = drv_stick_x * 1;
           }
           
-          else (drv_stick_x < 0) {
-            whl_RF_percent = drv_stick_x * -1
-            whl_RB_percent = drv_stick_x * 1;
+          if (drv_stick_x < 0) {
             whl_LF_percent = drv_stick_x * 1;
             whl_LB_percent = drv_stick_x * -1;
-            
+            whl_RB_percent = drv_stick_x * 1;
+            whl_RF_percent = drv_stick_x * -1;
           }
         }
         whl_corrections(); // Corrects/Adjusts power for correct results
@@ -291,8 +290,8 @@ public class mechanumdrive extends LinearOpMode {
   public void whl_corrections() {
       whl_RF_percent = (float) (whl_RF_percent * 0.45);
       whl_RB_percent = (float) (whl_RB_percent * 0.45 );
-      whl_LF_percent = (float) (whl_LF_percent * 0.5);
-      whl_LB_percent = (float) (whl_LB_percent * 0.5);
+      whl_LF_percent = (float) (whl_LF_percent * 0.45);
+      whl_LB_percent = (float) (whl_LB_percent * 0.45);
   }
   
   
