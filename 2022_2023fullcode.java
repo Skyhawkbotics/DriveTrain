@@ -38,6 +38,7 @@ public class mechanumdrive extends LinearOpMode {
   private DcMotor whl_RF;
   private DcMotorEx arm_EXT;
   private DcMotorEx arm_ROT;
+  private DcMotorEx susan_ROT;
   private Servo claw_GRIP;
   private Servo wrist_ROT;
 
@@ -54,6 +55,7 @@ public class mechanumdrive extends LinearOpMode {
   float whl_RF_percent;
   float arm_EXT_angle = 0; // 0 to 1300 | retracted to fully extended
   float arm_ROT_angle = 0; // 0 to 3500 | lowered to fully raised
+  float susan_ROT_angle = 0;
   double claw_GRIP_angle = 0.28; // 0.28 to 0.85 | closed to fully opened
   double wrist_ROT_percent = 0.5; // >0.5 to <0.5 | move up or move down
   
@@ -76,6 +78,8 @@ public class mechanumdrive extends LinearOpMode {
     whl_LF = hardwareMap.get(DcMotor.class, "left/front");
     whl_RB = hardwareMap.get(DcMotor.class, "right/back");
     whl_RF = hardwareMap.get(DcMotor.class, "right/front");
+    
+    susan_ROT = hardwareMap.get(DcMotorEx.class, "susan_ROT");
     //arm_EXT = hardwareMap.get(DcMotorEx.class, "arm_extender");
     //arm_ROT = hardwareMap.get(DcMotorEx.class, "arm_rotater");
     //claw_GRIP = hardwareMap.get(Servo.class, "claw_grip");
@@ -86,6 +90,10 @@ public class mechanumdrive extends LinearOpMode {
     whl_LF.setDirection(DcMotorSimple.Direction.REVERSE);
     //--//
     
+    susan_ROT.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    susan_ROT.setTargetPosition(0);
+    susan_ROT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    susan_ROT.setVelocity(750);
     //--Set up the arm motors--//
     /*
     arm_EXT.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -171,10 +179,10 @@ public class mechanumdrive extends LinearOpMode {
           }
           
           if (drv_stick_x < 0) {
-            whl_LF_percent = drv_stick_x * 1;
-            whl_LB_percent = drv_stick_x * -1;
-            whl_RB_percent = drv_stick_x * 1;
-            whl_RF_percent = drv_stick_x * -1;
+            whl_LF_percent = drv_stick_x * -1;
+            whl_LB_percent = drv_stick_x * 1;
+            whl_RB_percent = drv_stick_x * -1;
+            whl_RF_percent = drv_stick_x * 1;
           }
         }
         whl_corrections(); // Corrects/Adjusts power for correct results
@@ -191,6 +199,8 @@ public class mechanumdrive extends LinearOpMode {
         //claw_rotater.setPosition(claw_rotate_desiredangle);
         //arm_extender.setTargetPosition(-Help.degreesToTick(arm_extender_desiredangle));
         //arm_rotater.setTargetPosition(-Help.degreesToTick(arm_rotate_desiredangle));
+        susan_ROT.setTargetPosition(Help.degreesToTick(susan_ROT_angle));
+        
         
 
         
@@ -258,6 +268,7 @@ public class mechanumdrive extends LinearOpMode {
       arm_EXT_angle+=450 * (now_time-last_time);
     }
 
+    susan_ROT_angle = gamepad1.right_stick_y*1000;
     
     ////----BOUNDARIES----////
 
@@ -288,10 +299,10 @@ public class mechanumdrive extends LinearOpMode {
 
   }
   public void whl_corrections() {
-      whl_RF_percent = (float) (whl_RF_percent * 0.45);
-      whl_RB_percent = (float) (whl_RB_percent * 0.45 );
-      whl_LF_percent = (float) (whl_LF_percent * 0.45);
-      whl_LB_percent = (float) (whl_LB_percent * 0.45);
+      whl_RF_percent = (float) (whl_RF_percent * -0.5);
+      whl_RB_percent = (float) (whl_RB_percent * -0.6 );
+      whl_LF_percent = (float) (whl_LF_percent * -0.5);
+      whl_LB_percent = (float) (whl_LB_percent * -0.6);
   }
   
   
