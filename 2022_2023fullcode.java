@@ -4,6 +4,8 @@ Packages and Imports used for the code.
 */
 package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -11,6 +13,7 @@ import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import java.lang.Math;
 
@@ -42,7 +45,8 @@ public class mechanumdrive extends LinearOpMode {
   private DcMotorEx susan_ROT;
   private Servo claw_GRIP;
   private Servo wrist_ROT;
-
+  //private TouchSensor elevator_RESETSENSOR;
+  private DistanceSensor elevator_DISTSENSOR;
   
   //time at which the claw rotates for per movement. Modified when restarting the robot.
   //double CLAW_ROTATE_TIME = 0.18;
@@ -66,7 +70,9 @@ public class mechanumdrive extends LinearOpMode {
   double reset_last_time = runtime.seconds(); //Last time the robot has reset
   
   boolean stopreset_soon = false; //Is the robot trying to reset all the motors? (Except wheels)
+  boolean arm_Sensor = false;
   
+  boolean elevator_HasReset = false;
 
   //private DistanceSensor distance;
   /**
@@ -82,9 +88,14 @@ public class mechanumdrive extends LinearOpMode {
     
     susan_ROT = hardwareMap.get(DcMotorEx.class, "susan_ROT");
     //arm_EXT = hardwareMap.get(DcMotorEx.class, "arm_extender");
-    //arm_ELEVATOR1 = hardwareMap.get(DcMotorEx.class, "arm_rotater");
+    arm_ELEVATOR1 = hardwareMap.get(DcMotorEx.class, "Elevator1");
+    arm_ELEVATOR2 = hardwareMap.get(DcMotorEx.class, "Elevator2");
+
     //claw_GRIP = hardwareMap.get(Servo.class, "claw_grip");
     //wrist_ROT = hardwareMap.get(Servo.class, "wrist_ROT");
+    
+    //Initalize Sensors
+    elevator_DISTSENSOR = hardwareMap.get(DistanceSensor.class, "elevatorDistance");
     
     //--These wheels are reversed for desired results--//
     whl_LB.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -96,26 +107,30 @@ public class mechanumdrive extends LinearOpMode {
     susan_ROT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     susan_ROT.setVelocity(750);
     //--Set up the arm motors--//
-    /*
-    arm_EXT.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    
+    //arm_EXT.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     arm_ELEVATOR1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     arm_ELEVATOR2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-    arm_EXT.setTargetPosition(Help.degreesToTick(0));
+    //arm_EXT.setTargetPosition(Help.degreesToTick(0));
     arm_ELEVATOR1.setTargetPosition(Help.degreesToTick(0));
     arm_ELEVATOR2.setTargetPosition(Help.degreesToTick(0));
 
-    arm_EXT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    //arm_EXT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     arm_ELEVATOR1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     arm_ELEVATOR2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-    arm_EXT.setVelocity(750);
+    //arm_EXT.setVelocity(750);
     arm_ELEVATOR1.setVelocity(1200);
     arm_ELEVATOR2.setVelocity(1200);
+    
+    //setup touch sensor
+    //digitalTouch.setMode(DigitalChannel.Mode.INPUT);
+
 
     //--//
-    /*
-    */
+    
+    
     waitForStart();
     
     if (opModeIsActive()) {
@@ -124,9 +139,24 @@ public class mechanumdrive extends LinearOpMode {
         //now_time, the time since the start of the program and is used to find time differentials between loop iterations
         double now_time = runtime.seconds();
         
+        // Initialization Process //
+        //5.2
+        if (!elevator_HasReset && elevator_DISTSENSOR.getDistance(DistanceUnit.CM) > 5.2) {
+          arm_ELEVATOR_angle -= 200 * (now_time-last_time);
+        }
+        else if (!elevator_HasReset && elevator_DISTSENSOR.getDistance(DistanceUnit.CM) < 5.2) {
+          elevator_HasReset = true;
+          arm_ELEVATOR1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+          arm_ELEVATOR2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+          arm_ELEVATOR_angle = 0;
+          arm_ELEVATOR1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+          arm_ELEVATOR2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        }
+        // Finished Robot intitalzieaiton//
         ////----INPUTS----////
-        gamepadInputHandling(now_time);
-        
+        if (elevator_HasReset) {
+          gamepadInputHandling(now_time);
+        }
         
         
         //--All things related to resetting the motors--// DEPRECATED FOR NOW
@@ -160,8 +190,15 @@ public class mechanumdrive extends LinearOpMode {
         telemetry.addData("rightstickx", gamepad1.right_stick_x);
         telemetry.addData("rightsticky", gamepad1.right_stick_y);
         telemetry.addData("arm_desiredangle", arm_EXT_angle);
-        telemetry.addData("armrotate_desiredangle", arm_ROT_angle);
+        telemetry.addData("arm_ELEVATOR_angle", arm_ELEVATOR_angle);
+        telemetry.addData("elevatordist", elevator_DISTSENSOR.getDistance(DistanceUnit.CM));
         telemetry.update();
+        
+        ////ZERO OUT ARM EXTENDER////
+        //if (digitalTouch.getState() == false) {
+          //arm_ELEVATOR_angle-=400 * (now_time-last_time);
+        //}
+
         
         ////----WHEEL DRIVING----////
         /*
@@ -207,8 +244,8 @@ public class mechanumdrive extends LinearOpMode {
         //claw.setPosition(claw_grip_desiredangle);
         //claw_rotater.setPosition(claw_rotate_desiredangle);
         //arm_extender.setTargetPosition(-Help.degreesToTick(arm_extender_desiredangle));
-        //arm_ELEVATOR1.setTargetPosition(-Help.degreesToTick(arm_ELEVATOR_angle));
-        //arm_ELEVATOR2.setTargetPosition(-Help.degreesToTick(arm_ELEVATOR_angle));
+        arm_ELEVATOR1.setTargetPosition(+Help.degreesToTick(arm_ELEVATOR_angle));
+        arm_ELEVATOR2.setTargetPosition(-Help.degreesToTick(arm_ELEVATOR_angle));
 
         susan_ROT.setTargetPosition(Help.degreesToTick(susan_ROT_angle));
         
@@ -265,10 +302,10 @@ public class mechanumdrive extends LinearOpMode {
 
     // Y A arm ROT up down
     if (gamepad1.y) {
-      arm_ELEVATOR_angle-=800 * (now_time-last_time);
+      arm_ELEVATOR_angle-=400 * (now_time-last_time);
     } 
     else if (gamepad1.a) {
-      arm_ELEVATOR_angle+=800 * (now_time-last_time);
+      arm_ELEVATOR_angle+=400 * (now_time-last_time);
     }
 
     // B X arm EXT forward back
@@ -293,10 +330,11 @@ public class mechanumdrive extends LinearOpMode {
     }
 
     //Boundaries of the arm vertical rotation
-    if (arm_ELEVATOR_angle > 3500) {
-      arm_ELEVATOR_angle = 3500;
+    
+    if (arm_ELEVATOR_angle > 2480) {
+      arm_ELEVATOR_angle = 2480;
     }
-    else if (arm_ROT_angle < 0) {
+    else if (arm_ELEVATOR_angle < 0) {
       arm_ELEVATOR_angle = 0;
     }
 
