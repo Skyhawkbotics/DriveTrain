@@ -24,7 +24,6 @@ Code Starts Here.
 /*
 Hello future programmer. My name is Kevin Vu and initially wrote this code.
 It is not very readable and some of the design decisions I made are very questionable.
-
 | For the movement of the claw, look at the gamepadInputHandling() claw section and the clawMove() section.
 | now_time-last_time is used to find time inbetween loops and normalize degrees per loop to degrees per second.
 */
@@ -42,10 +41,9 @@ public class mechanumdrive extends LinearOpMode {
   private DcMotorEx arm_EXT;
   private DcMotorEx arm_ELEVATOR1;
   private DcMotorEx arm_ELEVATOR2;
-  private DcMotorEx susan_ROT;
   private Servo claw_GRIP;
   private Servo wrist_ROT;
-  //private TouchSensor elevator_RESETSENSOR;
+  private Servo susan_ROT
   private DistanceSensor elevator_DISTSENSOR;
   
   //time at which the claw rotates for per movement. Modified when restarting the robot.
@@ -101,12 +99,6 @@ public class mechanumdrive extends LinearOpMode {
     whl_LB.setDirection(DcMotorSimple.Direction.REVERSE);
     whl_LF.setDirection(DcMotorSimple.Direction.REVERSE);
     //--//
-    
-    susan_ROT.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-    susan_ROT.setTargetPosition(0);
-    susan_ROT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-    susan_ROT.setVelocity(750);
-    //--Set up the arm motors--//
     
     //arm_EXT.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     arm_ELEVATOR1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -271,7 +263,6 @@ public class mechanumdrive extends LinearOpMode {
       everything_universalscale = 1;
       wheel_universalscale = 0.8;
     }
-
     if (gamepad1.right_bumper) {
       wheel_equalizerscale = 0.3;
     }
