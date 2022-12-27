@@ -244,7 +244,7 @@ public class mechanumdrive extends LinearOpMode {
         
         claw_GRIP.setPosition(claw_GRIP_angle);
         wrist_ROT.setPosition(wrist_ROT_percent);
-        arm_EXT.setTargetPosition(-Help.degreesToTick(arm_EXT_angle));
+        arm_ROT.setTargetPosition(-Help.degreesToTick(arm_ROT_angle));
         arm_EXT.setTargetPosition(-Help.degreesToTick(arm_EXT_angle));
         arm_ELEVATOR1.setTargetPosition(+Help.degreesToTick(arm_ELEVATOR_angle));
         arm_ELEVATOR2.setTargetPosition(-Help.degreesToTick(arm_ELEVATOR_angle));
@@ -329,6 +329,13 @@ public class mechanumdrive extends LinearOpMode {
       susan_ROT_percent = 0.5;
     }
     
+    if (gamepad1.back) {
+      arm_ROT_angle+=450 * (now_time-last_time);
+    }
+    else if (gamepad1.start) {
+      arm_ROT_angle-=450 * (now_time-last_time);
+    }
+
     ////----BOUNDARIES----////
 
 
