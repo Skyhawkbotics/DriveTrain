@@ -41,6 +41,7 @@ public class mechanumdrive extends LinearOpMode {
   private DcMotorEx arm_EXT;
   private DcMotorEx arm_ELEVATOR1;
   private DcMotorEx arm_ELEVATOR2;
+  private DcMotorEx arm_ROT;
   private Servo claw_GRIP;
   private Servo wrist_ROT;
   private Servo susan_ROT;
@@ -57,6 +58,7 @@ public class mechanumdrive extends LinearOpMode {
   float whl_RB_percent;
   float whl_RF_percent;
   float arm_EXT_angle = 0; // 0 to 1300 | retracted to fully extended
+  float arm_ROT_angle = 0;
   float arm_ELEVATOR_angle = 0; // 0 to 3500 | lowered to fully raised
   double susan_ROT_percent = 0.5;
   double claw_GRIP_angle = 0.28; // 0.28 to 0.85 | closed to fully opened
@@ -86,7 +88,8 @@ public class mechanumdrive extends LinearOpMode {
     whl_RF = hardwareMap.get(DcMotor.class, "right/front");
     
     susan_ROT = hardwareMap.get(Servo.class, "susan_ROT"); // Control servo port 0
-    arm_EXT = hardwareMap.get(DcMotorEx.class, "arm_extender"); //Expansion port 1
+    arm_EXT = hardwareMap.get(DcMotorEx.class, "arm_EXT"); //Expansion port 1
+    arm_ROT = hardwareMap.get(DcMotorEx.class, "arm_ROT")
     arm_ELEVATOR1 = hardwareMap.get(DcMotorEx.class, "Elevator1");
     arm_ELEVATOR2 = hardwareMap.get(DcMotorEx.class, "Elevator2");
 
@@ -101,19 +104,23 @@ public class mechanumdrive extends LinearOpMode {
     whl_LF.setDirection(DcMotorSimple.Direction.REVERSE);
     //--//
     
-    //arm_EXT.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    arm_ROT.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    arm_EXT.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     arm_ELEVATOR1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     arm_ELEVATOR2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-    //arm_EXT.setTargetPosition(Help.degreesToTick(0));
+    arm_ROT.setTargetPosition(Help.degreesToTick(0));
+    arm_EXT.setTargetPosition(Help.degreesToTick(0));
     arm_ELEVATOR1.setTargetPosition(Help.degreesToTick(0));
     arm_ELEVATOR2.setTargetPosition(Help.degreesToTick(0));
 
-    //arm_EXT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    arm_ROT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    arm_EXT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     arm_ELEVATOR1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     arm_ELEVATOR2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-    //arm_EXT.setVelocity(750);
+    arm_ROT.setVelocity(750);
+    arm_EXT.setVelocity(750);
     arm_ELEVATOR1.setVelocity(1200);
     arm_ELEVATOR2.setVelocity(1200);
     
@@ -182,8 +189,9 @@ public class mechanumdrive extends LinearOpMode {
         telemetry.addData("leftsticky", gamepad1.left_stick_y);
         telemetry.addData("rightstickx", gamepad1.right_stick_x);
         telemetry.addData("rightsticky", gamepad1.right_stick_y);
-        telemetry.addData("arm_desiredangle", arm_EXT_angle);
+        telemetry.addData("arm_ext_desiredangle", arm_EXT_angle);
         telemetry.addData("arm_ELEVATOR_angle", arm_ELEVATOR_angle);
+        telemetry.addData("arm_ROT_angle", arm_ROT_angle);
         telemetry.addData("elevatordist", elevator_DISTSENSOR.getDistance(DistanceUnit.CM));
         telemetry.update();
         
@@ -236,6 +244,7 @@ public class mechanumdrive extends LinearOpMode {
         
         claw_GRIP.setPosition(claw_GRIP_angle);
         wrist_ROT.setPosition(wrist_ROT_percent);
+        arm_EXT.setTargetPosition(-Help.degreesToTick(arm_EXT_angle));
         arm_EXT.setTargetPosition(-Help.degreesToTick(arm_EXT_angle));
         arm_ELEVATOR1.setTargetPosition(+Help.degreesToTick(arm_ELEVATOR_angle));
         arm_ELEVATOR2.setTargetPosition(-Help.degreesToTick(arm_ELEVATOR_angle));
