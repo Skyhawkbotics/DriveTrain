@@ -43,7 +43,7 @@ public class mechanumdrive extends LinearOpMode {
   private DcMotorEx arm_ELEVATOR2;
   private Servo claw_GRIP;
   private Servo wrist_ROT;
-  private Servo susan_ROT
+  private Servo susan_ROT;
   private DistanceSensor elevator_DISTSENSOR;
   
   //time at which the claw rotates for per movement. Modified when restarting the robot.
@@ -58,10 +58,11 @@ public class mechanumdrive extends LinearOpMode {
   float whl_RF_percent;
   float arm_EXT_angle = 0; // 0 to 1300 | retracted to fully extended
   float arm_ELEVATOR_angle = 0; // 0 to 3500 | lowered to fully raised
-  float susan_ROT_angle = 0;
+  double susan_ROT_percent = 0.5;
   double claw_GRIP_angle = 0.28; // 0.28 to 0.85 | closed to fully opened
   double wrist_ROT_percent = 0.5; // >0.5 to <0.5 | move up or move down
   
+  double susan_ROT_pos = 0;
   double wrist_ROT_pos = 0; // Increases or decreases based on how much movement the claw makes | Utilized for finding how much to readjust the claw by to reset it.
   
   double last_time = runtime.seconds(); //Used to find how much time has elapsed per iteration in the runtime loop.
@@ -84,13 +85,13 @@ public class mechanumdrive extends LinearOpMode {
     whl_RB = hardwareMap.get(DcMotor.class, "right/back");
     whl_RF = hardwareMap.get(DcMotor.class, "right/front");
     
-    susan_ROT = hardwareMap.get(DcMotorEx.class, "susan_ROT");
-    //arm_EXT = hardwareMap.get(DcMotorEx.class, "arm_extender");
+    susan_ROT = hardwareMap.get(Servo.class, "susan_ROT"); // Control servo port 0
+    arm_EXT = hardwareMap.get(DcMotorEx.class, "arm_extender"); //Expansion port 1
     arm_ELEVATOR1 = hardwareMap.get(DcMotorEx.class, "Elevator1");
     arm_ELEVATOR2 = hardwareMap.get(DcMotorEx.class, "Elevator2");
 
-    //claw_GRIP = hardwareMap.get(Servo.class, "claw_grip");
-    //wrist_ROT = hardwareMap.get(Servo.class, "wrist_ROT");
+    claw_GRIP = hardwareMap.get(Servo.class, "claw_GRIP"); //control servo port 2
+    wrist_ROT = hardwareMap.get(Servo.class, "wrist_ROT"); //control servo port 1
     
     //Initalize Sensors
     elevator_DISTSENSOR = hardwareMap.get(DistanceSensor.class, "elevatorDistance");
@@ -233,13 +234,13 @@ public class mechanumdrive extends LinearOpMode {
         
         //Set position of arm and claw motors to their corresponding variables.
         
-        //claw.setPosition(claw_grip_desiredangle);
-        //claw_rotater.setPosition(claw_rotate_desiredangle);
-        //arm_extender.setTargetPosition(-Help.degreesToTick(arm_extender_desiredangle));
+        claw_GRIP.setPosition(claw_GRIP_angle);
+        wrist_ROT.setPosition(wrist_ROT_percent);
+        arm_EXT.setTargetPosition(-Help.degreesToTick(arm_EXT_angle));
         arm_ELEVATOR1.setTargetPosition(+Help.degreesToTick(arm_ELEVATOR_angle));
         arm_ELEVATOR2.setTargetPosition(-Help.degreesToTick(arm_ELEVATOR_angle));
 
-        susan_ROT.setTargetPosition(Help.degreesToTick(susan_ROT_angle));
+        susan_ROT.setPosition(susan_ROT_percent);
         
         
 
@@ -301,22 +302,32 @@ public class mechanumdrive extends LinearOpMode {
 
     // B X arm EXT forward back
     if (gamepad1.b) {
-      arm_EXT_angle-=500 * (now_time-last_time);
+      arm_EXT_angle-=450 * (now_time-last_time);
     } 
     else if (gamepad1.x) {
       arm_EXT_angle+=450 * (now_time-last_time);
     }
 
-    susan_ROT_angle = gamepad1.right_stick_y*1000;
+     if (gamepad1.left_bumper) {
+      susan_ROT_percent = 0.8;
+      susan_ROT_pos += (now_time-last_time);
+    }
+    else if (gamepad1.right_bumper) {
+      susan_ROT_percent = 0.3;
+      susan_ROT_pos -= (now_time-last_time);
+    }
+    else {
+      susan_ROT_percent = 0.5;
+    }
     
     ////----BOUNDARIES----////
 
 
-    if (arm_EXT_angle < 0) { 
+    if (arm_EXT_angle < -123123123) { 
       arm_EXT_angle = 0;
       
     }
-    else if (arm_EXT_angle > 1300) {
+    else if (arm_EXT_angle > 123123123) {
       arm_EXT_angle = 1300;
     }
 
