@@ -89,7 +89,7 @@ public class mechanumdrive extends LinearOpMode {
     
     susan_ROT = hardwareMap.get(Servo.class, "susan_ROT"); // Control servo port 0
     arm_EXT = hardwareMap.get(DcMotorEx.class, "arm_EXT"); //Expansion port 1
-    arm_ROT = hardwareMap.get(DcMotorEx.class, "arm_ROT")
+    arm_ROT = hardwareMap.get(DcMotorEx.class, "arm_ROT");
     arm_ELEVATOR1 = hardwareMap.get(DcMotorEx.class, "Elevator1");
     arm_ELEVATOR2 = hardwareMap.get(DcMotorEx.class, "Elevator2");
 
@@ -119,7 +119,7 @@ public class mechanumdrive extends LinearOpMode {
     arm_ELEVATOR1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     arm_ELEVATOR2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-    arm_ROT.setVelocity(750);
+    arm_ROT.setVelocity(20);
     arm_EXT.setVelocity(750);
     arm_ELEVATOR1.setVelocity(1200);
     arm_ELEVATOR2.setVelocity(1200);
@@ -330,10 +330,10 @@ public class mechanumdrive extends LinearOpMode {
     }
     
     if (gamepad1.back) {
-      arm_ROT_angle+=450 * (now_time-last_time);
+      arm_ROT_angle+=20 * (now_time-last_time);
     }
     else if (gamepad1.start) {
-      arm_ROT_angle-=450 * (now_time-last_time);
+      arm_ROT_angle-=20 * (now_time-last_time);
     }
 
     ////----BOUNDARIES----////
