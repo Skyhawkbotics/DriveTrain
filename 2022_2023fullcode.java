@@ -213,30 +213,44 @@ public class mechanumdrive extends LinearOpMode {
         whl_RB_percent = gamepad1.right_stick_y;
         whl_RF_percent = gamepad1.right_stick_y;
         */
-        float drv_stick_y = gamepad1.left_stick_y;
-        float drv_stick_x = gamepad1.left_stick_x;
-
-        if (Math.abs(gamepad1.left_stick_y) > Math.abs(gamepad1.left_stick_x)) {
-          whl_LB_percent = drv_stick_y;
-          whl_LF_percent = drv_stick_y;
-          whl_RB_percent = drv_stick_y;
-          whl_RF_percent = drv_stick_y;
+        
+        boolean dif = Math.abs((gamepad1.left_stick_y+gamepad1.left_stick_x))>Math.abs((gamepad1.right_stick_x+gamepad1.right_stick_y));
+        
+        float drv_stick_y2 = gamepad1.right_stick_y;
+        float drv_stick_x2 = gamepad1.right_stick_x;
+        if (!dif) {
+          if (Math.abs(gamepad1.right_stick_y) > Math.abs(gamepad1.right_stick_x)) {
+            whl_LB_percent = drv_stick_y2;
+            whl_LF_percent = drv_stick_y2;
+            whl_RB_percent = drv_stick_y2;
+            whl_RF_percent = drv_stick_y2;
+          }
+          else {
+            if (drv_stick_x2 > 0) {
+              whl_RF_percent = drv_stick_x2 * 1;
+              whl_RB_percent = drv_stick_x2 * -1;
+              whl_LF_percent = drv_stick_x2 * -1;
+              whl_LB_percent = drv_stick_x2 * 1;
+            }
+            
+            if (drv_stick_x2 < 0) {
+              whl_LF_percent = drv_stick_x2 * -1;
+              whl_LB_percent = drv_stick_x2 * 1;
+              whl_RB_percent = drv_stick_x2 * -1;
+              whl_RF_percent = drv_stick_x2 * 1;
+            }
+          }
         }
         else {
-          if (drv_stick_x > 0) {
-            whl_RF_percent = drv_stick_x * 1;
-            whl_RB_percent = drv_stick_x * -1;
-            whl_LF_percent = drv_stick_x * -1;
-            whl_LB_percent = drv_stick_x * 1;
-          }
+          float drv_stick_y = gamepad1.left_stick_y;
+          float drv_stick_x = gamepad1.left_stick_x * 0.2f;
           
-          if (drv_stick_x < 0) {
-            whl_LF_percent = drv_stick_x * -1;
-            whl_LB_percent = drv_stick_x * 1;
-            whl_RB_percent = drv_stick_x * -1;
-            whl_RF_percent = drv_stick_x * 1;
-          }
+          whl_LB_percent = drv_stick_y - drv_stick_x;
+          whl_LF_percent = drv_stick_y - drv_stick_x;
+          whl_RB_percent = drv_stick_y + drv_stick_x;
+          whl_RF_percent = drv_stick_y + drv_stick_x;
         }
+        
         whl_corrections(); // Corrects/Adjusts power for correct results
         
         //Set power of motors to their corresponding variables
