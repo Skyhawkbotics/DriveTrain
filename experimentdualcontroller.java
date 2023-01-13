@@ -154,7 +154,28 @@ public class mechanumdrive extends LinearOpMode {
       devices.get("arm_ROT").num += gamepad2.left_stick_y * 1000 * (now_time-last_time);
     }
 
+    //SUSAN ROTATION
+    if (gamepad2.left_stick_x != 0) {
+      devices.get("susan_ROT").num = (gamepad2.left_stick_x / 2) + 0.5;
 
+      if (devices.get("susan_ROT").num > 1) {
+        devices.get("susan_ROT").num = 1;
+      }
+      else (devices.get("susan_ROT").num < 0) {
+        devices.get("susan_ROT").num = 0;
+      }
+    }
+
+    //ELEVATOR
+    if (gamepad2.right_stick_x != 0) {
+      devices.get("arm_ELEVATOR1").num += gamepad2.right_stick_x * 100 * (now_time-last_time);
+      devices.get("arm_ELEVATOR1").num += gamepad2.right_stick_x * 100 * (now_time-last_time);
+    }
+
+    //WRIST
+    if (gamepad2.right_stick_y != 0) {
+      devices.get("wrist_ROT").num = (gamepad2.right_stick_y / 2) + 0.5;
+    }
 
   }
   public void whl_corrections() {
