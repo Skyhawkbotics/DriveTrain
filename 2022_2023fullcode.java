@@ -325,12 +325,13 @@ public class mechanumdrive extends LinearOpMode {
 
     if (gamepad2.right_stick_x != 0) {
       //ELEVATOR
-      arm_ELEVATOR_angle += gamepad2.right_stick_x * 100 * (now_time-last_time)
+      arm_ELEVATOR_angle += gamepad2.right_stick_x * 100 * (now_time-last_time);
     }
 
     if (gamepad2.right_stick_y != 0) {
       //WRIST
       wrist_ROT_percent = (gamepad2.right_stick_y / 2) + 0.5;
+      wrist_ROT_pos -= (now_time-last_time);
     }
 
 
