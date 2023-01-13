@@ -79,6 +79,7 @@ public class mechanumdrive extends LinearOpMode {
   boolean arm_Sensor = false;
   
   boolean elevator_HasReset = false;
+  boolean claw_gripped = true
 
   //private DistanceSensor distance;
   /**
@@ -313,24 +314,23 @@ public class mechanumdrive extends LinearOpMode {
       wrist_ROT_percent = 0;
     }
 
-    //dpad up/down claw open/close
-    if (gamepad2.dpad_up) {
-      claw_GRIP_angle = 0.5;
-    }
-    if (gamepad2.dpad_down) {
-      claw_GRIP_angle = -0.5;
-    }
-    else {
+
+    if (gamepad2.b) {
+      //CLAW GRIP/RELEASE
+      if (claw_gripped) {
+        claw_GRIP_angle = 0.5;
+      }
+      else if (!claw_gripped) {
+        claw_GRIP_angle = -0.5;
+      }
     }
 
-
-
-     if (gamepad2.left_bumper) {
+     if (gamepad2.left_trigger) {
       //ELEVATOR MOVEMENT
-      arm_ELEVATOR_angle += gamepad2.left_bumper * 400 * (now_time-last_time);
+      arm_ELEVATOR_angle += gamepad2.left_trigger * 400 * (now_time-last_time);
     }
-    else if (gamepad2.right_bumper) {
-      arm_ELEVATOR_angle -= gamepad2.left_bumper * 400 * (now_time-last_time);
+    else if (gamepad2.right_trigger) {
+      arm_ELEVATOR_angle -= gamepad2.right_trigger * 400 * (now_time-last_time);
     }
     
 
