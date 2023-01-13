@@ -238,7 +238,7 @@ class device {
   }
   
   public void setPower() {
-    if (this.type == "DcMotor" || this.type == "DcMotorEx) {
+    if (this.type == "DcMotor" || this.type == "DcMotorEx") {
         this.object.SetTargetPosition(this.num);
     }
     else if (this.type == "Servo") {
