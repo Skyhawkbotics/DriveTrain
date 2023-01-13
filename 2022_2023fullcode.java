@@ -285,37 +285,8 @@ public class mechanumdrive extends LinearOpMode {
   }
   
   public void gamepadInputHandling(double now_time) {
-    /*
-    if (gamepad1.left_bumper) {
-      everything_universalscale = 0.4;
-      wheel_universalscale = 0.3;
-    }
-    else {
-      everything_universalscale = 1;
-      wheel_universalscale = 0.8;
-    }
-    if (gamepad1.right_bumper) {
-      wheel_equalizerscale = 0.3;
-    }
-    else {
-      wheel_equalizerscale = 0;
-    }*/
 
-    //dpad left/right wrist rotation
-    if (gamepad2.a) {
-      //wrist_ROT_pos += (now_time-last_time);
-      wrist_ROT_percent = 0.5;
-    }
-    else if (gamepad2.y) {
-      //wrist_ROT -= (now_time-last_time);
-      wrist_ROT_percent = -0.5;
-    }
-    else {
-      wrist_ROT_percent = 0;
-    }
-
-
-    if (gamepad2.b) {
+    if (gamepad2.right_bumper) {
       //CLAW GRIP/RELEASE
       if (claw_gripped) {
         claw_GRIP_angle = 0.5;
@@ -326,22 +297,22 @@ public class mechanumdrive extends LinearOpMode {
     }
 
      if (gamepad2.left_trigger) {
-      //ELEVATOR MOVEMENT
-      arm_ELEVATOR_angle += gamepad2.left_trigger * 400 * (now_time-last_time);
+      //ARM EXTENDER
+      arm_EXT_percent += (gamepad2.leftstickx / 2) + 0.5;
     }
     else if (gamepad2.right_trigger) {
-      arm_ELEVATOR_angle -= gamepad2.right_trigger * 400 * (now_time-last_time);
+      arm_EXT_percent -= (gamepad2.leftstickx / 2) + 0.5;
     }
     
 
-    if (gamepad2.leftstickx != 0) {
+    if (gamepad2.left_stick_y != 0) {
       //ARM ROTATION
-      arm_ROT_angle+=gamepad2.leftstickx * 1000 * (now_time-last_time);
+      arm_ROT_angle+=gamepad2.left_stick_y * 1000 * (now_time-last_time);
     }
 
-    if (gamepad2.leftsticky != 0) {
+    if (gamepad2.left_stick_x != 0) {
       //SUSAN ROTATION
-      susan_ROT_percent = (gamepad2.leftsticky / 2) + 0.5;
+      susan_ROT_percent = (gamepad2.left_stick_x / 2) + 0.5;
       susan_ROT_pos -= (now_time-last_time);
 
       if (susan_ROT_percent > 1) {
@@ -350,6 +321,14 @@ public class mechanumdrive extends LinearOpMode {
       else (susan_ROT_percent < 0) {
         susan_ROT_percent = 0;
       }
+    }
+
+    if (gamepad2.right_stick_x != 0) {
+      arm_ELEVATOR_angle += gamepad2.right_stick_x * 100 * (now_time-last_time)
+    }
+
+    if (gamepad2.right_stick_y != 0) {
+      wrist_ROT_percent = (gamepad2.right_stick_y / 2) + 0.5;
     }
 
 
