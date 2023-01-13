@@ -2,22 +2,22 @@
 /*
 Packages and Imports used for the code.
 */
-package org.firstinspires.ftc.teamcode;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+package org.firstinspires.ftc.teamcode                                 ;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode            ;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.TouchSensor;
-import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DigitalChannel                  ;
+import com.qualcomm.robotcore.hardware.Servo                           ;
+import com.qualcomm.robotcore.util.ElapsedTime                         ;
+import com.qualcomm.robotcore.hardware.DcMotorEx                       ;
+import com.qualcomm.robotcore.hardware.DistanceSensor                  ;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp                  ;
+import com.qualcomm.robotcore.hardware.DcMotor                         ;
+import com.qualcomm.robotcore.hardware.DcMotorSimple                   ;
+import com.qualcomm.robotcore.hardware.TouchSensor                     ;
+import com.qualcomm.robotcore.hardware.CRServo                         ;
 
-import java.util.*;
-import java.lang.Math;
+import java.util.*                                                     ;
+import java.lang.Math                                                  ;
 
 /*
 String array which holds all ports
@@ -28,7 +28,7 @@ String dictionary which holds all inputs and their corresponding output and thei
 @TeleOp(name = "2022-2023fullcode")
 public class mechanumdrive extends LinearOpMode {
   //Clock
-  private ElapsedTime     runtime = new ElapsedTime();
+  private ElapsedTime runtime = new ElapsedTime();
   
   //Create input dictionary
   private Hashtable<String, boolean> gamepad1_INPUT_DICTIONARY = new Hashtable<String, boolean>(); // NOT IN USE YET
@@ -36,9 +36,9 @@ public class mechanumdrive extends LinearOpMode {
   
   //Create devices
   private Hashtable<String, device> devices = new Hashtable<String, device>();
-  devices.put("whl_LB", new device("DcMotor", "float", "whl_LB"));
+  devices.put("whl_LB", new device("DcMotor", "float", "whl_LB"))                   ;
           devices.get("whl_LB").object.setDirection(DcMotorSimple.Direction.REVERSE);
-  devices.put("whl_LF", new device("DcMotor", "float", "whl_LF"));
+  devices.put("whl_LF", new device("DcMotor", "float", "whl_LF"))                   ;
           devices.get("whl_LF").object.setDirection(DcMotorSimple.Direction.REVERSE);
   devices.put("whl_RB", new device("DcMotor", "float", "whl_RB"));
   devices.put("whl_RF", new device("DcMotor", "float", "whl_RF"));
@@ -47,7 +47,7 @@ public class mechanumdrive extends LinearOpMode {
   devices.put("arm_ELEVATOR2", new device("DcMotorEx", "float", "arm_ELEVATOR2", int[] properties = {1200} ));
   devices.put("arm_ROT",       new device("DcMotorEx", "float", "arm_ROT",       int[] properties = {400}  ));
 
-  devices.put("arm_EXT", new device("Servo", "double", "arm_EXT"));
+  devices.put("arm_EXT",   new device("Servo", "double", "arm_EXT"  ));
   devices.put("susan_ROT", new device("Servo", "double", "susan_ROT"));
 
   devices.put("claw_GRIP", new device("CRServo", "double", "claw_GRIP"));
@@ -55,10 +55,6 @@ public class mechanumdrive extends LinearOpMode {
 
   private DistanceSensor elevator_DISTSENSOR;
   double last_time = runtime.seconds(); //Used to find how much time has elapsed per iteration in the runtime loop.
-  double reset_last_time = runtime.seconds(); //Last time the robot has reset
-  boolean stopreset_soon = false; //Is the robot trying to reset all the motors? (Except wheels)
-  boolean arm_Sensor = false;
-  boolean elevator_HasReset = false;
   //private DistanceSensor distance;
   @Override
   public void runOpMode() {
