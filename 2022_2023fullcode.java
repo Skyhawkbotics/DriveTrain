@@ -301,11 +301,11 @@ public class mechanumdrive extends LinearOpMode {
     }*/
 
     //dpad left/right wrist rotation
-    if (gamepad1.dpad_left) {
+    if (gamepad2.a) {
       //wrist_ROT_pos += (now_time-last_time);
       wrist_ROT_percent = 0.5;
     }
-    else if (gamepad1.dpad_right) {
+    else if (gamepad2.y) {
       //wrist_ROT -= (now_time-last_time);
       wrist_ROT_percent = -0.5;
     }
@@ -314,55 +314,47 @@ public class mechanumdrive extends LinearOpMode {
     }
 
     //dpad up/down claw open/close
-    if (gamepad1.dpad_up) {
+    if (gamepad2.dpad_up) {
       claw_GRIP_angle = 0.5;
     }
-    if (gamepad1.dpad_down) {
+    if (gamepad2.dpad_down) {
       claw_GRIP_angle = -0.5;
     }
     else {
-      //claw_GRIP_angle = 0;
     }
 
-    // Y A arm ROT up down
-    if (gamepad1.y) {
-      arm_ELEVATOR_angle-=400 * (now_time-last_time);
-    } 
-    else if (gamepad1.a) {
-      arm_ELEVATOR_angle+=400 * (now_time-last_time);
-    }
 
-    // B X arm EXT forward back
-    if (gamepad1.b) {
-      arm_EXT_pos-=(now_time-last_time);
-      arm_EXT_percent = 0;
-    } 
-    else if (gamepad1.x) {
-      arm_EXT_pos+=(now_time-last_time);
-      arm_EXT_percent = 1;
-    }
-    else {
-      arm_EXT_percent = 0.5;
-    }
 
-     if (gamepad1.left_bumper) {
-      susan_ROT_percent = 0.8;
-      susan_ROT_pos += (now_time-last_time);
+     if (gamepad2.left_bumper) {
+      //ELEVATOR MOVEMENT
+      arm_ELEVATOR_angle += gamepad2.left_bumper * 400 * (now_time-last_time);
     }
-    else if (gamepad1.right_bumper) {
-      susan_ROT_percent = 0.2;
-      susan_ROT_pos -= (now_time-last_time);
-    }
-    else {
-      susan_ROT_percent = 0.5;
+    else if (gamepad2.right_bumper) {
+      arm_ELEVATOR_angle -= gamepad2.left_bumper * 400 * (now_time-last_time);
     }
     
-    if (gamepad1.back) {
-      arm_ROT_angle+=800 * (now_time-last_time);
+
+    if (gamepad2.leftstickx != 0) {
+      //ARM ROTATION
+      arm_ROT_angle+=gamepad2.leftstickx * 1000 * (now_time-last_time);
     }
-    else if (gamepad1.start) {
-      arm_ROT_angle-=800 * (now_time-last_time);
+
+    if (gamepad2.leftsticky != 0) {
+      //SUSAN ROTATION
+      susan_ROT_percent = (gamepad2.leftsticky / 2) + 0.5;
+      susan_ROT_pos -= (now_time-last_time);
+
+      if (susan_ROT_percent > 1) {
+        susan_ROT_percent = 1;
+      }
+      else (susan_ROT_percent < 0) {
+        susan_ROT_percent = 0;
+      }
     }
+
+
+
+    
 
     ////----BOUNDARIES----////
 
