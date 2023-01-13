@@ -45,6 +45,7 @@ public class mechanumdrive extends LinearOpMode {
 
   devices.put("arm_ELEVATOR1", new device("DcMotorEx", "float", "arm_ELEVATOR1", int[] properties = {1200} ));
   devices.put("arm_ELEVATOR2", new device("DcMotorEx", "float", "arm_ELEVATOR2", int[] properties = {1200} ));
+          devices.get("arm_ELEVATOR2").object.setDirection(DcMotorSimple.Direction.REVERSE);
   devices.put("arm_ROT",       new device("DcMotorEx", "float", "arm_ROT",       int[] properties = {400}  ));
 
   devices.put("arm_EXT",   new device("Servo", "double", "arm_EXT"  ));
@@ -131,50 +132,29 @@ public class mechanumdrive extends LinearOpMode {
   }
   
   public void gamepadInputHandling(double now_time) {
-    /*
-    left_stick   + right_stick   | wheel
-    left_bumper  + left_trigger  | wrist
-    right_bumper + right_trigger | claw
-    
-    dpad_left    + dpad_right    | susan
-    dpad_up      + dpad_down     | arm_ROT
-    
-    Y (up)       + B (left)      | arm_EXT // Accesible using meaty part of thumb! Wrist pain ouch.
-    A (down)     + X (right)     | arm_ELEVATOR
-    */
-    if (gamepad1.left_bumper) 
-      devices.get("wrist_ROT").num = 0.5;
-    else if (gamepad1.left_trigger >0.1) 
-      devices.get("wrist_ROT").num = -0.5;
-    else
-      devices.get("wrist_ROT").num = 0;
 
-    if (gamepad1.right_bumper)
-        devices.get("claw_GRIP").num = 0.5;
-    else if (gamepad1_right_trigger > 0.1)
-        devices.get("claw_GRIP").num = -0.5;
-
-    if (gamepad1.X) {
-      devices.get("arm_ELEVATOR1").num += 80 * (now_time-last_time);
-      devices.get("arm_ELEVATOR2").num += 80 * (now_time-last_time);
+    //CLAW GRIP/RELEASE
+    if (claw_gripped) {
+      devices.get("claw_GRIP").num = 0.5;
     }
-    else if (gamepad1.A) {
-      devices.get("arm_ELEVATOR1").num -= 80 * (now_time-last_time);
-      devices.get("arm_ELEVATOR2").num -= 80 * (now_time-last_time);
+    else if (!claw_gripped) {
+      devices.get("claw_GRIP").num = -0.5;
     }
-    
 
-    if (gamepad1.dpad_up)
-      devices.get("arm_ROT").num+=200 * (now_time-last_time);
-    else if (gamepad1.dpad_down)
-      devices.get("arm_ROT").num+=200 * (now_time-last_time);
+    //ARM EXTENDER
+    if (gamepad2.left_trigger) {
+      devices.get("arm_EXT").num -= (gamepad2.right_trigger / 2) + 0.5;
+    }
+    else if (gamepad2.right_trigger) {
+      devices.get("arm_EXT").num -= (gamepad2.right_trigger / 2) + 0.5;
+    }
 
-    if (gamepad1.dpad_left)
-      devices.get("susan_ROT").num = 0;
-    else if (gamepad1.dpad_right)
-      devices.get("susan_ROT").num = 1;
-    else
-      devices.get("susan_ROT").num = 0.5;
+    //ARM ROTATION
+    if (gamepad2.left_stick_y != 0) {
+      devices.get("arm_ROT").num += gamepad2.left_stick_y * 1000 * (now_time-last_time);
+    }
+
+
 
   }
   public void whl_corrections() {
