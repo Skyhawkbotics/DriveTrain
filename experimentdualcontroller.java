@@ -32,19 +32,29 @@ public class mechanumdrive extends LinearOpMode {
   
   //Create input dictionary
   private Hashtable<String, boolean> gamepad1_INPUT_DICTIONARY = new Hashtable<String, boolean>(); // NOT IN USE YET
-  gamepad1_INPUT_DICTIONARY.put("a", gamepad1.a);
+  //gamepad1_INPUT_DICTIONARY.put("a", gamepad1.a);
   
   //Create devices
-  private Hashtable<String, device> devices = new Hashtable<String, device>();
-  devices.put("whl_LB", new device("DcMotor", "float", "whl_LB"))                   ;
+  private HashMap<String, device> devices = new HashMap<String, device>();
+  //devices.put("A", "e");
+
+  private DistanceSensor elevator_DISTSENSOR;
+  double last_time = runtime.seconds(); //Used to find how much time has elapsed per iteration in the runtime loop.
+  //private DistanceSensor distance;
+  @Override
+  public void runOpMode() {
+    
+    devices.put("whl_LB", new device("DcMotor", "float", "whl_LB"));
           devices.get("whl_LB").object.setDirection(DcMotorSimple.Direction.REVERSE);
   devices.put("whl_LF", new device("DcMotor", "float", "whl_LF"))                   ;
           devices.get("whl_LF").object.setDirection(DcMotorSimple.Direction.REVERSE);
   devices.put("whl_RB", new device("DcMotor", "float", "whl_RB"));
   devices.put("whl_RF", new device("DcMotor", "float", "whl_RF"));
-
-  devices.put("arm_ELEVATOR1", new device("DcMotorEx", "float", "arm_ELEVATOR1", int[] properties = {1200} ));
-  devices.put("arm_ELEVATOR2", new device("DcMotorEx", "float", "arm_ELEVATOR2", int[] properties = {1200} ));
+  
+  int[] ELEVATOR_properties = {1200};
+  int[]
+  devices.put("arm_ELEVATOR1", new device("DcMotorEx", "float", "arm_ELEVATOR1", properties ));
+  devices.put("arm_ELEVATOR2", new device("DcMotorEx", "float", "arm_ELEVATOR2", properties ));
           devices.get("arm_ELEVATOR2").object.setDirection(DcMotorSimple.Direction.REVERSE);
   devices.put("arm_ROT",       new device("DcMotorEx", "float", "arm_ROT",       int[] properties = {400}  ));
 
@@ -53,13 +63,6 @@ public class mechanumdrive extends LinearOpMode {
 
   devices.put("claw_GRIP", new device("CRServo", "double", "claw_GRIP"));
   devices.put("wrist_ROT", new device("CRServo", "double", "wrist_ROT"));
-
-  private DistanceSensor elevator_DISTSENSOR;
-  double last_time = runtime.seconds(); //Used to find how much time has elapsed per iteration in the runtime loop.
-  //private DistanceSensor distance;
-  @Override
-  public void runOpMode() {
-    
     waitForStart();
     if (opModeIsActive()) {
       while (opModeIsActive()) {
