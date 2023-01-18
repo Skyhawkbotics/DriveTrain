@@ -67,6 +67,8 @@ public class mechanumdrive extends LinearOpMode {
   double claw_GRIP_angle = 0; // 0.28 to 0.85 | closed to fully opened
   double wrist_ROT_percent = 0.5; // >0.5 to <0.5 | move up or move down
   double arm_EXT_percent = 0.5; // 0 to 1
+  
+  double wrist_ROT_percent_FROMARM = 0;
 
   
   double susan_ROT_pos = 0;
@@ -79,7 +81,8 @@ public class mechanumdrive extends LinearOpMode {
   boolean arm_Sensor = false;
   
   boolean elevator_HasReset = false;
-  boolean claw_gripped = true
+  boolean claw_gripped = true;
+  boolean gamepad2_right_bumper_down_LASTTIME = false;
 
   //private DistanceSensor distance;
   /**
@@ -286,53 +289,72 @@ public class mechanumdrive extends LinearOpMode {
   
   public void gamepadInputHandling(double now_time) {
 
-    if (gamepad2.right_bumper) {
-      //CLAW GRIP/RELEASE
+    if (!gamepad2.right_bumper && gamepad2_right_bumper_down_LASTTIME) {
       if (claw_gripped) {
-        claw_GRIP_angle = 0.5;
+        claw_GRIP_angle = 0.1;
+        claw_gripped = false;
       }
       else if (!claw_gripped) {
-        claw_GRIP_angle = -0.5;
+        claw_GRIP_angle = -0.3;
+        claw_gripped = true;
       }
     }
-
-     if (gamepad2.left_trigger) {
-      //ARM EXTENDER
-      arm_EXT_percent += (gamepad2.leftstickx / 2) + 0.5;
+    
+    if (gamepad2.right_bumper) {
+      gamepad2_right_bumper_down_LASTTIME = true;
+      //CLAW GRIP/RELEASE
+      
     }
-    else if (gamepad2.right_trigger) {
-      arm_EXT_percent -= (gamepad2.leftstickx / 2) + 0.5;
+    else {
+      gamepad2_right_bumper_down_LASTTIME = false;
+    }
+    
+
+     if (gamepad2.left_trigger > 0.1) {
+      //ARM EXTENDER
+      arm_EXT_percent = (gamepad2.left_trigger / 2) + 0.5;
+    }
+    else if (gamepad2.right_trigger > 0.1) {
+      arm_EXT_percent = (gamepad2.right_trigger / -2) + 0.5;
+      //arm_EXT_percent = (gamepad2.left_stick_x / 2) + 0.5;
+    }
+    else {
+      arm_EXT_percent = 0.5;
     }
     
 
     if (gamepad2.left_stick_y != 0) {
       //ARM ROTATION
       arm_ROT_angle+=gamepad2.left_stick_y * 1000 * (now_time-last_time);
+      wrist_ROT_percent_FROMARM = (gamepad2.left_stick_y / 8);
     }
 
-    if (gamepad2.left_stick_x != 0) {
+    if (gamepad2.left_stick_x > 0.1 || gamepad2.left_stick_x < -0.1) {
       //SUSAN ROTATION
-      susan_ROT_percent = (gamepad2.left_stick_x / 2) + 0.5;
+      susan_ROT_percent = (gamepad2.left_stick_x / -6) + 0.5;
       susan_ROT_pos -= (now_time-last_time);
 
       if (susan_ROT_percent > 1) {
         susan_ROT_percent = 1;
       }
-      else (susan_ROT_percent < 0) {
+      else if (susan_ROT_percent < 0) {
         susan_ROT_percent = 0;
       }
+    } else {
+      susan_ROT_percent = 0.5;
     }
 
-    if (gamepad2.right_stick_x != 0) {
-      //ELEVATOR
-      arm_ELEVATOR_angle += gamepad2.right_stick_x * 100 * (now_time-last_time);
+    //ELEVATOR
+    if (gamepad2.dpad_up) {
+      arm_ELEVATOR_angle += 30;
     }
+    else if (gamepad2.dpad_down) {
+      arm_ELEVATOR_angle -= 30;
+    }
+    
 
-    if (gamepad2.right_stick_y != 0) {
-      //WRIST
-      wrist_ROT_percent = (gamepad2.right_stick_y / 2) + 0.5;
-      wrist_ROT_pos -= (now_time-last_time);
-    }
+      wrist_ROT_percent = (gamepad2.right_stick_y / 4) + wrist_ROT_percent_FROMARM;
+    wrist_ROT_pos -= (now_time-last_time);
 
 
 
@@ -369,9 +391,9 @@ public class mechanumdrive extends LinearOpMode {
   }
   public void whl_corrections() {
       whl_RF_percent = (float) (whl_RF_percent * -0.5);
-      whl_RB_percent = (float) (whl_RB_percent * -0.6 );
-      whl_LF_percent = (float) (whl_LF_percent * -0.8);
-      whl_LB_percent = (float) (whl_LB_percent * -0.9);
+      whl_RB_percent = (float) (whl_RB_percent * -0.5);
+      whl_LF_percent = (float) (whl_LF_percent * -0.5);
+      whl_LB_percent = (float) (whl_LB_percent * -0.5);
   }
   
   
