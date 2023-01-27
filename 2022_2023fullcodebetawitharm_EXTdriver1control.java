@@ -309,7 +309,6 @@ public class mechanumdrive extends LinearOpMode {
       gamepad2_right_bumper_down_LASTTIME = false;
     }
     
-
     if (gamepad1.dpad_down) {
       //ARM EXTENDER ga
       arm_EXT_percent = 0.2;
@@ -327,12 +326,11 @@ public class mechanumdrive extends LinearOpMode {
     }
     else if (gamepad2.right_trigger > 0.1) {
       arm_EXT_percent = (gamepad2.right_trigger / -2) + 0.5;
+      //arm_EXT_percent = (gamepad2.left_stick_x / 2) + 0.5;
     }
     else {
       arm_EXT_percent = 0.5;
     }
-
-
     
 
     if (gamepad2.left_stick_y != 0) {
