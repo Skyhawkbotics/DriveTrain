@@ -77,7 +77,7 @@ public class mechanumdrive extends LinearOpMode {
   double last_time = runtime.seconds(); //Used to find how much time has elapsed per iteration in the runtime loop.
   double reset_last_time = runtime.seconds(); //Last time the robot has reset
   
-  boolean stopreset_soon = false; //Is the robot trying to reset all the motors? (Except wheels)
+  boolean start_DOWN = false; //Is the start button down?
   boolean arm_Sensor = false;
   
   boolean elevator_HasReset = false;
@@ -190,6 +190,24 @@ public class mechanumdrive extends LinearOpMode {
           reset_last_time = runtime.seconds();
         }
         */
+        
+        //RESET ROBOT CODE
+        if (start_DOWN && !gamepad2.start) {
+          reset_last_time = now_time;
+        }
+        
+        if (now_time - reset_last_time > 0.1) { //Reset robot
+          arm_ROT_angle = 0;
+          arm_ELEVATOR_angle = 0;
+          arm_EXT_percent = getServoDirection(0, arm_EXT_pos, 0.2);
+          arm_EXT_pos += (arm_EXT_percent-0.5) * (now_time-last_time);
+          
+          //Check if its time to stop resetting everything
+          if (arm_EXT_percent == 0.5) {
+            reset_last_time = 0;
+          }
+        }
+        start_DOWN = gamepad2.start;
         last_time = now_time; //To find time differentials between loops.
         
         ////----VARIABLE MONITORING----////
@@ -200,12 +218,13 @@ public class mechanumdrive extends LinearOpMode {
         telemetry.addData("leftsticky", gamepad1.left_stick_y);
         telemetry.addData("rightstickx", gamepad1.right_stick_x);
         telemetry.addData("rightsticky", gamepad1.right_stick_y);
-        telemetry.addData("arm_ext_percent", arm_EXT_percent);
+        telemetry.addData("arm_ext_pos", arm_EXT_pos);
         telemetry.addData("arm_ELEVATOR_angle", arm_ELEVATOR_angle);
         telemetry.addData("arm_ROT_angle", arm_ROT_angle);
         telemetry.addData("claw_GRIP_angle", claw_GRIP_angle);
-        telemetry.addData("wrist", wrist_ROT_percent);
-        telemetry.addData("arm_EXT_pos", arm_EXT_pos);
+        telemetry.addData("wrist_ROT_pos", wrist_ROT_pos);
+        telemetry.addData("susan_ROT_pos", susan_ROT_pos);
+        telemetry.addData("nowtime-resetlasttime", now_time - reset_last_time);
 
         telemetry.addData("elevatordist", elevator_DISTSENSOR.getDistance(DistanceUnit.CM));
         telemetry.update();
@@ -359,24 +378,25 @@ public class mechanumdrive extends LinearOpMode {
       gamepad2_right_bumper_down_LASTTIME = false;
     }
     
-    
-    if (gamepad1.dpad_up) {
-      arm_EXT_percent = 0.8;
-    } else if (gamepad1.dpad_down) {
+    if (gamepad1.dpad_down) {
+      //ARM EXTENDER ga
       arm_EXT_percent = 0.2;
-    } else {
+    }
+    else if (gamepad1.dpad_up) {
+      arm_EXT_percent = 0.8;
+    }
+    else {
       arm_EXT_percent = 0.5;
     }
-    
 
-     if (gamepad2.left_trigger > 0.1 && arm_EXT_pos < 0) {
+     if (gamepad2.left_trigger > 0.1) {
       //ARM EXTENDER
       arm_EXT_percent = (gamepad2.left_trigger / 2) + 0.5;
-      arm_EXT_pos += (gamepad2.left_trigger / 2) + 0.5;
+      arm_EXT_pos += (gamepad2.left_trigger / 2) * (now_time-last_time);
     }
-    else if (gamepad2.right_trigger > 0.1 && arm_EXT_pos > -170) {
+    else if (gamepad2.right_trigger > 0.1) {
       arm_EXT_percent = (gamepad2.right_trigger / -2) + 0.5;
-      arm_EXT_pos -= (gamepad2.right_trigger / 2) + 0.5;
+      arm_EXT_pos += (gamepad2.right_trigger / -2) * (now_time-last_time);
     }
     else {
       arm_EXT_percent = 0.5;
@@ -392,7 +412,6 @@ public class mechanumdrive extends LinearOpMode {
     if (gamepad2.left_stick_x > 0.1 || gamepad2.left_stick_x < -0.1) {
       //SUSAN ROTATION
       susan_ROT_percent = (gamepad2.left_stick_x / -6) + 0.5;
-      susan_ROT_pos -= (now_time-last_time);
 
       if (susan_ROT_percent > 1) {
         susan_ROT_percent = 1;
@@ -400,6 +419,8 @@ public class mechanumdrive extends LinearOpMode {
       else if (susan_ROT_percent < 0) {
         susan_ROT_percent = 0;
       }
+      
+      susan_ROT_pos += (susan_ROT_percent-0.5) * (now_time-last_time);
     } else {
       susan_ROT_percent = 0.5;
     }
@@ -412,14 +433,13 @@ public class mechanumdrive extends LinearOpMode {
       arm_ELEVATOR_angle -= 30;
     }
     
+    
 
-      wrist_ROT_percent = (gamepad2.right_stick_y / -2); //+ wrist_ROT_percent_FROMARM;
-    wrist_ROT_pos -= (now_time-last_time);
+    wrist_ROT_percent = (gamepad2.right_stick_y / -2);
+    wrist_ROT_pos += wrist_ROT_percent * (now_time-last_time);
 
 
-    if (gamepad1.right_bumper) { 
-      tankDrive = true;
-    }
+
     
 
     ////----BOUNDARIES----////
@@ -458,6 +478,11 @@ public class mechanumdrive extends LinearOpMode {
       whl_LB_percent = (float) (whl_LB_percent * -0.5);
   }
   
+  public double getServoDirection(double destinationTarget, double currentTarget, double stopRange) {
+    double polarity = (destinationTarget>currentTarget) ? 1 : 0;
+    polarity = (Math.abs(destinationTarget-currentTarget)>stopRange) ? polarity : 0.5;
+    return polarity;
+  }
   
 }
 
