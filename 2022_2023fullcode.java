@@ -196,7 +196,7 @@ public class mechanumdrive extends LinearOpMode {
           reset_last_time = now_time;
           resetting = true;
         }
-        else {
+        else if (!resetting) {
           reset_last_time = now_time;
         }
         
