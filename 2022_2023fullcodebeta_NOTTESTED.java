@@ -192,7 +192,11 @@ public class mechanumdrive extends LinearOpMode {
         */
         
         //RESET ROBOT CODE
-        if (!gamepad2.start && now_time - reset_last_time > 0.1) { //Reset robot
+        if (start_DOWN && !gamepad2.start) {
+          reset_last_time = now_time;
+        }
+        
+        if (now_time - reset_last_time > 0.1) { //Reset robot
           arm_ROT_angle = 0;
           arm_ELEVATOR_angle = 0;
           arm_EXT_percent = getServoDirection(0, arm_EXT_pos, 0);
@@ -203,7 +207,7 @@ public class mechanumdrive extends LinearOpMode {
             reset_last_time = 0;
           }
         }
-        
+        start_DOWN = gamepad2.start
         last_time = now_time; //To find time differentials between loops.
         
         ////----VARIABLE MONITORING----////
@@ -428,11 +432,6 @@ public class mechanumdrive extends LinearOpMode {
       arm_ELEVATOR_angle -= 30;
     }
     
-    if (gamepad2.start) {
-    }
-    else {
-      reset_last_time = runtime.seconds();
-    }
     
 
     wrist_ROT_percent = (gamepad2.right_stick_y / -2);
