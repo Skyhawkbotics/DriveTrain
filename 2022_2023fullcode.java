@@ -76,7 +76,7 @@ public class mechanumdrive extends LinearOpMode {
   double arm_EXT_pos = 0;
   double last_time = runtime.seconds(); //Used to find how much time has elapsed per iteration in the runtime loop.
   double reset_last_time = runtime.seconds(); //Last time the robot has reset
-  
+  boolean resetting = false;
   boolean start_DOWN = false; //Is the start button down?
   boolean arm_Sensor = false;
   
@@ -194,9 +194,13 @@ public class mechanumdrive extends LinearOpMode {
         //RESET ROBOT CODE
         if (start_DOWN && !gamepad2.start) {
           reset_last_time = now_time;
+          resetting = true;
+        }
+        else {
+          reset_last_time = now_time;
         }
         
-        if (now_time - reset_last_time > 0.1) { //Reset robot
+        if (now_time - reset_last_time > 0.1 && resetting) { //Reset robot
           arm_ROT_angle = 0;
           arm_ELEVATOR_angle = 0;
           arm_EXT_percent = getServoDirection(0, arm_EXT_pos, 0.2);
@@ -205,6 +209,7 @@ public class mechanumdrive extends LinearOpMode {
           //Check if its time to stop resetting everything
           if (arm_EXT_percent == 0.5) {
             reset_last_time = 0;
+            resetting = false;
           }
         }
         start_DOWN = gamepad2.start;
