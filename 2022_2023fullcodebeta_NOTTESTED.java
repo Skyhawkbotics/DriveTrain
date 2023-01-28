@@ -83,6 +83,11 @@ public class mechanumdrive extends LinearOpMode {
   boolean elevator_HasReset = false;
   boolean claw_gripped = true;
   boolean gamepad2_right_bumper_down_LASTTIME = false;
+  
+  boolean tankDrive = false;
+  int counterActwheels = 0;
+  int counterActwheels_POLARITY = 0;
+  double counterActwheels_ACTIVE = 0;
 
   //private DistanceSensor distance;
   /**
@@ -208,7 +213,8 @@ public class mechanumdrive extends LinearOpMode {
         telemetry.addData("arm_ELEVATOR_angle", arm_ELEVATOR_angle);
         telemetry.addData("arm_ROT_angle", arm_ROT_angle);
         telemetry.addData("claw_GRIP_angle", claw_GRIP_angle);
-        telemetry.addData("wrist", wrist_ROT_percent);
+        telemetry.addData("wrist_ROT_pos", wrist_ROT_pos);
+        telemetry.addData("susan_ROT_pos", susan_ROT_pos);
 
         telemetry.addData("elevatordist", elevator_DISTSENSOR.getDistance(DistanceUnit.CM));
         telemetry.update();
@@ -231,37 +237,81 @@ public class mechanumdrive extends LinearOpMode {
         
         float drv_stick_y2 = gamepad1.right_stick_y;
         float drv_stick_x2 = gamepad1.right_stick_x;
-        if (!dif) {
-          if (Math.abs(gamepad1.right_stick_y) > Math.abs(gamepad1.right_stick_x)) {
-            whl_LB_percent = drv_stick_y2;
-            whl_LF_percent = drv_stick_y2;
-            whl_RB_percent = drv_stick_y2;
-            whl_RF_percent = drv_stick_y2;
-          }
-          else {
-            if (drv_stick_x2 > 0) {
-              whl_RF_percent = drv_stick_x2 * 1;
-              whl_RB_percent = drv_stick_x2 * -1;
-              whl_LF_percent = drv_stick_x2 * -1;
-              whl_LB_percent = drv_stick_x2 * 1;
+
+        if (!tankDrive) {
+          if (!dif) {
+            if (Math.abs(gamepad1.right_stick_y) > Math.abs(gamepad1.right_stick_x)) {
+              whl_LB_percent = drv_stick_y2;
+              whl_LF_percent = drv_stick_y2;
+              whl_RB_percent = drv_stick_y2;
+              whl_RF_percent = drv_stick_y2;
             }
-            
-            if (drv_stick_x2 < 0) {
-              whl_LF_percent = drv_stick_x2 * -1;
-              whl_LB_percent = drv_stick_x2 * 1;
-              whl_RB_percent = drv_stick_x2 * -1;
-              whl_RF_percent = drv_stick_x2 * 1;
+            else {
+              if (drv_stick_x2 > 0.9) {
+                whl_RF_percent = 1;
+                whl_RB_percent = -0.7f;
+                whl_LF_percent = -1;
+                whl_LB_percent = 0.7f;
+                counterActwheels = 1;
+              }
+              
+              else if (drv_stick_x2 < -0.9) {
+                whl_LF_percent = 1;
+                whl_LB_percent = -0.7f;
+                whl_RB_percent = 0.7f;
+                whl_RF_percent = -1;
+                counterActwheels = -1;
+              }
+              
+              //If the stick WAS active last iteration, and is now NOT active, we need to apply a counterforce
+              else if (counterActwheels != 0){
+                counterActwheels_POLARITY = counterActwheels;
+                counterActwheels = 0;
+                counterActwheels_ACTIVE = now_time;
+              }
+              
+              //Check if the wheels need to be counteracted this iteration
+              if (counterActwheels_ACTIVE != 0) {
+                
+                whl_RB_percent = 0.9f * counterActwheels_POLARITY;
+                whl_LB_percent = -0.9f * counterActwheels_POLARITY;
+                whl_RF_percent = -1f * counterActwheels_POLARITY;
+                whl_LF_percent = 1f * counterActwheels_POLARITY;
+                //Make counteract force last only for 0.2 seconds
+                if (now_time-counterActwheels_ACTIVE > 0.2){
+                  counterActwheels_ACTIVE = 0;
+                }
+              }
             }
           }
-        }
         else {
           float drv_stick_y = gamepad1.left_stick_y;
-          float drv_stick_x = gamepad1.left_stick_x * 0.2f;
+          float drv_stick_x = gamepad1.left_stick_x;
+          if (Math.abs(drv_stick_x)-Math.abs(drv_stick_y)>0.8) {
+
+            whl_LB_percent = - drv_stick_x*0.4f;
+            whl_LF_percent = - drv_stick_x*0.4f;
+            whl_RB_percent = + drv_stick_x*0.6f;
+            whl_RF_percent = + drv_stick_x*0.6f;
+          }
+          else {
           
-          whl_LB_percent = drv_stick_y - drv_stick_x;
-          whl_LF_percent = drv_stick_y - drv_stick_x;
-          whl_RB_percent = drv_stick_y + drv_stick_x;
-          whl_RF_percent = drv_stick_y + drv_stick_x;
+            drv_stick_x = drv_stick_x * 0.2f;
+            
+            whl_LB_percent = drv_stick_y - drv_stick_x;
+            whl_LF_percent = drv_stick_y - drv_stick_x;
+            whl_RB_percent = drv_stick_y + drv_stick_x;
+            whl_RF_percent = drv_stick_y + drv_stick_x;
+          
+          }
+        }
+        } else if (tankDrive) {
+
+          whl_LB_percent = gamepad1.left_stick_y;
+          whl_LF_percent = gamepad1.left_stick_y;
+          whl_RB_percent = gamepad1.right_stick_y;
+          whl_RF_percent = gamepad1.right_stick_y;
+
         }
         
         whl_corrections(); // Corrects/Adjusts power for correct results
@@ -300,11 +350,11 @@ public class mechanumdrive extends LinearOpMode {
 
     if (!gamepad2.right_bumper && gamepad2_right_bumper_down_LASTTIME) {
       if (claw_gripped) {
-        claw_GRIP_angle = 0.1;
+        claw_GRIP_angle = 1;
         claw_gripped = false;
       }
       else if (!claw_gripped) {
-        claw_GRIP_angle = -0.3;
+        claw_GRIP_angle = -1;
         claw_gripped = true;
       }
     }
@@ -329,14 +379,14 @@ public class mechanumdrive extends LinearOpMode {
       arm_EXT_percent = 0.5;
     }
 
-     if (gamepad2.left_trigger > 0.1) {
+     if (gamepad2.left_trigger > 0.1 && arm_EXT_pos < 0) {
       //ARM EXTENDER
       arm_EXT_percent = (gamepad2.left_trigger / 2) + 0.5;
-      arm_EXT_pos += arm_EXT_percent * (now_time-last_time);
+      arm_EXT_pos += (gamepad2.left_trigger / 2) + 0.5;
     }
-    else if (gamepad2.right_trigger > 0.1) {
+    else if (gamepad2.right_trigger > 0.1 && arm_EXT_pos > -170) {
       arm_EXT_percent = (gamepad2.right_trigger / -2) + 0.5;
-      arm_EXT_pos -= arm_EXT_percent * (now_time-last_time);
+      arm_EXT_pos -= (gamepad2.right_trigger / 2) + 0.5;
     }
     else {
       arm_EXT_percent = 0.5;
@@ -366,10 +416,10 @@ public class mechanumdrive extends LinearOpMode {
     }
 
     //ELEVATOR
-    if (gamepad2.dpad_up) {
+    if (gamepad2.dpad_up        && arm_ELEVATOR_angle < 1050) {
       arm_ELEVATOR_angle += 30;
     }
-    else if (gamepad2.dpad_down) {
+    else if (gamepad2.dpad_down && arm_ELEVATOR_angle > 0) {
       arm_ELEVATOR_angle -= 30;
     }
     
@@ -380,7 +430,7 @@ public class mechanumdrive extends LinearOpMode {
     }
     
 
-    wrist_ROT_percent = (gamepad2.right_stick_y / 4) + wrist_ROT_percent_FROMARM;
+    wrist_ROT_percent = (gamepad2.right_stick_y / -2);
     wrist_ROT_pos += wrist_ROT_percent * (now_time-last_time);
 
 
@@ -417,8 +467,8 @@ public class mechanumdrive extends LinearOpMode {
 
   }
   public void whl_corrections() {
-      whl_RF_percent = (float) (whl_RF_percent * -0.5);
-      whl_RB_percent = (float) (whl_RB_percent * -0.5);
+      whl_RF_percent = (float) (whl_RF_percent * -0.42);
+      whl_RB_percent = (float) (whl_RB_percent * -0.42);
       whl_LF_percent = (float) (whl_LF_percent * -0.5);
       whl_LB_percent = (float) (whl_LB_percent * -0.5);
   }
