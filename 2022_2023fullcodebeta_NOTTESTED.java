@@ -391,7 +391,7 @@ public class mechanumdrive extends LinearOpMode {
     }
     else if (gamepad2.right_trigger > 0.1 && arm_EXT_pos > -170) {
       arm_EXT_percent = (gamepad2.right_trigger / -2) + 0.5;
-      arm_EXT_pos -= (gamepad2.right_trigger / 2) * (now_time-last_time);
+      arm_EXT_pos -= (gamepad2.right_trigger / -2) * (now_time-last_time);
     }
     else {
       arm_EXT_percent = 0.5;
