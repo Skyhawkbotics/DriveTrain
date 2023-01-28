@@ -195,8 +195,13 @@ public class mechanumdrive extends LinearOpMode {
         if (!gamepad2.start && now_time - reset_last_time > 0.1) { //Reset robot
           arm_ROT_angle = 0;
           arm_ELEVATOR_angle = 0;
+          arm_EXT_percent = getServoDirection(0, arm_EXT_pos, 10);
+          arm_EXT_pos += (arm_EXT_percent-0.5) * (now_time-last_time);
           
-          
+          //Check if its time to stop resetting everything
+          if (now_time-reset_last_time > 5 && arm_EXT_percent == 0.5) {
+            reset_last_time = 0;
+          }
         }
         
         last_time = now_time; //To find time differentials between loops.
@@ -382,11 +387,11 @@ public class mechanumdrive extends LinearOpMode {
      if (gamepad2.left_trigger > 0.1 && arm_EXT_pos < 0) {
       //ARM EXTENDER
       arm_EXT_percent = (gamepad2.left_trigger / 2) + 0.5;
-      arm_EXT_pos += (gamepad2.left_trigger / 2) + 0.5;
+      arm_EXT_pos += (gamepad2.left_trigger / 2) * (now_time-last_time);
     }
     else if (gamepad2.right_trigger > 0.1 && arm_EXT_pos > -170) {
       arm_EXT_percent = (gamepad2.right_trigger / -2) + 0.5;
-      arm_EXT_pos -= (gamepad2.right_trigger / 2) + 0.5;
+      arm_EXT_pos -= (gamepad2.right_trigger / 2) * (now_time-last_time);
     }
     else {
       arm_EXT_percent = 0.5;
@@ -405,12 +410,12 @@ public class mechanumdrive extends LinearOpMode {
 
       if (susan_ROT_percent > 1) {
         susan_ROT_percent = 1;
-        susan_ROT_pos += (now_time-last_time)*0.5;
       }
       else if (susan_ROT_percent < 0) {
         susan_ROT_percent = 0;
-        susan_ROT_pos -= (now_time-last_time)*0.5;
       }
+      
+      susan_ROT_pos += (susan_ROT_perecent-0.5) * (now_time-last_time);
     } else {
       susan_ROT_percent = 0.5;
     }
@@ -473,6 +478,11 @@ public class mechanumdrive extends LinearOpMode {
       whl_LB_percent = (float) (whl_LB_percent * -0.5);
   }
   
+  public void getServoDirection(double destinationTarget, double currentTarget, double stopRange) {
+    double polarity = (destinationTarget>currentTarget) ? 1 : 0;
+    polarity = (Math.abs(destinationTarget-currentTarget)>stopRange) ? polarity : 0.5;
+    return polarity
+  }
   
 }
 
