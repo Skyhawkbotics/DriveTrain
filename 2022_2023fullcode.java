@@ -224,6 +224,7 @@ public class mechanumdrive extends LinearOpMode {
         telemetry.addData("claw_GRIP_angle", claw_GRIP_angle);
         telemetry.addData("wrist_ROT_pos", wrist_ROT_pos);
         telemetry.addData("susan_ROT_pos", susan_ROT_pos);
+        telemetry.addData("polarity", getServoDirection(0, arm_EXT_pos, 0.2));
         telemetry.addData("nowtime-resetlasttime", now_time - reset_last_time);
 
         telemetry.addData("elevatordist", elevator_DISTSENSOR.getDistance(DistanceUnit.CM));
