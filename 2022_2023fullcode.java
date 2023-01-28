@@ -228,51 +228,53 @@ public class mechanumdrive extends LinearOpMode {
         
         float drv_stick_y2 = gamepad1.right_stick_y;
         float drv_stick_x2 = gamepad1.right_stick_x;
-        if (!dif) {
-          if (Math.abs(gamepad1.right_stick_y) > Math.abs(gamepad1.right_stick_x)) {
-            whl_LB_percent = drv_stick_y2;
-            whl_LF_percent = drv_stick_y2;
-            whl_RB_percent = drv_stick_y2;
-            whl_RF_percent = drv_stick_y2;
-          }
-          else {
-            if (drv_stick_x2 > 0.9) {
-              whl_RF_percent = 1;
-              whl_RB_percent = -0.7f;
-              whl_LF_percent = -1;
-              whl_LB_percent = 0.7f;
-              counterActwheels = 1;
+
+        if (!tankDrive) {
+          if (!dif) {
+            if (Math.abs(gamepad1.right_stick_y) > Math.abs(gamepad1.right_stick_x)) {
+              whl_LB_percent = drv_stick_y2;
+              whl_LF_percent = drv_stick_y2;
+              whl_RB_percent = drv_stick_y2;
+              whl_RF_percent = drv_stick_y2;
             }
-            
-            else if (drv_stick_x2 < -0.9) {
-              whl_LF_percent = 1;
-              whl_LB_percent = -0.7f;
-              whl_RB_percent = 0.7f;
-              whl_RF_percent = -1;
-              counterActwheels = -1;
-            }
-            
-            //If the stick WAS active last iteration, and is now NOT active, we need to apply a counterforce
-            else if (counterActwheels != 0){
-              counterActwheels_POLARITY = counterActwheels;
-              counterActwheels = 0;
-              counterActwheels_ACTIVE = now_time;
-            }
-            
-            //Check if the wheels need to be counteracted this iteration
-            if (counterActwheels_ACTIVE != 0) {
+            else {
+              if (drv_stick_x2 > 0.9) {
+                whl_RF_percent = 1;
+                whl_RB_percent = -0.7f;
+                whl_LF_percent = -1;
+                whl_LB_percent = 0.7f;
+                counterActwheels = 1;
+              }
               
-              whl_RB_percent = 0.9f * counterActwheels_POLARITY;
-              whl_LB_percent = -0.9f * counterActwheels_POLARITY;
-              whl_RF_percent = -1f * counterActwheels_POLARITY;
-              whl_LF_percent = 1f * counterActwheels_POLARITY;
-              //Make counteract force last only for 0.2 seconds
-              if (now_time-counterActwheels_ACTIVE > 0.2){
-                counterActwheels_ACTIVE = 0;
+              else if (drv_stick_x2 < -0.9) {
+                whl_LF_percent = 1;
+                whl_LB_percent = -0.7f;
+                whl_RB_percent = 0.7f;
+                whl_RF_percent = -1;
+                counterActwheels = -1;
+              }
+              
+              //If the stick WAS active last iteration, and is now NOT active, we need to apply a counterforce
+              else if (counterActwheels != 0){
+                counterActwheels_POLARITY = counterActwheels;
+                counterActwheels = 0;
+                counterActwheels_ACTIVE = now_time;
+              }
+              
+              //Check if the wheels need to be counteracted this iteration
+              if (counterActwheels_ACTIVE != 0) {
+                
+                whl_RB_percent = 0.9f * counterActwheels_POLARITY;
+                whl_LB_percent = -0.9f * counterActwheels_POLARITY;
+                whl_RF_percent = -1f * counterActwheels_POLARITY;
+                whl_LF_percent = 1f * counterActwheels_POLARITY;
+                //Make counteract force last only for 0.2 seconds
+                if (now_time-counterActwheels_ACTIVE > 0.2){
+                  counterActwheels_ACTIVE = 0;
+                }
               }
             }
           }
-        }
         else {
           float drv_stick_y = gamepad1.left_stick_y;
           float drv_stick_x = gamepad1.left_stick_x;
@@ -293,6 +295,14 @@ public class mechanumdrive extends LinearOpMode {
             whl_RF_percent = drv_stick_y + drv_stick_x;
           
           }
+        }
+        } else if (tankDrive) {
+
+          whl_LB_percent = gamepad1.left_stick_y;
+          whl_LF_percent = gamepad1.left_stick_y;
+          whl_RB_percent = gamepad1.right_stick_y;
+          whl_RF_percent = gamepad1.right_stick_y;
+
         }
         
         whl_corrections(); // Corrects/Adjusts power for correct results
