@@ -23,10 +23,12 @@ Code Starts Here.
 */
 
 /*
-Hello future programmer. My name is Kevin Vu and initially wrote this code.
-It is not very readable and some of the design decisions I made are very questionable.
-| For the movement of the claw, look at the gamepadInputHandling() claw section and the clawMove() section.
-| now_time-last_time is used to find time inbetween loops and normalize degrees per loop to degrees per second.
+Process for having ignore boundaries toggle:
+Variable: Boundaries toggle = true/false;
+
+IN GAMEPUTHANDLING();
+  when setting pos OR checking for boundaries, completely omit them
+  have boundaries toggle be set on button back
 */
 
 @TeleOp(name = "2022-2023fullcode")
@@ -76,18 +78,20 @@ public class mechanumdrive extends LinearOpMode {
   double arm_EXT_pos = 0;
   double last_time = runtime.seconds(); //Used to find how much time has elapsed per iteration in the runtime loop.
   double reset_last_time = runtime.seconds(); //Last time the robot has reset
-  String resetting = "";
   boolean start_DOWN = false; //Is the start button down?
   boolean Y_DOWN = false;
   boolean A_DOWN = false;
   boolean B_DOWN = false;
   boolean X_DOWN = false;
+  boolean back_DOWN = false;
   boolean arm_Sensor = false;
   
   boolean elevator_HasReset = false;
   boolean claw_gripped = true;
-  boolean gamepad2_right_bumper_down_LASTTIME = false;
-  
+  boolean right_bumper_DOWN = false;
+  String resetting = "";
+  boolean boundariesMODE = false;
+
   boolean tankDrive = false;
   int counterActwheels = 0;
   int counterActwheels_POLARITY = 0;
@@ -196,6 +200,9 @@ public class mechanumdrive extends LinearOpMode {
         */
         
         //RESET ROBOT CODE
+        /*
+        Process:
+        */
         if ((start_DOWN && !gamepad2.start) || (Y_DOWN && !gamepad2.y) || (X_DOWN && !gamepad2.x) || (A_DOWN && !gamepad2.a) || (B_DOWN && !gamepad2.b)) {
           reset_last_time = now_time;
           if (start_DOWN && !gamepad2.start) { resetting = "reset"; }
@@ -213,11 +220,15 @@ public class mechanumdrive extends LinearOpMode {
         }
         
         if (now_time - reset_last_time > 0.1 && !(resetting == "")) { //Reset robot
-          arm_ROT_angle = 0;
-          arm_ELEVATOR_angle = 0;
           if (resetting == "reset") {
             arm_EXT_percent = getServoDirection(0, arm_EXT_pos, 0.1);
             arm_EXT_pos += (arm_EXT_percent-0.5) * (now_time-last_time);
+            arm_ROT_angle = 0;
+            arm_ELEVATOR_angle = 0;
+            wrist_ROT_percent = getServoDirection(0, wrist_ROT_pos, 0.05)-0.5;
+            wrist_ROT_pos += (wrist_ROT_percent) * (now_time-last_time);
+            susan_ROT_percent = getServoDirection(0, susan_ROT_pos, 0.05);
+            susan_ROT_pos += (susan_ROT_percent-0.5) * (now_time-last_time);
           }
           else if (resetting == "lowFloor") {
             arm_EXT_percent = getServoDirection(0, arm_EXT_pos, 0.1);
@@ -251,7 +262,7 @@ public class mechanumdrive extends LinearOpMode {
             arm_ELEVATOR_angle = 1050;
           }
           //Check if its time to stop resetting everything
-          if (arm_EXT_percent == 0.5 && wrist_ROT_percent == 0) {
+          if (arm_EXT_percent == 0.5 && wrist_ROT_percent == 0 && susan_ROT_percent == 0.5) {
             reset_last_time = 0;
             resetting = "";
           }
@@ -411,8 +422,19 @@ public class mechanumdrive extends LinearOpMode {
   }
   
   public void gamepadInputHandling(double now_time) {
-
-    if (!gamepad2.right_bumper && gamepad2_right_bumper_down_LASTTIME) {
+    
+    if (back_DOWN && !gamepad2.back) {
+      boundariesMODE = !boundariesMODE;
+    }
+    
+    if (gamepad2.back) {
+      back_DOWN = true;
+    }
+    else {
+      back_DOWN = false
+    }
+    
+    if (!gamepad2.right_bumper && right_bumper_DOWN) {
       if (claw_gripped) {
         claw_GRIP_angle = 1;
         claw_gripped = false;
@@ -424,12 +446,12 @@ public class mechanumdrive extends LinearOpMode {
     }
     
     if (gamepad2.right_bumper) {
-      gamepad2_right_bumper_down_LASTTIME = true;
+      right_bumper_DOWN = true;
       //CLAW GRIP/RELEASE
       
     }
     else {
-      gamepad2_right_bumper_down_LASTTIME = false;
+      right_bumper_DOWN = false;
     }
     
     if (gamepad1.dpad_down) {
@@ -443,14 +465,21 @@ public class mechanumdrive extends LinearOpMode {
       arm_EXT_percent = 0.5;
     }
 
-     if (gamepad2.left_trigger > 0.1 && arm_EXT_pos < 0) {
+     if (gamepad2.left_trigger > 0.1 && (arm_EXT_pos < 0 || boundariesMode)) {
       //ARM EXTENDER
       arm_EXT_percent = (gamepad2.left_trigger / 2) + 0.5;
-      arm_EXT_pos += (gamepad2.left_trigger / 2) * (now_time-last_time);
+       
+      if (!boundariesMode) {
+        arm_EXT_pos += (gamepad2.left_trigger / 2) * (now_time-last_time);
+      }
     }
-    else if (gamepad2.right_trigger > 0.1 && arm_EXT_pos > -3.16) {
+    else if (gamepad2.right_trigger > 0.1 && (arm_EXT_pos > -3.16 || boundariesMode)) {
       arm_EXT_percent = (gamepad2.right_trigger / -2) + 0.5;
-      arm_EXT_pos += (gamepad2.right_trigger / -2) * (now_time-last_time);
+      
+      if (!boundariesMode) {
+        arm_EXT_pos += (gamepad2.right_trigger / -2) * (now_time-last_time);
+      }
+        
     }
     else {
       arm_EXT_percent = 0.5;
@@ -474,16 +503,18 @@ public class mechanumdrive extends LinearOpMode {
         susan_ROT_percent = 0;
       }
       
-      susan_ROT_pos += (susan_ROT_percent-0.5) * (now_time-last_time);
+      if (!boundariesMode) {
+        susan_ROT_pos += (susan_ROT_percent-0.5) * (now_time-last_time);
+      }
     } else {
       susan_ROT_percent = 0.5;
     }
 
     //ELEVATOR
-    if (gamepad2.dpad_up        && arm_ELEVATOR_angle < 1050) {
+    if (gamepad2.dpad_up        && (arm_ELEVATOR_angle < 1050 || boundariesMode)) {
       arm_ELEVATOR_angle += 30;
     }
-    else if (gamepad2.dpad_down && arm_ELEVATOR_angle > 0) {
+    else if (gamepad2.dpad_down && (arm_ELEVATOR_angle > 0 || boundariesMode)) {
       arm_ELEVATOR_angle -= 30;
     }
     
