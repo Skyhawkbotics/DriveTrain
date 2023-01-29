@@ -76,8 +76,12 @@ public class mechanumdrive extends LinearOpMode {
   double arm_EXT_pos = 0;
   double last_time = runtime.seconds(); //Used to find how much time has elapsed per iteration in the runtime loop.
   double reset_last_time = runtime.seconds(); //Last time the robot has reset
-  boolean resetting = false;
+  String resetting = "";
   boolean start_DOWN = false; //Is the start button down?
+  boolean Y_DOWN = false;
+  boolean A_DOWN = false;
+  boolean B_DOWN = false;
+  boolean X_DOWN = false;
   boolean arm_Sensor = false;
   
   boolean elevator_HasReset = false;
@@ -192,27 +196,51 @@ public class mechanumdrive extends LinearOpMode {
         */
         
         //RESET ROBOT CODE
-        if (start_DOWN && !gamepad2.start) {
+        if ((start_DOWN && !gamepad2.start) || (Y_DOWN && !gamepad2.Y) || (X_DOWN && !gamepad2.X) || (A_DOWN && !gamepad2.A) || (B_DOWN && !gamepad2.B)) {
           reset_last_time = now_time;
           resetting = true;
+          if (start_DOWN && !gamepad2.start) { resetting = "reset"; }
+          if (X_DOWN && !gamepad2.X) { resetting = "lowFloor"; }
+          if (A_DOWN && !gamepad2.A) { resetting = "lowPole"; }
+          if (B_DOWN && !gamepad2.B) { resetting = "medPole"; }
+          if (Y_DOWN && !gamepad2.Y) { resetting = "highPole"; }
+
+
+
+
         }
-        else if (!resetting) {
+        else if (resetting == "") {
           reset_last_time = now_time;
         }
         
-        if (now_time - reset_last_time > 0.1 && resetting) { //Reset robot
+        if (now_time - reset_last_time > 0.1 && !(resetting == "")) { //Reset robot
           arm_ROT_angle = 0;
           arm_ELEVATOR_angle = 0;
-          arm_EXT_percent = getServoDirection(0, arm_EXT_pos, 0.2);
-          arm_EXT_pos += (arm_EXT_percent-0.5) * (now_time-last_time);
-          
+          if (resetting == "reset") {
+            arm_EXT_percent = getServoDirection(0, arm_EXT_pos, 0.1);
+            arm_EXT_pos += (arm_EXT_percent-0.5) * (now_time-last_time);
+          }
+          else if (resetting == "lowFloor") {
+            arm_EXT_percent = getServoDirection(0, arm_EXT_pos, 0.1);
+            arm_EXT_pos += (arm_EXT_percent-0.5) * (now_time-last_time);
+          }
+          else if (resetting == "lowPole") {
+          }
+          else if (resetting == "medPole") {
+          }
+          else if (resetting == "highPole") {
+          }
           //Check if its time to stop resetting everything
           if (arm_EXT_percent == 0.5) {
             reset_last_time = 0;
-            resetting = false;
+            resetting = "";
           }
         }
         start_DOWN = gamepad2.start;
+        A_DOWN = gamepad2.A;
+        Y_DOWN = gamepad2.Y;
+        X_DOWN = gamepad2.X;
+        B_DOWN = gamepad2.B;
         last_time = now_time; //To find time differentials between loops.
         
         ////----VARIABLE MONITORING----////
