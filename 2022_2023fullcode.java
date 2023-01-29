@@ -196,14 +196,13 @@ public class mechanumdrive extends LinearOpMode {
         */
         
         //RESET ROBOT CODE
-        if ((start_DOWN && !gamepad2.start) || (Y_DOWN && !gamepad2.Y) || (X_DOWN && !gamepad2.X) || (A_DOWN && !gamepad2.A) || (B_DOWN && !gamepad2.B)) {
+        if ((start_DOWN && !gamepad2.start) || (Y_DOWN && !gamepad2.y) || (X_DOWN && !gamepad2.x) || (A_DOWN && !gamepad2.a) || (B_DOWN && !gamepad2.b)) {
           reset_last_time = now_time;
-          resetting = true;
           if (start_DOWN && !gamepad2.start) { resetting = "reset"; }
-          if (X_DOWN && !gamepad2.X) { resetting = "lowFloor"; }
-          if (A_DOWN && !gamepad2.A) { resetting = "lowPole"; }
-          if (B_DOWN && !gamepad2.B) { resetting = "medPole"; }
-          if (Y_DOWN && !gamepad2.Y) { resetting = "highPole"; }
+          if (X_DOWN && !gamepad2.x) { resetting = "lowFloor"; }
+          if (A_DOWN && !gamepad2.a) { resetting = "lowPole"; }
+          if (B_DOWN && !gamepad2.b) { resetting = "medPole"; }
+          if (Y_DOWN && !gamepad2.y) { resetting = "highPole"; }
 
 
 
@@ -223,30 +222,30 @@ public class mechanumdrive extends LinearOpMode {
           else if (resetting == "lowFloor") {
             arm_EXT_percent = getServoDirection(0, arm_EXT_pos, 0.1);
             arm_EXT_pos += (arm_EXT_percent-0.5) * (now_time-last_time);
-            arm_ROT_angle = 16823.594;
+            arm_ROT_angle = 16823.594f;
             wrist_ROT_percent = getServoDirection(0, wrist_ROT_pos, 0.05)-0.5;
             wrist_ROT_pos += (wrist_ROT_percent) * (now_time-last_time);
 
           }
           else if (resetting == "lowPole") {
-            arm_EXT_percent = getServoDirection(0, arm_EXT_pos, 0.1);
+            arm_EXT_percent = getServoDirection(0, arm_EXT_pos, 0.05);
             arm_EXT_pos += (arm_EXT_percent-0.5) * (now_time-last_time);
-            arm_ROT_angle = 13079.58;
+            arm_ROT_angle = 13079.58f;
             wrist_ROT_percent = getServoDirection(1.96, wrist_ROT_pos, 0.05)-0.5;
             wrist_ROT_pos += (wrist_ROT_percent) * (now_time-last_time);
           }
           else if (resetting == "medPole") {
-            arm_EXT_percent = getServoDirection(0, arm_EXT_pos, 0.1);
+            arm_EXT_percent = getServoDirection(0, arm_EXT_pos, 0.05);
             arm_EXT_pos += (arm_EXT_percent-0.5) * (now_time-last_time);
-            arm_ROT_angle = 11333.954;
+            arm_ROT_angle = 11333.954f;
             wrist_ROT_percent = getServoDirection(2.596, wrist_ROT_pos, 0.05)-0.5;
             wrist_ROT_pos += (wrist_ROT_percent) * (now_time-last_time);
             arm_ELEVATOR_angle = 1050;
           }
           else if (resetting == "highPole") {
-            arm_EXT_percent = getServoDirection(0, arm_EXT_pos, 0.1);
+            arm_EXT_percent = getServoDirection(-1.5, arm_EXT_pos, 0.05);
             arm_EXT_pos += (arm_EXT_percent-0.5) * (now_time-last_time);
-            arm_ROT_angle = 10130.439;
+            arm_ROT_angle = 10130.439f;
             wrist_ROT_percent = getServoDirection(4.26, wrist_ROT_pos, 0.05)-0.5;
             wrist_ROT_pos += (wrist_ROT_percent) * (now_time-last_time);
             arm_ELEVATOR_angle = 1050;
@@ -258,10 +257,10 @@ public class mechanumdrive extends LinearOpMode {
           }
         }
         start_DOWN = gamepad2.start;
-        A_DOWN = gamepad2.A;
-        Y_DOWN = gamepad2.Y;
-        X_DOWN = gamepad2.X;
-        B_DOWN = gamepad2.B;
+        A_DOWN = gamepad2.a;
+        Y_DOWN = gamepad2.y;
+        X_DOWN = gamepad2.x;
+        B_DOWN = gamepad2.b;
         last_time = now_time; //To find time differentials between loops.
         
         ////----VARIABLE MONITORING----////
@@ -444,12 +443,12 @@ public class mechanumdrive extends LinearOpMode {
       arm_EXT_percent = 0.5;
     }
 
-     if (gamepad2.left_trigger > 0.1) {
+     if (gamepad2.left_trigger > 0.1 && arm_EXT_pos < 0) {
       //ARM EXTENDER
       arm_EXT_percent = (gamepad2.left_trigger / 2) + 0.5;
       arm_EXT_pos += (gamepad2.left_trigger / 2) * (now_time-last_time);
     }
-    else if (gamepad2.right_trigger > 0.1) {
+    else if (gamepad2.right_trigger > 0.1 && arm_EXT_pos > -3.16) {
       arm_EXT_percent = (gamepad2.right_trigger / -2) + 0.5;
       arm_EXT_pos += (gamepad2.right_trigger / -2) * (now_time-last_time);
     }
