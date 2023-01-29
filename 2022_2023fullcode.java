@@ -223,15 +223,36 @@ public class mechanumdrive extends LinearOpMode {
           else if (resetting == "lowFloor") {
             arm_EXT_percent = getServoDirection(0, arm_EXT_pos, 0.1);
             arm_EXT_pos += (arm_EXT_percent-0.5) * (now_time-last_time);
+            arm_ROT_angle = 16823.594;
+            wrist_ROT_percent = getServoDirection(0, wrist_ROT_pos, 0.05)-0.5;
+            wrist_ROT_pos += (wrist_ROT_percent) * (now_time-last_time);
+
           }
           else if (resetting == "lowPole") {
+            arm_EXT_percent = getServoDirection(0, arm_EXT_pos, 0.1);
+            arm_EXT_pos += (arm_EXT_percent-0.5) * (now_time-last_time);
+            arm_ROT_angle = 13079.58;
+            wrist_ROT_percent = getServoDirection(1.96, wrist_ROT_pos, 0.05)-0.5;
+            wrist_ROT_pos += (wrist_ROT_percent) * (now_time-last_time);
           }
           else if (resetting == "medPole") {
+            arm_EXT_percent = getServoDirection(0, arm_EXT_pos, 0.1);
+            arm_EXT_pos += (arm_EXT_percent-0.5) * (now_time-last_time);
+            arm_ROT_angle = 11333.954;
+            wrist_ROT_percent = getServoDirection(2.596, wrist_ROT_pos, 0.05)-0.5;
+            wrist_ROT_pos += (wrist_ROT_percent) * (now_time-last_time);
+            arm_ELEVATOR_angle = 1050;
           }
           else if (resetting == "highPole") {
+            arm_EXT_percent = getServoDirection(0, arm_EXT_pos, 0.1);
+            arm_EXT_pos += (arm_EXT_percent-0.5) * (now_time-last_time);
+            arm_ROT_angle = 10130.439;
+            wrist_ROT_percent = getServoDirection(4.26, wrist_ROT_pos, 0.05)-0.5;
+            wrist_ROT_pos += (wrist_ROT_percent) * (now_time-last_time);
+            arm_ELEVATOR_angle = 1050;
           }
           //Check if its time to stop resetting everything
-          if (arm_EXT_percent == 0.5) {
+          if (arm_EXT_percent == 0.5 && wrist_ROT_percent == 0) {
             reset_last_time = 0;
             resetting = "";
           }
@@ -469,7 +490,7 @@ public class mechanumdrive extends LinearOpMode {
     
     
 
-    wrist_ROT_percent = (gamepad2.right_stick_y / -2);
+    wrist_ROT_percent = (gamepad2.right_stick_y / -2);//0.5 to 0.5
     wrist_ROT_pos += wrist_ROT_percent * (now_time-last_time);
 
 
