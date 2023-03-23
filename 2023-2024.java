@@ -60,7 +60,7 @@ public class Code20232024 extends LinearOpMode {
   
   double clock_timer_MAX = 60.0;
   double clock_timer = clock_timer_MAX;
-  double clock_active = false;
+  boolean clock_active = false;
   
   boolean claw_gripped = true;
   boolean tankDrive = true;
@@ -193,16 +193,16 @@ public class Code20232024 extends LinearOpMode {
   public void clock(double now_time) {
     if (gamepad1.start) {
       clock_active = false;
-      timer = clock_timer_MAX;
+      clock_timer = clock_timer_MAX;
     }
     else if (!clock_active && !gamepad1.atRest()) {
       clock_active = true;
     }
     
     if (clock_active) {
-      timer -= (now_time-last_time);
-      if (timer < 0.0)
-        timer = 0.0;
+      clock_timer -= (now_time-last_time);
+      if (clock_timer < 0.0)
+        clock_timer = 0.0;
     }
   }
   
