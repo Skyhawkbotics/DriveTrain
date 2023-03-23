@@ -58,7 +58,7 @@ public class Code20232024 extends LinearOpMode {
   double last_time = runtime.seconds(); //Used to find how much time has elapsed per iteration in the runtime loop.
   double reset_last_time = runtime.seconds(); //Last time the robot has reset
   
-  double clock_timer_MAX = 60.0;
+  double clock_timer_MAX = 90.0;
   double clock_timer = clock_timer_MAX;
   boolean clock_active = false;
   
@@ -191,7 +191,7 @@ public class Code20232024 extends LinearOpMode {
   }
   
   public void clock(double now_time) {
-    if (gamepad1.start) {
+    if (gamepad2.start) {
       clock_active = false;
       clock_timer = clock_timer_MAX;
     }
