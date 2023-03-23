@@ -3,6 +3,9 @@ Packages and Imports used for the code.
 */
 package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -21,11 +24,13 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
+import org.firstinspires.ftc.robotcore.external.navigation.Temperature;
+
 
 import java.lang.Math;
 
 @TeleOp(name = "2023-2024test")
-public class mechanumdrive extends LinearOpMode {
+public class Code20232024 extends LinearOpMode {
   //Clock
   private ElapsedTime     runtime = new ElapsedTime();
 
@@ -37,13 +42,16 @@ public class mechanumdrive extends LinearOpMode {
   private DcMotor whl_LF;
   private DcMotor whl_RB;
   private DcMotor whl_RF;
+  private DcMotorEx arm_ELEVATOR;
+  
+  
   
   private CRServo claw_GRIP;
   
-  float whl_LB_percent;
-  float whl_LF_percent;
-  float whl_RB_percent;
-  float whl_RF_percent;
+  double whl_LB_percent;
+  double whl_LF_percent;
+  double whl_RB_percent;
+  double whl_RF_percent;
   float arm_ELEVATOR_angle = 0;
   double claw_GRIP_angle = 0; // 0.28 to 0.85 | closed to fully opened
   
@@ -52,6 +60,7 @@ public class mechanumdrive extends LinearOpMode {
   
   boolean claw_gripped = true;
   boolean tankDrive = true;
+  boolean right_bumper_DOWN = false;
 
   @Override
   public void runOpMode() {
@@ -61,16 +70,18 @@ public class mechanumdrive extends LinearOpMode {
     whl_RB = hardwareMap.get(DcMotor.class, "right/back");
     whl_RF = hardwareMap.get(DcMotor.class, "right/front");
     
+    arm_ELEVATOR = hardwareMap.get(DcMotorEx.class, "arm");
+    
+    claw_GRIP = hardwareMap.get(CRServo.class, "claw");
+
     BNO055IMU.Parameters parameters = new BNO055IMU.Parameters(
-      new RevHubOrientationOnRobot(
-            RevHubOrientationOnRobot.LogoFacingDirection.BACKWARD,
-            RevHubOrientationOnRobot.UsbFacingDirection.DOWN
-      )
+
     );
 
     parameters.mode                = BNO055IMU.SensorMode.IMU;
     parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
     parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+    parameters.accelPowerMode      = BNO055IMU.AccelPowerMode.NORMAL;
     parameters.loggingEnabled      = false;
     
     imu = hardwareMap.get(BNO055IMU.class, "imu");
@@ -85,15 +96,10 @@ public class mechanumdrive extends LinearOpMode {
       while (opModeIsActive()) {
         //now_time, the time since the start of the program and is used to find time differentials between loop iterations
         double now_time = runtime.seconds();
-        
-        last_time = now_time; //To find time differentials between loops.
-        
-        YawPitchRollAngles robotOrientation;
-        robotOrientation = imu.getRobotYawPitchRollAngles();
+        gamepadInputHandling(now_time);
 
-        double Yaw   = robotOrientation.getYaw(AngleUnit.DEGREES);
-        double Pitch = robotOrientation.getPitch(AngleUnit.DEGREES);
-        double Roll  = robotOrientation.getRoll(AngleUnit.DEGREES);
+        last_time = now_time; //To find time differentials between loops.
+        Orientation orientation = imu.getAngularOrientation();
         
         ////----VARIABLE MONITORING----////
         
@@ -103,10 +109,12 @@ public class mechanumdrive extends LinearOpMode {
         telemetry.addData("leftsticky", gamepad1.left_stick_y);
         telemetry.addData("rightstickx", gamepad1.right_stick_x);
         telemetry.addData("rightsticky", gamepad1.right_stick_y);
+        telemetry.addData("arm_Elevator_angle", arm_ELEVATOR_angle);
         
-        telemetry.addData("y_rot", Yaw);
-        telemetry.addData("x_rot", Pitch);
-        telemetry.addData("z_rot", Roll);
+        telemetry.addData("orientation", orientation);
+        telemetry.addData("velocity", imu.getVelocity());
+        telemetry.addData("acceleration", imu.getAcceleration());
+        telemetry.addData("temperature", imu.getTemperature());
 
         telemetry.update();
         
@@ -115,81 +123,11 @@ public class mechanumdrive extends LinearOpMode {
         float drv_stick_y2 = gamepad1.right_stick_y;
         float drv_stick_x2 = gamepad1.right_stick_x;
 
-        if (!tankDrive) {
-          if (!dif) {
-            if (Math.abs(gamepad1.right_stick_y) > Math.abs(gamepad1.right_stick_x)) {
-              whl_LB_percent = drv_stick_y2;
-              whl_LF_percent = drv_stick_y2;
-              whl_RB_percent = drv_stick_y2;
-              whl_RF_percent = drv_stick_y2;
-            }
-            else {
-              if (drv_stick_x2 > 0.9) {
-                whl_RF_percent = 1;
-                whl_RB_percent = -0.7f;
-                whl_LF_percent = -1;
-                whl_LB_percent = 0.7f;
-                counterActwheels = 1;
-              }
-              
-              else if (drv_stick_x2 < -0.9) {
-                whl_LF_percent = 1;
-                whl_LB_percent = -0.7f;
-                whl_RB_percent = 0.7f;
-                whl_RF_percent = -1;
-                counterActwheels = -1;
-              }
-              
-              //If the stick WAS active last iteration, and is now NOT active, we need to apply a counterforce
-              else if (counterActwheels != 0){
-                counterActwheels_POLARITY = counterActwheels;
-                counterActwheels = 0;
-                counterActwheels_ACTIVE = now_time;
-              }
-              
-              //Check if the wheels need to be counteracted this iteration
-              if (counterActwheels_ACTIVE != 0) {
-                
-                whl_RB_percent = 0.9f * counterActwheels_POLARITY;
-                whl_LB_percent = -0.9f * counterActwheels_POLARITY;
-                whl_RF_percent = -1f * counterActwheels_POLARITY;
-                whl_LF_percent = 1f * counterActwheels_POLARITY;
-                //Make counteract force last only for 0.2 seconds
-                if (now_time-counterActwheels_ACTIVE > 0.2){
-                  counterActwheels_ACTIVE = 0;
-                }
-              }
-            }
-          }
-        else {
-          float drv_stick_y = gamepad1.left_stick_y;
-          float drv_stick_x = gamepad1.left_stick_x;
-          if (Math.abs(drv_stick_x)-Math.abs(drv_stick_y)>0.8) {
-
-            whl_LB_percent = - drv_stick_x*0.4f;
-            whl_LF_percent = - drv_stick_x*0.4f;
-            whl_RB_percent = + drv_stick_x*0.6f;
-            whl_RF_percent = + drv_stick_x*0.6f;
-          }
-          else {
-          
-            drv_stick_x = drv_stick_x * 0.2f;
-            
-            whl_LB_percent = drv_stick_y - drv_stick_x;
-            whl_LF_percent = drv_stick_y - drv_stick_x;
-            whl_RB_percent = drv_stick_y + drv_stick_x;
-            whl_RF_percent = drv_stick_y + drv_stick_x;
-          
-          }
-        }
-        } else if (tankDrive) {
-
           whl_LB_percent = gamepad1.left_stick_y;
           whl_LF_percent = gamepad1.left_stick_y;
           whl_RB_percent = gamepad1.right_stick_y;
           whl_RF_percent = gamepad1.right_stick_y;
 
-        }
         
         whl_corrections(); // Corrects/Adjusts power for correct results
         
@@ -199,6 +137,8 @@ public class mechanumdrive extends LinearOpMode {
         whl_LF.setPower(whl_LF_percent);
         whl_RF.setPower(whl_RF_percent);
         
+        arm_ELEVATOR.setPower(Help.degreesToTick(arm_ELEVATOR_angle));
+        claw_GRIP.setPower(claw_GRIP_angle);
         
         telemetry.update();
       }
@@ -209,13 +149,42 @@ public class mechanumdrive extends LinearOpMode {
   }
   
   public void gamepadInputHandling(double now_time) {
+    if (gamepad1.a&& arm_ELEVATOR_angle < 1000) {
+      arm_ELEVATOR_angle = 5;
+    }
+    else if (gamepad1.y && arm_ELEVATOR_angle > -1000) {
+      arm_ELEVATOR_angle = -5;
+    }
+    else if (!gamepad1.a || !gamepad1.y) {
+      arm_ELEVATOR_angle = 0;
+    }
     
+    if (!gamepad2.right_bumper && right_bumper_DOWN) {
+      if (claw_gripped) {
+        claw_GRIP_angle = 1;
+        claw_gripped = false;
+      }
+      else if (!claw_gripped) {
+        claw_GRIP_angle = -1;
+        claw_gripped = true;
+      }
+    }
+    
+    if (gamepad2.right_bumper) {
+      right_bumper_DOWN = true;
+      //CLAW GRIP/RELEASE
+      
+    }
+    else {
+      right_bumper_DOWN = false;
+    }
+    right_bumper_DOWN = gamepad1.right_bumper;
   }
   public void whl_corrections() {
-      whl_RF_percent = (float) (whl_RF_percent * -0.5);
-      whl_RB_percent = (float) (whl_RB_percent * 0.5);
-      whl_LF_percent = (float) (whl_LF_percent * 0.5);
-      whl_LB_percent = (float) (whl_LB_percent * -0.5);
+      whl_RF_percent = (float) (whl_RF_percent * 0.6);
+      whl_RB_percent = (float) (whl_RB_percent * -0.6);
+      whl_LF_percent = (float) (whl_LF_percent * 0.6);
+      whl_LB_percent = (float) (whl_LB_percent * 0.6);
   }
   
   public double getServoDirection(double destinationTarget, double currentTarget, double stopRange) {
