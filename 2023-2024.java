@@ -201,6 +201,8 @@ public class Code20232024 extends LinearOpMode {
     
     if (clock_active) {
       timer -= (now_time-last_time);
+      if (timer < 0.0)
+        timer = 0.0;
     }
   }
   
