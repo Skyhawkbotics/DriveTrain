@@ -58,6 +58,10 @@ public class Code20232024 extends LinearOpMode {
   double last_time = runtime.seconds(); //Used to find how much time has elapsed per iteration in the runtime loop.
   double reset_last_time = runtime.seconds(); //Last time the robot has reset
   
+  double clock_timer_MAX = 60.0;
+  double clock_timer = clock_timer_MAX;
+  double clock_active = false;
+  
   boolean claw_gripped = true;
   boolean tankDrive = true;
   boolean right_bumper_DOWN = false;
@@ -97,7 +101,7 @@ public class Code20232024 extends LinearOpMode {
         //now_time, the time since the start of the program and is used to find time differentials between loop iterations
         double now_time = runtime.seconds();
         gamepadInputHandling(now_time);
-
+        clock(now_time);
         last_time = now_time; //To find time differentials between loops.
         Orientation orientation = imu.getAngularOrientation();
         
@@ -115,7 +119,12 @@ public class Code20232024 extends LinearOpMode {
         telemetry.addData("velocity", imu.getVelocity());
         telemetry.addData("acceleration", imu.getAcceleration());
         telemetry.addData("temperature", imu.getTemperature());
-
+        telemetry.addData("", "");
+        telemetry.addData("", "");
+        telemetry.addData("", "");
+        telemetry.addData("", "");
+        telemetry.addData("Clock Active", clock_active);
+        telemetry.addData("Clock Time", clock_timer);
         telemetry.update();
         
         boolean dif = Math.abs((gamepad1.left_stick_y+gamepad1.left_stick_x))>Math.abs((gamepad1.right_stick_x+gamepad1.right_stick_y));
@@ -180,6 +189,21 @@ public class Code20232024 extends LinearOpMode {
     }
     right_bumper_DOWN = gamepad1.right_bumper;
   }
+  
+  public void clock(double now_time) {
+    if (gamepad1.start) {
+      clock_active = false;
+      timer = clock_timer_MAX;
+    }
+    else if (!clock_active && !gamepad1.atRest()) {
+      clock_active = true;
+    }
+    
+    if (clock_active) {
+      timer -= (now_time-last_time);
+    }
+  }
+  
   public void whl_corrections() {
       whl_RF_percent = (float) (whl_RF_percent * 0.6);
       whl_RB_percent = (float) (whl_RB_percent * -0.6);
