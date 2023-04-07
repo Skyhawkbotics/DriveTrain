@@ -46,7 +46,7 @@ public class Code20232024 extends LinearOpMode {
   
   
   
-  private CRServo claw_GRIP;
+  private Servo claw_GRIP;
   
   double whl_LB_percent;
   double whl_LF_percent;
@@ -70,13 +70,13 @@ public class Code20232024 extends LinearOpMode {
   public void runOpMode() {
     //Initalize Motors and Servos
     whl_LB = hardwareMap.get(DcMotor.class, "left/back");
-    whl_LF = hardwareMap.get(DcMotor.class, "left/front");
+    //whl_LF = hardwareMap.get(DcMotor.class, "left/front");
     whl_RB = hardwareMap.get(DcMotor.class, "right/back");
-    whl_RF = hardwareMap.get(DcMotor.class, "right/front");
+    //whl_RF = hardwareMap.get(DcMotor.class, "right/front");
     
     arm_ELEVATOR = hardwareMap.get(DcMotorEx.class, "arm");
     
-    claw_GRIP = hardwareMap.get(CRServo.class, "claw");
+    claw_GRIP = hardwareMap.get(Servo.class, "claw");
 
     BNO055IMU.Parameters parameters = new BNO055IMU.Parameters(
 
@@ -143,11 +143,11 @@ public class Code20232024 extends LinearOpMode {
         //Set power of motors to their corresponding variables
         whl_LB.setPower(whl_LB_percent);
         whl_RB.setPower(whl_RB_percent);
-        whl_LF.setPower(whl_LF_percent);
-        whl_RF.setPower(whl_RF_percent);
+        //whl_LF.setPower(whl_LF_percent);
+        //whl_RF.setPower(whl_RF_percent);
         
         arm_ELEVATOR.setPower(Help.degreesToTick(arm_ELEVATOR_angle));
-        claw_GRIP.setPower(claw_GRIP_angle);
+        claw_GRIP.setPosition(claw_GRIP_angle);
         
         telemetry.update();
       }
@@ -168,13 +168,13 @@ public class Code20232024 extends LinearOpMode {
       arm_ELEVATOR_angle = 0;
     }
     
-    if (!gamepad2.right_bumper && right_bumper_DOWN) {
+    if (!gamepad1.right_bumper && right_bumper_DOWN) {
       if (claw_gripped) {
-        claw_GRIP_angle = 1;
+        claw_GRIP_angle = 0.5;
         claw_gripped = false;
       }
       else if (!claw_gripped) {
-        claw_GRIP_angle = -1;
+        claw_GRIP_angle = 0;
         claw_gripped = true;
       }
     }
@@ -208,9 +208,9 @@ public class Code20232024 extends LinearOpMode {
   
   public void whl_corrections() {
       whl_RF_percent = (float) (whl_RF_percent * 0.6);
-      whl_RB_percent = (float) (whl_RB_percent * -0.6);
+      whl_RB_percent = (float) (whl_RB_percent * -1);
       whl_LF_percent = (float) (whl_LF_percent * 0.6);
-      whl_LB_percent = (float) (whl_LB_percent * 0.6);
+      whl_LB_percent = (float) (whl_LB_percent * 0.5);
   }
   
   public double getServoDirection(double destinationTarget, double currentTarget, double stopRange) {
