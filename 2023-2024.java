@@ -52,8 +52,9 @@ public class Code20232024 extends LinearOpMode {
   double whl_LF_percent;
   double whl_RB_percent;
   double whl_RF_percent;
-  float arm_ELEVATOR_angle = 0;
+  float arm_ELEVATOR_speed = 0;
   double claw_GRIP_angle = 0; // 0.28 to 0.85 | closed to fully opened
+  float arm_ELEVATOR_POSITION;
   
   double last_time = runtime.seconds(); //Used to find how much time has elapsed per iteration in the runtime loop.
   double reset_last_time = runtime.seconds(); //Last time the robot has reset
@@ -77,6 +78,7 @@ public class Code20232024 extends LinearOpMode {
     arm_ELEVATOR = hardwareMap.get(DcMotorEx.class, "arm");
     
     claw_GRIP = hardwareMap.get(CRServo.class, "claw");
+
 
     BNO055IMU.Parameters parameters = new BNO055IMU.Parameters(
 
@@ -113,7 +115,7 @@ public class Code20232024 extends LinearOpMode {
         telemetry.addData("leftsticky", gamepad1.left_stick_y);
         telemetry.addData("rightstickx", gamepad1.right_stick_x);
         telemetry.addData("rightsticky", gamepad1.right_stick_y);
-        telemetry.addData("arm_Elevator_angle", arm_ELEVATOR_angle);
+        telemetry.addData("arm_Elevator_speed", arm_ELEVATOR_speed);
         
         telemetry.addData("orientation", orientation);
         telemetry.addData("velocity", imu.getVelocity());
@@ -125,19 +127,54 @@ public class Code20232024 extends LinearOpMode {
         telemetry.addData("", "");
         telemetry.addData("Clock Active", clock_active);
         telemetry.addData("Clock Time", clock_timer);
+        telemetry.addData("armPosition", arm_ELEVATOR_POSITION);
         telemetry.update();
         
         boolean dif = Math.abs((gamepad1.left_stick_y+gamepad1.left_stick_x))>Math.abs((gamepad1.right_stick_x+gamepad1.right_stick_y));
         
         float drv_stick_y2 = gamepad1.right_stick_y;
         float drv_stick_x2 = gamepad1.right_stick_x;
-
+        float truth = (Math.abs(gamepad1.right_stick_y) - Math.abs(gamepad1.left_stick_y) > 0) ? gamepad1.right_stick_y : gamepad1.left_stick_y;
           whl_LB_percent = gamepad1.left_stick_y;
           whl_LF_percent = gamepad1.left_stick_y;
           whl_RB_percent = gamepad1.right_stick_y;
           whl_RF_percent = gamepad1.right_stick_y;
 
+        if (gamepad1.left_bumper) {
+          whl_LB_percent = truth;
+          whl_LF_percent = truth;
+          whl_RB_percent = truth;
+          whl_RF_percent = truth;
+        }
+        /* reALLLY good at turning but ont tsrrafingin
+        if (gamepad1.dpad_right) {
+          whl_RF_percent = 1;
+          whl_RB_percent = -1.5f;
+          whl_LF_percent = -1;
+          whl_LB_percent = 1.5f;
+        }
         
+        else if (gamepad1.dpad_left) {
+          whl_LF_percent = 1;
+          whl_LB_percent = -1.5f;
+          whl_RB_percent = 1.5f;
+          whl_RF_percent = -1;
+        }
+        */
+        
+        if (gamepad1.dpad_right) {
+          whl_RF_percent = 1;
+          whl_RB_percent = -1.5f;
+          whl_LF_percent = -1;
+          whl_LB_percent = 1.5f;
+        }
+        
+        else if (gamepad1.dpad_left) {
+          whl_LF_percent = 1;
+          whl_LB_percent = -0.5f;
+          whl_RB_percent = 0.5f;
+          whl_RF_percent = -1;
+        }
         whl_corrections(); // Corrects/Adjusts power for correct results
         
         //Set power of motors to their corresponding variables
@@ -146,7 +183,7 @@ public class Code20232024 extends LinearOpMode {
         whl_LF.setPower(whl_LF_percent);
         whl_RF.setPower(whl_RF_percent);
         
-        arm_ELEVATOR.setPower(Help.degreesToTick(arm_ELEVATOR_angle));
+        arm_ELEVATOR.setPower(Help.degreesToTick(arm_ELEVATOR_speed));
         claw_GRIP.setPower(claw_GRIP_angle);
         
         telemetry.update();
@@ -158,17 +195,20 @@ public class Code20232024 extends LinearOpMode {
   }
   
   public void gamepadInputHandling(double now_time) {
-    if (gamepad1.a&& arm_ELEVATOR_angle < 1000) {
-      arm_ELEVATOR_angle = 5;
+    if (gamepad1.y&& arm_ELEVATOR_POSITION < 10000) {
+      arm_ELEVATOR_speed = 5;
+      arm_ELEVATOR_POSITION += 5;
+      
     }
-    else if (gamepad1.y && arm_ELEVATOR_angle > -1000) {
-      arm_ELEVATOR_angle = -5;
+    else if (gamepad1.a && arm_ELEVATOR_POSITION > 0) {
+      arm_ELEVATOR_speed = -5;
+      arm_ELEVATOR_POSITION += -5;
     }
     else if (!gamepad1.a || !gamepad1.y) {
-      arm_ELEVATOR_angle = 0;
+      arm_ELEVATOR_speed = 0;
     }
     
-    if (!gamepad2.right_bumper && right_bumper_DOWN) {
+    if (!gamepad1.right_bumper && right_bumper_DOWN) {
       if (claw_gripped) {
         claw_GRIP_angle = 1;
         claw_gripped = false;
@@ -208,8 +248,8 @@ public class Code20232024 extends LinearOpMode {
   
   public void whl_corrections() {
       whl_RF_percent = (float) (whl_RF_percent * 0.6);
-      whl_RB_percent = (float) (whl_RB_percent * -0.6);
-      whl_LF_percent = (float) (whl_LF_percent * 0.6);
+      whl_RB_percent = (float) (whl_RB_percent * -0.5);
+      whl_LF_percent = (float) (whl_LF_percent * 0.65);
       whl_LB_percent = (float) (whl_LB_percent * 0.6);
   }
   
