@@ -309,19 +309,27 @@ public class Code20232024 extends LinearOpMode {
   }
   
   public void rotate(String type, double angle) {
+    //set whl mode to power
+    setWheelMode("power");
+
     //Based on angle difference, rotate left / right
-    
     double angleDif = trueAngleDif(angle);
     
     //While goal is far enough away
-    while (Math.abs(orientation.firstAngle - angle) > 5) {
+    while (Math.abs(orientation.firstAngle - angle) > 2) {
       if (angleDif > 0) {
-        
+        //Rotate to the LEFT?
+        twoDriveHandling(0, -1);
       }
       else if (angleDif < 0) {
-        
+        //Rotate to the RIGHT?
+        twoDriveHandling(0, 1);
       }
+      whl_corrections();
+      setPower();
     }
+
+    //Goal is reached, function end
     
   }
   
