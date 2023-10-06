@@ -162,8 +162,8 @@ public class Code20232024 extends LinearOpMode {
         telemetry.addData("armPosition", arm_ELEVATOR.getTargetPosition());
         telemetry.update();
         
-        //twoDriveHandling();
-        autoDriveHandling();
+        twoDriveHandling();
+        //autoDriveHandling();
         whl_corrections(); // Corrects/Adjusts power for correct results
         
         //Set power of motors to their corresponding variables
