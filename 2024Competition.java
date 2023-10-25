@@ -17,7 +17,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.hardware.CRServo;
-
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
@@ -26,26 +25,14 @@ import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 import org.firstinspires.ftc.robotcore.external.navigation.Temperature;
 
-/*
-Automomous idea:
-
-Dictionary
-  Key = Motor Variable
-    Table { timeStart, position }
-
-Urgent
-  Test consistency of robot setPosition
-
-*/
-
-
 import java.lang.Math;
 
 @TeleOp(name = "2024 testing")
 public class mechanumdrive extends LinearOpMode {
-  //Clock
+  //Clock Variable
   private ElapsedTime     runtime = new ElapsedTime();
 
+  // IMU - Includes Gyroscope / Acceleromotor / Thermometer and a lot lot more random stuff
   private BNO055IMU imu;
 
 
@@ -56,14 +43,14 @@ public class mechanumdrive extends LinearOpMode {
   private DcMotorEx whl_RF;
   private DcMotorEx arm_ELEVATOR;
   
-  
-  
   private CRServo claw_GRIP;
-  
+
+  // Max ranges from -1 to 1
   double whl_LB_percent;
   double whl_LF_percent;
   double whl_RB_percent;
   double whl_RF_percent;
+  
   float arm_ELEVATOR_speed = 0;
   double claw_GRIP_angle = 0; // 0.28 to 0.85 | closed to fully opened
   float arm_ELEVATOR_POSITION;
@@ -123,7 +110,7 @@ public class mechanumdrive extends LinearOpMode {
       while (opModeIsActive()) {
         //now_time, the time since the start of the program and is used to find time differentials between loop iterations
         double now_time = runtime.seconds();
-        if (clock_timer > 0) {
+        if (clock_timer >= 0) {
           gamepadInputHandling(now_time);
         }
         clock(now_time);
@@ -143,14 +130,13 @@ public class mechanumdrive extends LinearOpMode {
         telemetry.addData("orientation", orientation);
         telemetry.addData("velocity", imu.getVelocity());
         telemetry.addData("acceleration", imu.getAcceleration());
-        telemetry.addData("temperature", imu.getAngularOrientation().firstAngle);
+        telemetry.addData("firstAngle", imu.getAngularOrientation().firstAngle);
         telemetry.addData("", "");
         telemetry.addData("", "");
         telemetry.addData("", "");
         telemetry.addData("", "");
         telemetry.addData("Clock Active", clock_active);
         telemetry.addData("Clock Time", Math.floor(clock_timer));
-        //telemetry.addData("armPosition", arm_ELEVATOR.getTargetPosition());
         telemetry.update();
         
         //twoDriveHandling(gamepad1.left_stick_y, gamepad1.left_stick_x);
@@ -158,7 +144,7 @@ public class mechanumdrive extends LinearOpMode {
         tankDriveHandling();
         whl_corrections(); // Corrects/Adjusts power for correct results
         
-        //Set power of motors to their corresponding variables
+        //Set power of motors to their corresponding variables when clock is 0
         if (clock_timer <= 0) {
           whl_LB_percent = 0;
           whl_RB_percent = 0;
@@ -177,7 +163,7 @@ public class mechanumdrive extends LinearOpMode {
     whl_LF.setPower(whl_LF_percent);
     whl_RF.setPower(whl_RF_percent);
     
-    /*
+    /* -- This code block is to be used during autonomoous mode.
     whl_LB.setTargetPosition((int) whl_LB_percent);
     whl_RB.setTargetPosition((int) whl_RB_percent);
     whl_LF.setTargetPosition((int) whl_LF_percent);
@@ -189,42 +175,7 @@ public class mechanumdrive extends LinearOpMode {
   }
   
   public void gamepadInputHandling(double now_time) {
-    claw_GRIP_angle = gamepad2.left_stick_y;
-    /*
-    if (gamepad1.y && (arm_ELEVATOR.getTargetPosition() < 2200)) {
-      if (arm_ELEVATOR.getTargetPosition() > 1800)
-        arm_ELEVATOR_speed += 15;
-      else 
-        arm_ELEVATOR_speed += 30;
-    }
-    else if (gamepad1.a && (arm_ELEVATOR.getTargetPosition() >0)) {
-      arm_ELEVATOR_speed += -30;
-    }
-    else if (!gamepad1.a && !gamepad1.y) {
-      //arm_ELEVATOR_speed = 0;
-    }
     
-    if (!gamepad1.right_bumper && right_bumper_DOWN) {
-      if (claw_gripped) {
-        claw_GRIP_angle = 1;
-        claw_gripped = false;
-      }
-      else if (!claw_gripped) {
-        claw_GRIP_angle = -1;
-        claw_gripped = true;
-      }
-    }
-    
-    if (gamepad2.right_bumper) {
-      right_bumper_DOWN = true;
-      //CLAW GRIP/RELEASE
-      
-    }
-    else {
-      right_bumper_DOWN = false;
-    }
-    right_bumper_DOWN = gamepad1.right_bumper;
-    */
   }
   
   public void clock(double now_time) {
