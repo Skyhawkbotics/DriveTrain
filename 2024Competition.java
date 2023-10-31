@@ -42,7 +42,6 @@ public class mechanumdrive extends LinearOpMode {
   private DcMotorEx whl_RB;
   private DcMotorEx whl_RF;
   private DcMotorEx arm_ELEVATOR;
-  
   private CRServo claw_GRIP;
 
   // Max ranges from -1 to 1
@@ -51,19 +50,12 @@ public class mechanumdrive extends LinearOpMode {
   double whl_RB_percent;
   double whl_RF_percent;
   
-  float arm_ELEVATOR_speed = 0;
-  double claw_GRIP_angle = 0; // 0.28 to 0.85 | closed to fully opened
-  float arm_ELEVATOR_POSITION;
-  
   double last_time = runtime.seconds(); //Used to find how much time has elapsed per iteration in the runtime loop.
   double reset_last_time = runtime.seconds(); //Last time the robot has reset
   
   double clock_timer_MAX = 900000.0;
   double clock_timer = clock_timer_MAX;
   boolean clock_active = false;
-  
-  boolean claw_gripped = true;
-  boolean right_bumper_DOWN = false;
   
   double startRobotAngle = 0.0;
   Orientation orientation = null;
@@ -81,18 +73,13 @@ public class mechanumdrive extends LinearOpMode {
     claw_GRIP = hardwareMap.get(CRServo.class, "claw");
 
 
-    BNO055IMU.Parameters parameters = new BNO055IMU.Parameters(
-
-    );
-
+    BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
     parameters.mode                = BNO055IMU.SensorMode.IMU;
     parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
     parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
     parameters.accelPowerMode      = BNO055IMU.AccelPowerMode.NORMAL;
     parameters.loggingEnabled      = false;
-    
     imu = hardwareMap.get(BNO055IMU.class, "imu");
-
     imu.initialize(parameters);
     orientation = imu.getAngularOrientation();
     startRobotAngle = orientation.firstAngle;
@@ -100,9 +87,18 @@ public class mechanumdrive extends LinearOpMode {
     telemetry.addData("Mode", "calibrating...");
     telemetry.update();
     
-    
     setWheelMode("power");
     
+    //April Tag Testing
+    
+    Blegh myDetector = AprilTagIdCode.createAprilTagDetector("Camera1");
+    AprilTagIdCode.startAprilTagDetector(
+      
+    );
+
+
+
+
     waitForStart();
     
     if (opModeIsActive()) {
@@ -120,27 +116,13 @@ public class mechanumdrive extends LinearOpMode {
         
         ////----VARIABLE MONITORING----////
         
-        telemetry.addData("righttrigger", gamepad1.right_trigger);
-        telemetry.addData("lefttrigger", gamepad1.left_trigger);
-        telemetry.addData("leftstickx", gamepad1.left_stick_x);
-        telemetry.addData("leftsticky", gamepad1.left_stick_y);
-        telemetry.addData("rightstickx", gamepad1.right_stick_x);
-        telemetry.addData("rightsticky", gamepad1.right_stick_y);
         telemetry.addData("arm_Elevator_speed", arm_ELEVATOR_speed);
         telemetry.addData("orientation", orientation);
         telemetry.addData("velocity", imu.getVelocity());
         telemetry.addData("acceleration", imu.getAcceleration());
         telemetry.addData("firstAngle", imu.getAngularOrientation().firstAngle);
-        telemetry.addData("", "");
-        telemetry.addData("", "");
-        telemetry.addData("", "");
-        telemetry.addData("", "");
-        telemetry.addData("Clock Active", clock_active);
-        telemetry.addData("Clock Time", Math.floor(clock_timer));
         telemetry.update();
         
-        //twoDriveHandling(gamepad1.left_stick_y, gamepad1.left_stick_x);
-        //autoDriveHandling();
         tankDriveHandling();
         whl_corrections(); // Corrects/Adjusts power for correct results
         
@@ -211,12 +193,6 @@ public class mechanumdrive extends LinearOpMode {
       */
   }
   
-  public double getServoDirection(double destinationTarget, double currentTarget, double stopRange) {
-    double polarity = (destinationTarget>currentTarget) ? 1 : 0;
-    polarity = (Math.abs(destinationTarget-currentTarget)>stopRange) ? polarity : 0.5;
-    return polarity;
-  }
-  
   public void setWheelMode(String mode){
     if (mode == "position") {
       whl_LB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -283,21 +259,7 @@ public class mechanumdrive extends LinearOpMode {
     
   }
   
-  public double trueAngleDif(double angle) {
-    // Case 1: 179, -179, true dif is 2, actual dif is 358
-    // Case 2: -2, 2, true dif is 4, actual dif 4
-    // Case 1: 179, 1, true dif is 178, actual dif 178
-    
-    double actualDif = Math.abs(imu.getAngularOrientation().firstAngle - angle);
-    double polarity = Math.signum(imu.getAngularOrientation().firstAngle - angle);
-    
-    if (actualDif < 180) {
-      return actualDif * polarity;
-    }
-    else {
-      return (360.0 - actualDif) * polarity;
-    }
-  }
+  //Ready
   
   public void twoDriveHandling(double Y, double X) {
     whl_LB_percent = 0;
@@ -319,38 +281,6 @@ public class mechanumdrive extends LinearOpMode {
     whl_LF_percent = whl_LF_percent/1.5;
     whl_RB_percent = whl_RB_percent/1.5;
     whl_RF_percent = whl_RF_percent/1.5;
-  }
-  
-  public void halfHalfDriveHandling() {
-    whl_LB_percent = 0;
-    whl_LF_percent = 0;
-    whl_RB_percent = 0;
-    whl_RF_percent = 0;
-    
-    whl_LB_percent += gamepad1.left_stick_y;
-    whl_LF_percent += gamepad1.left_stick_y;
-    whl_RB_percent += gamepad1.left_stick_y;
-    whl_RF_percent += gamepad1.left_stick_y;
-    
-    whl_LB_percent -= gamepad1.left_stick_x*1.5;
-    whl_LF_percent += gamepad1.left_stick_x;
-    whl_RB_percent += gamepad1.left_stick_x*1.5;
-    whl_RF_percent -= gamepad1.left_stick_x;
-    
-    whl_LB_percent += gamepad1.right_stick_y;
-    whl_LF_percent += gamepad1.right_stick_y;
-    whl_RB_percent += gamepad1.right_stick_y;
-    whl_RF_percent += gamepad1.right_stick_y;
-    
-    whl_LB_percent -= gamepad1.right_stick_x*1.5;
-    whl_LF_percent += gamepad1.right_stick_x;
-    whl_RB_percent += gamepad1.right_stick_x*1.5;
-    whl_RF_percent -= gamepad1.right_stick_x;
-    
-    whl_LB_percent = whl_LB_percent/3;
-    whl_LF_percent = whl_LF_percent/3;
-    whl_RB_percent = whl_RB_percent/3;
-    whl_RF_percent = whl_RF_percent/3;
   }
   
   public void tankDriveHandling() {
