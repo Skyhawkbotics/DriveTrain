@@ -1,7 +1,7 @@
 /*
 Packages and Imports used for the code.
 */
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -24,6 +24,17 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 import org.firstinspires.ftc.robotcore.external.navigation.Temperature;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
+import org.firstinspires.ftc.teamcode.Help;
+
+import java.util.List;
 
 import java.lang.Math;
 
@@ -60,6 +71,18 @@ public class mechanumdrive extends LinearOpMode {
   double startRobotAngle = 0.0;
   Orientation orientation = null;
   
+  //aprilTag setup
+  private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
+
+  /**
+   * The variable to store our instance of the AprilTag processor.
+   */
+   private AprilTagProcessor aprilTag;
+   /**
+    * The variable to store our instance of the vision portal.
+   */
+   private VisionPortal visionPortal;
+  
   @Override
   public void runOpMode() {
     //Initalize Motors and Servos
@@ -70,7 +93,7 @@ public class mechanumdrive extends LinearOpMode {
     
     //arm_ELEVATOR = hardwareMap.get(DcMotorEx.class, "arm");
     
-    claw_GRIP = hardwareMap.get(CRServo.class, "claw");
+    //claw_GRIP = hardwareMap.get(CRServo.class, "claw");
 
 
     BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -91,12 +114,17 @@ public class mechanumdrive extends LinearOpMode {
     
     //April Tag Testing
     
-    Blegh myDetector = AprilTagIdCode.createAprilTagDetector("Camera1");
-    AprilTagIdCode.startAprilTagDetector(
+    //Blegh myDetector = AprilTagIdCode.createAprilTagDetector("Camera1");
+    //AprilTagIdCode.startAprilTagDetector(
       
-    );
+    //);
 
-
+    //AprilTag
+    initAprilTag();
+    // Wait for the DS start button to be touched.
+    telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
+    telemetry.addData(">", "Touch Play to start OpMode");
+    telemetry.update();
 
 
     waitForStart();
@@ -104,9 +132,37 @@ public class mechanumdrive extends LinearOpMode {
     if (opModeIsActive()) {
       // Start the loop
       while (opModeIsActive()) {
+        
+        //AprilTag Stuff START
+        
+        telemetryAprilTag();
+
+        // Push telemetry to the Driver Station.
+        telemetry.update();
+
+        // Save CPU resources; can resume streaming when needed.
+        if (gamepad1.dpad_down) {
+            visionPortal.stopStreaming();
+      } else if (gamepad1.dpad_up) {
+            visionPortal.resumeStreaming();
+      }
+
+       // Share the CPU.
+      sleep(20);
+      }
+
+    // Save more CPU resources when camera is no longer needed.
+    visionPortal.close();
+    /**
+     * Initialize the AprilTag processor.
+     */
+    
+    //END OF APRIL TAG STUFF
+    
+    
         //now_time, the time since the start of the program and is used to find time differentials between loop iterations
         double now_time = runtime.seconds();
-        if (clock_timer >= 0) {
+        if (clock_timer >= 0.0) {
           gamepadInputHandling(now_time);
         }
         clock(now_time);
@@ -116,7 +172,6 @@ public class mechanumdrive extends LinearOpMode {
         
         ////----VARIABLE MONITORING----////
         
-        telemetry.addData("arm_Elevator_speed", arm_ELEVATOR_speed);
         telemetry.addData("orientation", orientation);
         telemetry.addData("velocity", imu.getVelocity());
         telemetry.addData("acceleration", imu.getAcceleration());
@@ -136,7 +191,6 @@ public class mechanumdrive extends LinearOpMode {
         setPower();
       }
     }
-  }
   
   public void setPower() {
     
@@ -152,7 +206,7 @@ public class mechanumdrive extends LinearOpMode {
     whl_RF.setTargetPosition((int) whl_RF_percent);
     */
     //arm_ELEVATOR.setTargetPosition(Help.degreesToTick(arm_ELEVATOR_speed));
-    claw_GRIP.setPower(claw_GRIP_angle);
+    //claw_GRIP.setPower(claw_GRIP_angle);
     //telemetry.update();
   }
   
@@ -236,11 +290,11 @@ public class mechanumdrive extends LinearOpMode {
     setWheelMode("power");
     
     //Based on angle difference, rotate left / right
-    double angleDif = trueAngleDif(angle);
+    double angleDif = Help.trueAngleDif(angle, imu.getAngularOrientation().firstAngle);
     
     //While goal is far enough away
     while (Math.abs(imu.getAngularOrientation().firstAngle - angle) > 5 && opModeIsActive()) {
-      angleDif = trueAngleDif(angle);
+      angleDif = Help.trueAngleDif(angle, imu.getAngularOrientation().firstAngle);
       telemetry.addData("a", angleDif);
       telemetry.addData("b", imu.getAngularOrientation().firstAngle);
       telemetry.update();
@@ -330,6 +384,55 @@ public class mechanumdrive extends LinearOpMode {
       whl_RF_percent = -1;
     }
    }
+   
+   private void initAprilTag() {
+
+        // Create the AprilTag processor the easy way.
+        aprilTag = AprilTagProcessor.easyCreateWithDefaults();
+
+        // Create the vision portal the easy way.
+        if (USE_WEBCAM) {
+            visionPortal = VisionPortal.easyCreateWithDefaults(
+                hardwareMap.get(WebcamName.class, "Webcam 1"), aprilTag);
+        } else {
+            visionPortal = VisionPortal.easyCreateWithDefaults(
+                BuiltinCameraDirection.BACK, aprilTag);
+        }
+
+    }   // end method initAprilTag()
+
+    /**
+     * Add telemetry about AprilTag detections.
+     */
+    private void telemetryAprilTag() {
+
+        List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+        telemetry.addData("# AprilTags Detected", currentDetections.size());
+
+        // Step through the list of detections and display info for each one.
+        for (AprilTagDetection detection : currentDetections) {
+            if (detection.metadata != null) {
+                telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
+                telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
+                telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
+                telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
+            } else {
+                telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
+                telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
+                
+                telemetry.update();
+            }
+        }   // end for() loop
+
+        // Add "key" information to telemetry
+        telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
+        telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
+        telemetry.addLine("RBE = Range, Bearing & Elevation");
+
+        telemetry.update();
+    }   // end method telemetryAprilTag()
+   
+   
   }
   
 
