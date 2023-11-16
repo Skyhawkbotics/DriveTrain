@@ -77,4 +77,17 @@ public class Help {
       return (360.0 - actualDif) * polarity;
     }
   }
+
+  public double getAverage_aprilTagInfos(double[][] aprilTagInfos, int index) {
+
+    int output = 0;
+    int MAX_ITERATIONS = 3;
+
+    for (int i = 0; i < MAX_ITERATIONS; i++) {
+      output += aprilTagInfos[i][index];
+    }
+
+    output = output / MAX_ITERATIONS;
+    return output;
+  }
 }

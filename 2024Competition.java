@@ -70,6 +70,8 @@ public class mechanumdrive extends LinearOpMode {
   
   double startRobotAngle = 0.0;
   Orientation orientation = null;
+
+  int iterations = 0;
   
   //aprilTag setup
   private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
@@ -82,6 +84,7 @@ public class mechanumdrive extends LinearOpMode {
     * The variable to store our instance of the vision portal.
    */
    private VisionPortal visionPortal;
+   double[][] aprilTagInfos;
   
   @Override
   public void runOpMode() {
@@ -131,35 +134,23 @@ public class mechanumdrive extends LinearOpMode {
     
     if (opModeIsActive()) {
       // Start the loop
+      rotate("", startRobotAngle-90.0);
+
       while (opModeIsActive()) {
         
         //AprilTag Stuff START
+
+        if (iterations % 100 == 0 ) {
+          aprilTagInfos = telemetryAprilTag();
+        }
         
-        telemetryAprilTag();
+        double yaw = Help.getAverage_aprilTagInfos(aprilTagInfos, 5)
 
-        // Push telemetry to the Driver Station.
-        telemetry.update();
-
-        // Save CPU resources; can resume streaming when needed.
-        if (gamepad1.dpad_down) {
-            visionPortal.stopStreaming();
-      } else if (gamepad1.dpad_up) {
-            visionPortal.resumeStreaming();
-      }
-
-       // Share the CPU.
-      sleep(20);
-      }
-
-    // Save more CPU resources when camera is no longer needed.
-    visionPortal.close();
-    /**
-     * Initialize the AprilTag processor.
-     */
-    
-    //END OF APRIL TAG STUFF
-    
-    
+        if (math.abs(yaw) > 5 && aprilTagInfos != null) {
+          rotate("", imu.getAngularOrientation.firstAngle + yaw)
+        }
+      
+      
         //now_time, the time since the start of the program and is used to find time differentials between loop iterations
         double now_time = runtime.seconds();
         if (clock_timer >= 0.0) {
@@ -168,6 +159,7 @@ public class mechanumdrive extends LinearOpMode {
         clock(now_time);
         last_time = now_time; //To find time differentials between loops.
         orientation = imu.getAngularOrientation();
+        iterations +=1;
 
         
         ////----VARIABLE MONITORING----////
@@ -189,7 +181,10 @@ public class mechanumdrive extends LinearOpMode {
           whl_RF_percent = 0;
         }
         setPower();
+        }
       }
+    // Save more CPU resources when camera is no longer needed.
+    visionPortal.close();
     }
   
   public void setPower() {
@@ -198,7 +193,10 @@ public class mechanumdrive extends LinearOpMode {
     whl_RB.setPower(-whl_RB_percent);
     whl_LF.setPower(whl_LF_percent);
     whl_RF.setPower(whl_RF_percent);
-    
+    whl_LB_percent = 0;
+    whl_RB_percent = 0;
+    whl_LF_percent = 0;
+    whl_RF_percent = 0;
     /* -- This code block is to be used during autonomoous mode.
     whl_LB.setTargetPosition((int) whl_LB_percent);
     whl_RB.setTargetPosition((int) whl_RB_percent);
@@ -292,23 +290,20 @@ public class mechanumdrive extends LinearOpMode {
     //Based on angle difference, rotate left / right
     double angleDif = Help.trueAngleDif(angle, imu.getAngularOrientation().firstAngle);
     
-    //While goal is far enough away
-    while (Math.abs(imu.getAngularOrientation().firstAngle - angle) > 5 && opModeIsActive()) {
-      angleDif = Help.trueAngleDif(angle, imu.getAngularOrientation().firstAngle);
-      telemetry.addData("a", angleDif);
-      telemetry.addData("b", imu.getAngularOrientation().firstAngle);
-      telemetry.update();
-      if (angleDif > 0) {
-        //Rotate to the LEFT?
-        twoDriveHandling(0, -1.0);
-      }
-      else if (angleDif < 0) {
-        //Rotate to the RIGHT?
-        twoDriveHandling(0, 1.0);
-      }
-      whl_corrections();
-      setPower();
+    angleDif = Help.trueAngleDif(angle, imu.getAngularOrientation().firstAngle);
+    //telemetry.addData("a", angleDif);
+    //telemetry.addData("b", imu.getAngularOrientation().firstAngle);
+    //telemetry.update();
+    if (angleDif > 0) {
+      //Rotate to the LEFT?
+      twoDriveHandling(0, -1.0);
     }
+    else if (angleDif < 0) {
+      //Rotate to the RIGHT?
+      twoDriveHandling(0, 1.0);
+    }
+    whl_corrections();
+    setPower();
     //Goal is reached, function end
     
   }
@@ -343,18 +338,9 @@ public class mechanumdrive extends LinearOpMode {
     float drv_stick_y2 = gamepad1.right_stick_y;
     float drv_stick_x2 = gamepad1.right_stick_x;
     float truth = (Math.abs(gamepad1.right_stick_y) - Math.abs(gamepad1.left_stick_y) > 0) ? gamepad1.right_stick_y : gamepad1.left_stick_y;
+  
     
-      whl_LB_percent = gamepad1.left_stick_y;
-      whl_LF_percent = gamepad1.left_stick_y;
-      whl_RB_percent = gamepad1.right_stick_y;
-      whl_RF_percent = gamepad1.right_stick_y;
 
-    if (gamepad1.left_bumper) {
-      whl_LB_percent = truth;
-      whl_LF_percent = truth;
-      whl_RB_percent = truth;
-      whl_RF_percent = truth;
-    }
     /*
     if (gamepad1.dpad_right) {
       whl_RF_percent = 2;
@@ -371,17 +357,23 @@ public class mechanumdrive extends LinearOpMode {
     }*/
     
     if (gamepad1.left_stick_y > 0.9 && gamepad1.right_stick_y < -0.9) {
-      whl_RF_percent = 1;
-      whl_RB_percent = -1.5f;
-      whl_LF_percent = -1;
-      whl_LB_percent = 1.5f;
+      whl_RF_percent += 1;
+      whl_RB_percent += -1.5f;
+      whl_LF_percent += -1;
+      whl_LB_percent += 1.5f;
     }
     
     else if (gamepad1.left_stick_y < -0.9 && gamepad1.right_stick_y > 0.9) {
-      whl_LF_percent = 1;
-      whl_LB_percent = -1.5f;
-      whl_RB_percent = 1.5f;
-      whl_RF_percent = -1;
+      whl_LF_percent += 1;
+      whl_LB_percent += -1.5f;
+      whl_RB_percent += 1.5f;
+      whl_RF_percent += -1;
+    }
+    else {
+      whl_LB_percent += gamepad1.left_stick_y;
+      whl_LF_percent += gamepad1.left_stick_y;
+      whl_RB_percent += gamepad1.right_stick_y;
+      whl_RF_percent += gamepad1.right_stick_y;
     }
    }
    
@@ -408,14 +400,24 @@ public class mechanumdrive extends LinearOpMode {
 
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
         telemetry.addData("# AprilTags Detected", currentDetections.size());
-
+        double[][] aprilTagInfos = new double[3][9];
         // Step through the list of detections and display info for each one.
+        int iteration = 0;
         for (AprilTagDetection detection : currentDetections) {
             if (detection.metadata != null) {
                 telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
                 telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
                 telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
                 telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
+                aprilTagInfos[iteration][0] = detection.ftcPose.x;
+                aprilTagInfos[iteration][1] = detection.ftcPose.y;
+                aprilTagInfos[iteration][2] = detection.ftcPose.z;
+                aprilTagInfos[iteration][3] = detection.ftcPose.pitch;
+                aprilTagInfos[iteration][4] = detection.ftcPose.roll;
+                aprilTagInfos[iteration][5] = detection.ftcPose.yaw;
+                aprilTagInfos[iteration][6] = detection.ftcPose.range;
+                aprilTagInfos[iteration][7] = detection.ftcPose.bearing;
+                aprilTagInfos[iteration][8] = detection.ftcPose.elevation;
             } else {
                 telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
                 telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
@@ -430,6 +432,7 @@ public class mechanumdrive extends LinearOpMode {
         telemetry.addLine("RBE = Range, Bearing & Elevation");
 
         telemetry.update();
+        return aprilTagInfos;
     }   // end method telemetryAprilTag()
    
    
