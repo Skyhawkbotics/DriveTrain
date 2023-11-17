@@ -85,6 +85,7 @@ public class mechanumdrive extends LinearOpMode {
    */
    private VisionPortal visionPortal;
    double[][] aprilTagInfos;
+   double desiredRobotAngle = 0.0;
   
   @Override
   public void runOpMode() {
@@ -139,15 +140,16 @@ public class mechanumdrive extends LinearOpMode {
       while (opModeIsActive()) {
         
         //AprilTag Stuff START
-
-        if (iterations % 100 == 0 ) {
+        int aprilTagsDetected = 0;
+        if (iterations % 10 == 0 ) {
           aprilTagInfos = telemetryAprilTag();
         }
-        
-        double yaw = Help.getAverage_aprilTagInfos(aprilTagInfos, 5)
-
-        if (math.abs(yaw) > 5 && aprilTagInfos != null) {
-          rotate("", imu.getAngularOrientation.firstAngle + yaw)
+        double yaw = Help.getAverage_aprilTagInfos(aprilTagInfos, 5);
+        if ((int) aprilTagInfos[9][0] != 0) {
+          desiredRobotAngle = yaw + imu.getAngularOrientation().firstAngle;
+        }
+        if (Math.abs(yaw) > 2 && aprilTagInfos != null) {
+          rotate("", desiredRobotAngle);
         }
       
       
@@ -232,10 +234,10 @@ public class mechanumdrive extends LinearOpMode {
     //1st mult: individual wheel balance
     //2nd mult: better rotation (weaker front wheels)
     //3rd mult: weaker overall wheels
-      whl_RF_percent = (float) (whl_RF_percent * 0.65 * 0.7 * 0.6);
-      whl_RB_percent = (float) (whl_RB_percent * -0.55 *1* 0.6);
-      whl_LF_percent = (float) (whl_LF_percent * 0.65 *0.7 * 0.6);
-      whl_LB_percent = (float) (whl_LB_percent * 0.6 *1*0.6);
+      whl_RF_percent = (float) (whl_RF_percent * 0.65 * 1 * 0.6);
+      whl_RB_percent = (float) (whl_RB_percent * 0.65 *1* 0.6);
+      whl_LF_percent = (float) (whl_LF_percent * 0.65 *1 * 0.6);
+      whl_LB_percent = (float) (whl_LB_percent * 0.65 *1*0.6);
       
       /* STRAFE
       whl_RF_percent = (float) (whl_RF_percent * 0.6 * 0.6);
@@ -285,7 +287,7 @@ public class mechanumdrive extends LinearOpMode {
   
   public void rotate(String type, double angle) {
     //set whl mode to power
-    setWheelMode("power");
+    //setWheelMode("power");
     
     //Based on angle difference, rotate left / right
     double angleDif = Help.trueAngleDif(angle, imu.getAngularOrientation().firstAngle);
@@ -302,8 +304,6 @@ public class mechanumdrive extends LinearOpMode {
       //Rotate to the RIGHT?
       twoDriveHandling(0, 1.0);
     }
-    whl_corrections();
-    setPower();
     //Goal is reached, function end
     
   }
@@ -321,9 +321,9 @@ public class mechanumdrive extends LinearOpMode {
     whl_RB_percent += Y;
     whl_RF_percent += Y;
     
-    whl_LB_percent -= X*1.5;
+    whl_LB_percent += X;
     whl_LF_percent += X;
-    whl_RB_percent += X*1.5;
+    whl_RB_percent -= X;
     whl_RF_percent -= X;
     
     whl_LB_percent = whl_LB_percent/1.5;
@@ -357,17 +357,17 @@ public class mechanumdrive extends LinearOpMode {
     }*/
     
     if (gamepad1.left_stick_y > 0.9 && gamepad1.right_stick_y < -0.9) {
-      whl_RF_percent += 1;
-      whl_RB_percent += -1.5f;
-      whl_LF_percent += -1;
-      whl_LB_percent += 1.5f;
+      whl_RF_percent += -1;
+      whl_RB_percent += -1f;
+      whl_LF_percent += 1;
+      whl_LB_percent += 1f;
     }
     
     else if (gamepad1.left_stick_y < -0.9 && gamepad1.right_stick_y > 0.9) {
-      whl_LF_percent += 1;
-      whl_LB_percent += -1.5f;
-      whl_RB_percent += 1.5f;
-      whl_RF_percent += -1;
+      whl_LF_percent += -1;
+      whl_LB_percent += -1f;
+      whl_RB_percent += 1f;
+      whl_RF_percent += 1;
     }
     else {
       whl_LB_percent += gamepad1.left_stick_y;
@@ -396,11 +396,11 @@ public class mechanumdrive extends LinearOpMode {
     /**
      * Add telemetry about AprilTag detections.
      */
-    private void telemetryAprilTag() {
+    private double[][] telemetryAprilTag() {
 
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
         telemetry.addData("# AprilTags Detected", currentDetections.size());
-        double[][] aprilTagInfos = new double[3][9];
+        double[][] aprilTagInfos = new double[10][9];
         // Step through the list of detections and display info for each one.
         int iteration = 0;
         for (AprilTagDetection detection : currentDetections) {
@@ -418,6 +418,7 @@ public class mechanumdrive extends LinearOpMode {
                 aprilTagInfos[iteration][6] = detection.ftcPose.range;
                 aprilTagInfos[iteration][7] = detection.ftcPose.bearing;
                 aprilTagInfos[iteration][8] = detection.ftcPose.elevation;
+                iteration+=1;
             } else {
                 telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
                 telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
@@ -432,6 +433,7 @@ public class mechanumdrive extends LinearOpMode {
         telemetry.addLine("RBE = Range, Bearing & Elevation");
 
         telemetry.update();
+        aprilTagInfos[9][0] = (double) iteration;
         return aprilTagInfos;
     }   // end method telemetryAprilTag()
    

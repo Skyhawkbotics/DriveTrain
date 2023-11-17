@@ -52,7 +52,7 @@ public class Help {
     return polarity;
   }
 
-  public double trueAngleDif(double desiredAngle, double imuAngle) {
+  public static double trueAngleDif(double desiredAngle, double imuAngle) {
     // Case 1: 179, -179, true dif is 2, actual dif is 358
     // Case 2: -2, 2, true dif is 4, actual dif 4
     // Case 1: 179, 1, true dif is 178, actual dif 178
@@ -78,7 +78,7 @@ public class Help {
     }
   }
 
-  public double getAverage_aprilTagInfos(double[][] aprilTagInfos, int index) {
+  public static double getAverage_aprilTagInfos(double[][] aprilTagInfos, int index) {
 
     int output = 0;
     int MAX_ITERATIONS = 3;
