@@ -53,7 +53,8 @@ public class mechanumdrive extends LinearOpMode {
   private DcMotorEx whl_RB;
   private DcMotorEx whl_RF;
   private DcMotorEx arm_ELEVATOR;
-  private CRServo claw_GRIP;
+  private CRServo servo_1;
+  double servo_1_power = 0.0;
 
   // Max ranges from -1 to 1
   double whl_LB_percent;
@@ -97,7 +98,7 @@ public class mechanumdrive extends LinearOpMode {
     
     //arm_ELEVATOR = hardwareMap.get(DcMotorEx.class, "arm");
     
-    //claw_GRIP = hardwareMap.get(CRServo.class, "claw");
+    servo_1 = hardwareMap.get(CRServo.class, "Blegh");
 
 
     BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -141,15 +142,19 @@ public class mechanumdrive extends LinearOpMode {
         
         //AprilTag Stuff START
         int aprilTagsDetected = 0;
-        if (iterations % 10 == 0 ) {
-          aprilTagInfos = telemetryAprilTag();
+        double[][] newAprilTagInfos = null;
+        if (iterations % 1 == 0 ) {
+          newAprilTagInfos = telemetryAprilTag();
+          if (newAprilTagInfos != null) {
+            aprilTagInfos = newAprilTagInfos;
+          }
         }
         double yaw = Help.getAverage_aprilTagInfos(aprilTagInfos, 5);
-        if ((int) aprilTagInfos[9][0] != 0) {
+        if ((int) aprilTagInfos[9][0] != 0 && newAprilTagInfos != null) {
           desiredRobotAngle = yaw + imu.getAngularOrientation().firstAngle;
         }
-        if (Math.abs(yaw) > 2 && aprilTagInfos != null) {
-          rotate("", desiredRobotAngle);
+        if (Math.abs(desiredRobotAngle-imu.getAngularOrientation().firstAngle) > 5 && aprilTagInfos != null) {
+          //rotate("", desiredRobotAngle);
         }
       
       
@@ -170,6 +175,7 @@ public class mechanumdrive extends LinearOpMode {
         telemetry.addData("velocity", imu.getVelocity());
         telemetry.addData("acceleration", imu.getAcceleration());
         telemetry.addData("firstAngle", imu.getAngularOrientation().firstAngle);
+        telemetry.addData("blegh", yaw);
         telemetry.update();
         
         tankDriveHandling();
@@ -195,6 +201,7 @@ public class mechanumdrive extends LinearOpMode {
     whl_RB.setPower(-whl_RB_percent);
     whl_LF.setPower(whl_LF_percent);
     whl_RF.setPower(whl_RF_percent);
+    servo_1.setPower(servo_1_power);
     whl_LB_percent = 0;
     whl_RB_percent = 0;
     whl_LF_percent = 0;
@@ -211,7 +218,12 @@ public class mechanumdrive extends LinearOpMode {
   }
   
   public void gamepadInputHandling(double now_time) {
-    
+    if (gamepad1.X) {
+      servo_1_power+= 0.1 * (now_time-last_time);
+    }
+    else if (gamepad1.Y) {
+      servo_1_power-= 0.1 * (now_time-last_time);
+    }
   }
   
   public void clock(double now_time) {
@@ -298,11 +310,11 @@ public class mechanumdrive extends LinearOpMode {
     //telemetry.update();
     if (angleDif > 0) {
       //Rotate to the LEFT?
-      twoDriveHandling(0, -1.0);
+      twoDriveHandling(0, -1.0 * Math.abs(angleDif / 45));
     }
     else if (angleDif < 0) {
       //Rotate to the RIGHT?
-      twoDriveHandling(0, 1.0);
+      twoDriveHandling(0, 1.0 * Math.abs(angleDif / 45));
     }
     //Goal is reached, function end
     
