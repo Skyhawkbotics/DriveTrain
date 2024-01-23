@@ -96,7 +96,7 @@ public class mechanumdrive extends LinearOpMode {
     whl_RB = hardwareMap.get(DcMotorEx.class, "right/back");
     whl_RF = hardwareMap.get(DcMotorEx.class, "right/front");
     
-    //arm_ELEVATOR = hardwareMap.get(DcMotorEx.class, "arm");
+    arm_ELEVATOR = hardwareMap.get(DcMotorEx.class, "Arm Extender");
     
     servo_1 = hardwareMap.get(CRServo.class, "Blegh");
 
@@ -212,7 +212,7 @@ public class mechanumdrive extends LinearOpMode {
     whl_LF.setTargetPosition((int) whl_LF_percent);
     whl_RF.setTargetPosition((int) whl_RF_percent);
     */
-    //arm_ELEVATOR.setTargetPosition(Help.degreesToTick(arm_ELEVATOR_speed));
+    arm_ELEVATOR.setTargetPosition(Help.degreesToTick(arm_ELEVATOR_speed));
     //claw_GRIP.setPower(claw_GRIP_angle);
     //telemetry.update();
   }
@@ -223,6 +223,13 @@ public class mechanumdrive extends LinearOpMode {
     }
     else if (gamepad1.Y) {
       servo_1_power-= 0.1 * (now_time-last_time);
+    }
+
+    if (gamepad1.dpad_up) {
+      arm_ELEVATOR_speed+= 5 * (now_time-last_time);
+    }
+    else if (gamepad1.dpad_down){
+      arm_ELEVATOR_speed-= 5* (now_time-last_time);
     }
   }
   
