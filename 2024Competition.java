@@ -64,7 +64,7 @@ public class mechanumdrive extends LinearOpMode {
   
   double last_time = runtime.seconds(); //Used to find how much time has elapsed per iteration in the runtime loop.
   double reset_last_time = runtime.seconds(); //Last time the robot has reset
-  
+  double arm_ELEVATOR_speed = 0.0;
   double clock_timer_MAX = 900000.0;
   double clock_timer = clock_timer_MAX;
   boolean clock_active = false;
@@ -98,7 +98,7 @@ public class mechanumdrive extends LinearOpMode {
     
     arm_ELEVATOR = hardwareMap.get(DcMotorEx.class, "Arm Extender");
     
-    servo_1 = hardwareMap.get(CRServo.class, "Blegh");
+    //servo_1 = hardwareMap.get(CRServo.class, "Blegh");
 
 
     BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -212,7 +212,7 @@ public class mechanumdrive extends LinearOpMode {
     whl_LF.setTargetPosition((int) whl_LF_percent);
     whl_RF.setTargetPosition((int) whl_RF_percent);
     */
-    arm_ELEVATOR.setTargetPosition(Help.degreesToTick(arm_ELEVATOR_speed));
+    arm_ELEVATOR.setTargetPosition(arm_ELEVATOR_speed);
     //claw_GRIP.setPower(claw_GRIP_angle);
     //telemetry.update();
   }
@@ -226,10 +226,10 @@ public class mechanumdrive extends LinearOpMode {
     }
 
     if (gamepad1.dpad_up) {
-      arm_ELEVATOR_speed+= 5 * (now_time-last_time);
+      arm_ELEVATOR_speed+= 30 * (now_time-last_time);
     }
     else if (gamepad1.dpad_down){
-      arm_ELEVATOR_speed-= 5* (now_time-last_time);
+      arm_ELEVATOR_speed-= 30* (now_time-last_time);
     }
   }
   
