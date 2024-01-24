@@ -104,8 +104,8 @@ public class mechanumdrive extends LinearOpMode {
     
     arm_ELEVATOR = hardwareMap.get(DcMotorEx.class, "Arm Extender");
     
-    servo_ROTATER = hardwareMap.get(CRServo.class, " ");
-    servo_CLAW = hardwareMap.get(CRServo.class, " ");
+    servo_ROTATER = hardwareMap.get(CRServo.class, "Claw Flipper");
+    servo_CLAW = hardwareMap.get(CRServo.class, "Claw Opener");
     arm_ELEVATOR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     arm_ELEVATOR.setTargetPosition(0);
     arm_ELEVATOR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
