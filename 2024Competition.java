@@ -53,8 +53,13 @@ public class mechanumdrive extends LinearOpMode {
   private DcMotorEx whl_RB;
   private DcMotorEx whl_RF;
   private DcMotorEx arm_ELEVATOR;
-  private CRServo servo_1;
-  double servo_1_power = 0.0;
+  private CRServo servo_ROTATER;
+  double servo_ROTATER_power = 0.0;
+
+  private CRServo servo_CLAW;
+  double servo_CLAW_power = 0.0;
+  boolean servo_CLAW_closed = false;
+  boolean right_bumper_DOWN = false;
 
   // Max ranges from -1 to 1
   double whl_LB_percent;
@@ -99,8 +104,8 @@ public class mechanumdrive extends LinearOpMode {
     
     arm_ELEVATOR = hardwareMap.get(DcMotorEx.class, "Arm Extender");
     
-    //servo_1 = hardwareMap.get(CRServo.class, "Blegh");
-
+    servo_ROTATER = hardwareMap.get(CRServo.class, " ");
+    servo_CLAW = hardwareMap.get(CRServo.class, " ");
     arm_ELEVATOR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     arm_ELEVATOR.setTargetPosition(0);
     arm_ELEVATOR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -205,7 +210,8 @@ public class mechanumdrive extends LinearOpMode {
     whl_RB.setPower(-whl_RB_percent);
     whl_LF.setPower(whl_LF_percent);
     whl_RF.setPower(whl_RF_percent);
-    //servo_1.setPower(servo_1_power);
+    servo_ROTATER.setPower(servo_ROTATER_power);
+    servo_CLAW.setPower(servo_CLAW_power);
     whl_LB_percent = 0;
     whl_RB_percent = 0;
     whl_LF_percent = 0;
@@ -223,10 +229,20 @@ public class mechanumdrive extends LinearOpMode {
   
   public void gamepadInputHandling(double now_time) {
     if (gamepad1.x) {
-      servo_1_power+= 0.1 * (now_time-last_time);
+      servo_ROTATER_power+= 0.1 * (now_time-last_time);
     }
     else if (gamepad1.y) {
-      servo_1_power-= 0.1 * (now_time-last_time);
+      servo_ROTATER_power-= 0.1 * (now_time-last_time);
+    }
+
+    if (gamepad1.right_bumper && !right_bumper_DOWN) {
+      right_bumper_DOWN = true;
+      servo_CLAW_power = (servo_CLAW_closed == false) ? 1 : 0;
+      servo_CLAW_closed = !servo_CLAW_closed;
+    }
+
+    if (!gamepad1.right_bumper) {
+      right_bumper_DOWN = false;
     }
 
     if (gamepad1.dpad_up) {
