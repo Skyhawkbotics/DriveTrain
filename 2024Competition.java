@@ -65,6 +65,7 @@ public class mechanumdrive extends LinearOpMode {
   double last_time = runtime.seconds(); //Used to find how much time has elapsed per iteration in the runtime loop.
   double reset_last_time = runtime.seconds(); //Last time the robot has reset
   double arm_ELEVATOR_speed = 0.0;
+  
   double clock_timer_MAX = 900000.0;
   double clock_timer = clock_timer_MAX;
   boolean clock_active = false;
@@ -100,7 +101,10 @@ public class mechanumdrive extends LinearOpMode {
     
     //servo_1 = hardwareMap.get(CRServo.class, "Blegh");
 
-
+    arm_ELEVATOR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    arm_ELEVATOR.setTargetPosition(0);
+    arm_ELEVATOR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    arm_ELEVATOR.setVelocity(1000);
     BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
     parameters.mode                = BNO055IMU.SensorMode.IMU;
     parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
@@ -175,7 +179,7 @@ public class mechanumdrive extends LinearOpMode {
         telemetry.addData("velocity", imu.getVelocity());
         telemetry.addData("acceleration", imu.getAcceleration());
         telemetry.addData("firstAngle", imu.getAngularOrientation().firstAngle);
-        telemetry.addData("blegh", yaw);
+        telemetry.addData("blegh", arm_ELEVATOR_speed);
         telemetry.update();
         
         tankDriveHandling();
@@ -201,7 +205,7 @@ public class mechanumdrive extends LinearOpMode {
     whl_RB.setPower(-whl_RB_percent);
     whl_LF.setPower(whl_LF_percent);
     whl_RF.setPower(whl_RF_percent);
-    servo_1.setPower(servo_1_power);
+    //servo_1.setPower(servo_1_power);
     whl_LB_percent = 0;
     whl_RB_percent = 0;
     whl_LF_percent = 0;
@@ -212,24 +216,24 @@ public class mechanumdrive extends LinearOpMode {
     whl_LF.setTargetPosition((int) whl_LF_percent);
     whl_RF.setTargetPosition((int) whl_RF_percent);
     */
-    arm_ELEVATOR.setTargetPosition(arm_ELEVATOR_speed);
+    arm_ELEVATOR.setTargetPosition((int)arm_ELEVATOR_speed);
     //claw_GRIP.setPower(claw_GRIP_angle);
     //telemetry.update();
   }
   
   public void gamepadInputHandling(double now_time) {
-    if (gamepad1.X) {
+    if (gamepad1.x) {
       servo_1_power+= 0.1 * (now_time-last_time);
     }
-    else if (gamepad1.Y) {
+    else if (gamepad1.y) {
       servo_1_power-= 0.1 * (now_time-last_time);
     }
 
     if (gamepad1.dpad_up) {
-      arm_ELEVATOR_speed+= 30 * (now_time-last_time);
+      arm_ELEVATOR_speed+= 5 * (now_time-last_time);
     }
     else if (gamepad1.dpad_down){
-      arm_ELEVATOR_speed-= 30* (now_time-last_time);
+      arm_ELEVATOR_speed-= 5* (now_time-last_time);
     }
   }
   
@@ -459,7 +463,6 @@ public class mechanumdrive extends LinearOpMode {
    
   }
   
-
 
 
 
