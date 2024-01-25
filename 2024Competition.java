@@ -229,15 +229,17 @@ public class mechanumdrive extends LinearOpMode {
   
   public void gamepadInputHandling(double now_time) {
     if (gamepad1.x) {
-      servo_ROTATER_power+= 0.1 * (now_time-last_time);
+      servo_ROTATER_power = 0.25;
     }
     else if (gamepad1.y) {
-      servo_ROTATER_power-= 0.1 * (now_time-last_time);
+      servo_ROTATER_power =- 0.25;
     }
-
+    if (!gamepad1.x&&!gamepad1.y) {
+      servo_ROTATER_power = 0;
+    }
     if (gamepad1.right_bumper && !right_bumper_DOWN) {
       right_bumper_DOWN = true;
-      servo_CLAW_power = (servo_CLAW_closed == false) ? 1 : 0;
+      servo_CLAW_power = (servo_CLAW_closed == false) ? 2 : 0;
       servo_CLAW_closed = !servo_CLAW_closed;
     }
 
@@ -479,6 +481,3 @@ public class mechanumdrive extends LinearOpMode {
    
   }
   
-
-
-
