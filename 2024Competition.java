@@ -61,6 +61,10 @@ public class mechanumdrive extends LinearOpMode {
   boolean servo_CLAW_closed = false;
   boolean right_bumper_DOWN = false;
 
+  private DcMotorEx claw_ELEVATOR1;
+  private DcMotorEx claw_ELEVATOR2;
+  double claw_ELEVATOR_position = 0.0;
+
   // Max ranges from -1 to 1
   double whl_LB_percent;
   double whl_LF_percent;
@@ -104,12 +108,26 @@ public class mechanumdrive extends LinearOpMode {
     
     arm_ELEVATOR = hardwareMap.get(DcMotorEx.class, "Arm Extender");
     
+    claw_ELEVATOR1 = hardwareMap.get(DcMotorEx.class, "Left String Uppy Puller");
+    claw_ELEVATOR2 = hardwareMap.get(DcMotorEx.class, "Right String Uppy Puller");
+
     servo_ROTATER = hardwareMap.get(CRServo.class, "Claw Flipper");
     servo_CLAW = hardwareMap.get(CRServo.class, "Claw Opener");
     arm_ELEVATOR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     arm_ELEVATOR.setTargetPosition(0);
     arm_ELEVATOR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     arm_ELEVATOR.setVelocity(1000);
+
+    claw_ELEVATOR1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    claw_ELEVATOR1.setTargetPosition(0);
+    claw_ELEVATOR1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    claw_ELEVATOR1.setVelocity(400);
+
+    claw_ELEVATOR2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    claw_ELEVATOR2.setTargetPosition(0);
+    claw_ELEVATOR2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    claw_ELEVATOR2.setVelocity(400);
+
     BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
     parameters.mode                = BNO055IMU.SensorMode.IMU;
     parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
@@ -223,6 +241,9 @@ public class mechanumdrive extends LinearOpMode {
     whl_RF.setTargetPosition((int) whl_RF_percent);
     */
     arm_ELEVATOR.setTargetPosition((int)arm_ELEVATOR_speed);
+    claw_ELEVATOR1.setTargetPosition((int)claw_ELEVATOR_position);
+    claw_ELEVATOR2.setTargetPosition(-(int)claw_ELEVATOR_position);
+
     //claw_GRIP.setPower(claw_GRIP_angle);
     //telemetry.update();
   }
@@ -252,6 +273,13 @@ public class mechanumdrive extends LinearOpMode {
     }
     else if (gamepad1.dpad_down){
       arm_ELEVATOR_speed-= 5* (now_time-last_time);
+    }
+
+    if (gamepad1.left_bumper) {
+      claw_ELEVATOR_position+= 2 * (now_time-last_time);
+    }
+    else if (gamepad1.left_trigger > 0.2) {
+      claw_ELEVATOR_position-= 2 * (now_time-last_time);
     }
   }
   
