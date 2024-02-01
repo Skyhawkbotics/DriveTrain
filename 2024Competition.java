@@ -213,7 +213,7 @@ public class mechanumdrive extends LinearOpMode {
         telemetry.addData("velocity", imu.getVelocity());
         telemetry.addData("acceleration", imu.getAcceleration());
         telemetry.addData("firstAngle", imu.getAngularOrientation().firstAngle);
-        telemetry.addData("blegh", claw_ELEVATOR_position);
+        telemetry.addData("blegh", alignRobot);
         telemetry.update();
         
         tankDriveHandling();
@@ -261,11 +261,11 @@ public class mechanumdrive extends LinearOpMode {
   }
   
   public void gamepadInputHandling(double now_time) {
-    if (gamepad1.start) {
+    if (gamepad1.dpad_right) {
       start_down = true;
     }
     else {
-      if (start_down) {
+      if (gamepad1.dpad_right) {
         alignRobot = !alignRobot;
         aprilTagInfos = null;
       }
@@ -390,11 +390,11 @@ public class mechanumdrive extends LinearOpMode {
     //telemetry.update();
     if (angleDif > 0) {
       //Rotate to the LEFT?
-      twoDriveHandling(0, -0.2 * Math.abs(angleDif / 45));
+      twoDriveHandling(0, -0.5 * Math.abs(angleDif / 45));
     }
     else if (angleDif < 0) {
       //Rotate to the RIGHT?
-      twoDriveHandling(0, 0.2 * Math.abs(angleDif / 45));
+      twoDriveHandling(0, 0.5 * Math.abs(angleDif / 45));
     }
     //Goal is reached, function end
     
