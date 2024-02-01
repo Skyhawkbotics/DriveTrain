@@ -78,6 +78,8 @@ public class mechanumdrive extends LinearOpMode {
   double clock_timer_MAX = 900000.0;
   double clock_timer = clock_timer_MAX;
   boolean clock_active = false;
+  boolean alignRobot = false;
+  boolean start_down = false;
   
   double startRobotAngle = 0.0;
   Orientation orientation = null;
@@ -116,17 +118,17 @@ public class mechanumdrive extends LinearOpMode {
     arm_ELEVATOR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     arm_ELEVATOR.setTargetPosition(0);
     arm_ELEVATOR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-    arm_ELEVATOR.setVelocity(1000);
+    arm_ELEVATOR.setVelocity(10000);
 
     claw_ELEVATOR1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     claw_ELEVATOR1.setTargetPosition(0);
     claw_ELEVATOR1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-    claw_ELEVATOR1.setVelocity(400);
+    claw_ELEVATOR1.setVelocity(700);
 
     claw_ELEVATOR2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     claw_ELEVATOR2.setTargetPosition(0);
     claw_ELEVATOR2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-    claw_ELEVATOR2.setVelocity(400);
+    claw_ELEVATOR2.setVelocity(700);
 
     BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
     parameters.mode                = BNO055IMU.SensorMode.IMU;
@@ -163,7 +165,7 @@ public class mechanumdrive extends LinearOpMode {
     
     if (opModeIsActive()) {
       // Start the loop
-      rotate("", startRobotAngle-90.0);
+      //rotate("", startRobotAngle-90.0);
 
       while (opModeIsActive()) {
         
@@ -180,8 +182,8 @@ public class mechanumdrive extends LinearOpMode {
         if ((int) aprilTagInfos[9][0] != 0 && newAprilTagInfos != null) {
           desiredRobotAngle = yaw + imu.getAngularOrientation().firstAngle;
         }
-        if (Math.abs(desiredRobotAngle-imu.getAngularOrientation().firstAngle) > 5 && aprilTagInfos != null) {
-          //rotate("", desiredRobotAngle);
+        if (Math.abs(desiredRobotAngle-imu.getAngularOrientation().firstAngle) > 5 && aprilTagInfos != null && alignRobot) {
+          rotate("", desiredRobotAngle);
         }
       
       
@@ -202,7 +204,7 @@ public class mechanumdrive extends LinearOpMode {
         telemetry.addData("velocity", imu.getVelocity());
         telemetry.addData("acceleration", imu.getAcceleration());
         telemetry.addData("firstAngle", imu.getAngularOrientation().firstAngle);
-        telemetry.addData("blegh", arm_ELEVATOR_speed);
+        telemetry.addData("blegh", claw_ELEVATOR_position);
         telemetry.update();
         
         tankDriveHandling();
@@ -242,20 +244,31 @@ public class mechanumdrive extends LinearOpMode {
     */
     arm_ELEVATOR.setTargetPosition((int)arm_ELEVATOR_speed);
     claw_ELEVATOR1.setTargetPosition((int)claw_ELEVATOR_position);
-    claw_ELEVATOR2.setTargetPosition(-(int)claw_ELEVATOR_position);
+    claw_ELEVATOR2.setTargetPosition((int)claw_ELEVATOR_position);
 
     //claw_GRIP.setPower(claw_GRIP_angle);
     //telemetry.update();
   }
   
   public void gamepadInputHandling(double now_time) {
-    if (gamepad1.x) {
-      servo_ROTATER_power = 0.25;
+    if (gamepad1.start) {
+      start_down = true;
     }
-    else if (gamepad1.y) {
-      servo_ROTATER_power =- 0.25;
+    else {
+      if (start_down) {
+        alignRobot = !alignRobot;
+        aprilTagInfos = null;
+      }
+      start_down = false;
     }
-    if (!gamepad1.x&&!gamepad1.y) {
+    
+    if (gamepad1.y) {
+      servo_ROTATER_power = 0.3;
+    }
+    else if (gamepad1.a) {
+      servo_ROTATER_power =- 0.3;
+    }
+    if (!gamepad1.a&&!gamepad1.y) {
       servo_ROTATER_power = 0;
     }
     if (gamepad1.right_bumper && !right_bumper_DOWN) {
@@ -269,17 +282,17 @@ public class mechanumdrive extends LinearOpMode {
     }
 
     if (gamepad1.dpad_up) {
-      arm_ELEVATOR_speed+= 5 * (now_time-last_time);
+      arm_ELEVATOR_speed+= 100 * (now_time-last_time);
     }
     else if (gamepad1.dpad_down){
-      arm_ELEVATOR_speed-= 5* (now_time-last_time);
+      arm_ELEVATOR_speed-= 100* (now_time-last_time);
     }
 
-    if (gamepad1.left_bumper) {
-      claw_ELEVATOR_position+= 2 * (now_time-last_time);
+    if (gamepad1.left_bumper && claw_ELEVATOR_position <470) {
+      claw_ELEVATOR_position+= 150 * (now_time-last_time);
     }
-    else if (gamepad1.left_trigger > 0.2) {
-      claw_ELEVATOR_position-= 2 * (now_time-last_time);
+    else if (gamepad1.left_trigger > 0.2 && claw_ELEVATOR_position >-35) {
+      claw_ELEVATOR_position-= 150 * (now_time-last_time);
     }
   }
   
@@ -367,11 +380,11 @@ public class mechanumdrive extends LinearOpMode {
     //telemetry.update();
     if (angleDif > 0) {
       //Rotate to the LEFT?
-      twoDriveHandling(0, -1.0 * Math.abs(angleDif / 45));
+      twoDriveHandling(0, -0.2 * Math.abs(angleDif / 45));
     }
     else if (angleDif < 0) {
       //Rotate to the RIGHT?
-      twoDriveHandling(0, 1.0 * Math.abs(angleDif / 45));
+      twoDriveHandling(0, 0.2 * Math.abs(angleDif / 45));
     }
     //Goal is reached, function end
     
