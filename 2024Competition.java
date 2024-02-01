@@ -70,10 +70,14 @@ public class mechanumdrive extends LinearOpMode {
   double whl_LF_percent;
   double whl_RB_percent;
   double whl_RF_percent;
+
+  final double WHEEL_METER_CONSTANT = 1;
   
   double last_time = runtime.seconds(); //Used to find how much time has elapsed per iteration in the runtime loop.
   double reset_last_time = runtime.seconds(); //Last time the robot has reset
   double arm_ELEVATOR_speed = 0.0;
+
+  private String wheelMode = "power";
   
   double clock_timer_MAX = 900000.0;
   double clock_timer = clock_timer_MAX;
@@ -182,8 +186,13 @@ public class mechanumdrive extends LinearOpMode {
         if ((int) aprilTagInfos[9][0] != 0 && newAprilTagInfos != null) {
           desiredRobotAngle = yaw + imu.getAngularOrientation().firstAngle;
         }
-        if (Math.abs(desiredRobotAngle-imu.getAngularOrientation().firstAngle) > 5 && aprilTagInfos != null && alignRobot) {
-          rotate("", desiredRobotAngle);
+        if (aprilTagInfos != null && alignRobot) {
+          if (Math.abs(desiredRobotAngle-imu.getAngularOrientation().firstAngle) > 5) {
+            rotate("", desiredRobotAngle);
+          }
+          else {
+            aprilTagInfos = null;
+          }
         }
       
       
@@ -225,26 +234,27 @@ public class mechanumdrive extends LinearOpMode {
     }
   
   public void setPower() {
-    
-    whl_LB.setPower(-whl_LB_percent);
-    whl_RB.setPower(-whl_RB_percent);
-    whl_LF.setPower(whl_LF_percent);
-    whl_RF.setPower(whl_RF_percent);
-    servo_ROTATER.setPower(servo_ROTATER_power);
-    servo_CLAW.setPower(servo_CLAW_power);
-    whl_LB_percent = 0;
-    whl_RB_percent = 0;
-    whl_LF_percent = 0;
-    whl_RF_percent = 0;
-    /* -- This code block is to be used during autonomoous mode.
-    whl_LB.setTargetPosition((int) whl_LB_percent);
-    whl_RB.setTargetPosition((int) whl_RB_percent);
-    whl_LF.setTargetPosition((int) whl_LF_percent);
-    whl_RF.setTargetPosition((int) whl_RF_percent);
-    */
+    if (wheelMode == "power") {
+      whl_LB.setPower(whl_LB_percent);
+      whl_RB.setPower(whl_RB_percent);
+      whl_LF.setPower(-whl_LF_percent);
+      whl_RF.setPower(-whl_RF_percent);
+      whl_LB_percent = 0;
+      whl_RB_percent = 0;
+      whl_LF_percent = 0;
+      whl_RF_percent = 0;
+    }
+    else if (wheelMode == "position") {
+        whl_LB.setTargetPosition((int) whl_LB_percent);
+        whl_RB.setTargetPosition((int) whl_RB_percent);
+        whl_LF.setTargetPosition((int) -whl_LF_percent);
+        whl_RF.setTargetPosition((int) -whl_RF_percent);
+    }
     arm_ELEVATOR.setTargetPosition((int)arm_ELEVATOR_speed);
     claw_ELEVATOR1.setTargetPosition((int)claw_ELEVATOR_position);
     claw_ELEVATOR2.setTargetPosition((int)claw_ELEVATOR_position);
+    servo_ROTATER.setPower(servo_ROTATER_power);
+    servo_CLAW.setPower(servo_CLAW_power);
 
     //claw_GRIP.setPower(claw_GRIP_angle);
     //telemetry.update();
@@ -360,11 +370,11 @@ public class mechanumdrive extends LinearOpMode {
     
   }
   
-  public void autoDriveHandling() {
-    whl_LB_percent = 1000;
-    whl_LF_percent = 1000;
-    whl_RB_percent = 1000;
-    whl_RF_percent = 1000;
+  public void autoDriveHandling(double LB, double LF, double RB, double RF) {
+    whl_LB_percent += LB*WHEEL_METER_CONSTANT;
+    whl_LF_percent += LF*WHEEL_METER_CONSTANT;
+    whl_RB_percent += RB*WHEEL_METER_CONSTANT;
+    whl_RF_percent += RF*WHEEL_METER_CONSTANT;
   }
   
   public void rotate(String type, double angle) {
