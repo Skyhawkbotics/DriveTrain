@@ -38,6 +38,19 @@ import java.util.List;
 
 import java.lang.Math;
 
+/*Todo:
+Coding presets
+  High elevator rotation + low // needs testing
+    on up input + a
+    down input + a
+  Rotate 90 // needs testing
+    d + dpad right / left
+Camera Rotation jittery // needs testing
+  Check if the power is incorrectly set
+  Check the IF statement for rotation for consistency
+
+*/
+
 @TeleOp(name = "2024 testing")
 public class mechanumdrive extends LinearOpMode {
   //Clock Variable
@@ -90,6 +103,10 @@ public class mechanumdrive extends LinearOpMode {
 
   int iterations = 0;
   
+  //Presets
+  boolean joystick_active = false;
+  boolean rightangle_active = false;
+
   //aprilTag setup
   private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
 
@@ -182,11 +199,11 @@ public class mechanumdrive extends LinearOpMode {
             aprilTagInfos = newAprilTagInfos;
           }
         }
-        double yaw = Help.getAverage_aprilTagInfos(aprilTagInfos, 5);
-        if ((int) aprilTagInfos[9][0] != 0 && newAprilTagInfos != null) {
+        double yaw = Help.getAverage_aprilTagInfos(aprilTagInfos, aprilTagInfos[9][0]);
+        if ((int) aprilTagInfos[9][0] != 0 && newAprilTagInfos != null && !rightangle_active) {
           desiredRobotAngle = yaw + imu.getAngularOrientation().firstAngle;
         }
-        if (aprilTagInfos != null && alignRobot) {
+        if (aprilTagInfos != null && alignRobot && !rightangle_active) {
           if (Math.abs(desiredRobotAngle-imu.getAngularOrientation().firstAngle) > 5) {
             rotate("", desiredRobotAngle);
           }
@@ -194,7 +211,15 @@ public class mechanumdrive extends LinearOpMode {
             aprilTagInfos = null;
           }
         }
-      
+
+        if (rightangle_active) {
+          if (Math.abs(desiredRobotAngle-imu.getAngularOrientation().firstAngle) > 5){
+            rotate("", desiredRobotAngle);
+          }
+          else {
+            rightangle_active = false;
+          }
+        }
       
         //now_time, the time since the start of the program and is used to find time differentials between loop iterations
         double now_time = runtime.seconds();
@@ -261,17 +286,30 @@ public class mechanumdrive extends LinearOpMode {
   }
   
   public void gamepadInputHandling(double now_time) {
-    if (gamepad1.dpad_right) {
+    if (gamepad1.x) {
       start_down = true;
     }
     else {
-      if (gamepad1.dpad_right) {
+      if (start_down) {
         alignRobot = !alignRobot;
         aprilTagInfos = null;
       }
       start_down = false;
     }
+    //Rotate 90
+    // If there are any joystick moveemnts during this, cancel rotation
+    if (gamepad1.b && gamepad1.dpad_right) {
+      rightangle_active = true;
+      desiredRobotAngle = imu.getAngularOrientation().firstAngle + 90;
+
+    }
+    else if (gamepad1.b && gamepad1.dpad_left){
+      rightangle_active = true;
+      desiredRobotAngle = imu.getAngularOrientation().firstAngle - 90;
+    }
     
+
+
     if (gamepad1.y) {
       servo_ROTATER_power = 0.3;
     }
@@ -299,10 +337,20 @@ public class mechanumdrive extends LinearOpMode {
     }
 
     if (gamepad1.left_bumper && claw_ELEVATOR_position <470) {
-      claw_ELEVATOR_position+= 150 * (now_time-last_time);
+      if (!gamepad1.b) {
+         claw_ELEVATOR_position+= 150 * (now_time-last_time);
+      }
+      else{
+        claw_ELEVATOR_position = 470;
+      }
     }
     else if (gamepad1.left_trigger > 0.2 && claw_ELEVATOR_position >-35) {
-      claw_ELEVATOR_position-= 150 * (now_time-last_time);
+      if (!gamepad1.b) {
+        claw_ELEVATOR_position-= 150 * (now_time-last_time);
+      }
+      else {
+        claw_ELEVATOR_position=-35;
+      }
     }
   }
   
@@ -425,6 +473,14 @@ public class mechanumdrive extends LinearOpMode {
   }
   
   public void tankDriveHandling() {
+
+    if (Math.abs(gamepad1.left_stick_y) > 0.2 || Math.abs(gamepad1.right_stick_y) > 0.2){
+      joystick_active = true;
+    }
+    else {
+      joystick_active = false;
+    }
+
     boolean dif = Math.abs((gamepad1.left_stick_y+gamepad1.left_stick_x))>Math.abs((gamepad1.right_stick_x+gamepad1.right_stick_y));
     
     float drv_stick_y2 = gamepad1.right_stick_y;

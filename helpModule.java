@@ -81,13 +81,13 @@ public class Help {
   public static double getAverage_aprilTagInfos(double[][] aprilTagInfos, int index) {
 
     int output = 0;
-    int MAX_ITERATIONS = 3;
+    int MAX_ITERATIONS = index;
 
     for (int i = 0; i < MAX_ITERATIONS; i++) {
-      output += aprilTagInfos[i][index];
+      output += aprilTagInfos[i][5];
     }
 
-    output = output / MAX_ITERATIONS;
+    output = output / index;
     return output;
   }
 }
