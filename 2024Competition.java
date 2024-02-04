@@ -234,7 +234,7 @@ public class mechanumdrive extends LinearOpMode {
         if (runtime.seconds() - code_start_time < 3.5) {
           servo_ROTATER_power = -0.3;
         }
-        else if (runtime.seconds() - uncode_start_time < 3.5) {
+        else if (runtime.seconds() - uncode_start_time < 2) {
           servo_ROTATER_power = 0.3;
         }
         last_time = now_time; //To find time differentials between loops.
