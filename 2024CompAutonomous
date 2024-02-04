@@ -190,10 +190,12 @@ public class mechanumdrive extends LinearOpMode {
       desiredRobotAngle-=90.0;
       while (Math.abs(desiredRobotAngle-imu.getAngularOrientation().firstAngle) > 5) {
         rotate("", desiredRobotAngle);
+        setPower();
       }
+      setWheelMode("position");
       autoDriveHandling(48,48,48,48);
+      setPower();
       elapse(5.0);
-      autoDriveHandling();
       code_start_time = runtime.seconds();
       while (opModeIsActive()) {
         
@@ -238,7 +240,7 @@ public class mechanumdrive extends LinearOpMode {
         clock(now_time);
         if (runtime.seconds() - code_start_time < 3.5) {
           //eservo_ROTATER_power = -0.3;
-          
+
         }
         last_time = now_time; //To find time differentials between loops.
         orientation = imu.getAngularOrientation();
