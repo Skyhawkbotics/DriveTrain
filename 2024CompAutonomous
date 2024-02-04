@@ -52,7 +52,7 @@ Camera Rotation jittery // needs testing
 */
 
 @TeleOp(name = "2024 testing")
-public class mechanumdrive extends LinearOpMode {
+public class Competition_Autonomous extends LinearOpMode {
   //Clock Variable
   private ElapsedTime     runtime = new ElapsedTime();
 
@@ -193,7 +193,6 @@ public class mechanumdrive extends LinearOpMode {
       }
       autoDriveHandling(48,48,48,48);
       elapse(5.0);
-      autoDriveHandling();
       code_start_time = runtime.seconds();
       while (opModeIsActive()) {
         
@@ -428,7 +427,7 @@ public class mechanumdrive extends LinearOpMode {
       whl_RF.setVelocity(200);
     }
     else if (mode == "power") {
-      wheelMode = "power"
+      wheelMode = "power";
       whl_LB.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
       whl_RB.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
       whl_LF.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
