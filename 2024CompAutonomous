@@ -233,7 +233,7 @@ public class mechanumdrive extends LinearOpMode {
         //now_time, the time since the start of the program and is used to find time differentials between loop iterations
         double now_time = runtime.seconds();
         if (clock_timer >= 0.0) {
-          gamepadInputHandling(now_time);
+          //gamepadInputHandling(now_time);
         }
         clock(now_time);
         if (runtime.seconds() - code_start_time < 3.5) {
