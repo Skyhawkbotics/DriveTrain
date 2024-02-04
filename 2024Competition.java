@@ -106,7 +106,7 @@ public class mechanumdrive extends LinearOpMode {
   //Presets
   boolean joystick_active = false;
   boolean rightangle_active = false;
-  boolean code_start_time = 0.0;
+  double code_start_time = 0.0;
 
   //aprilTag setup
   private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
@@ -165,8 +165,7 @@ public class mechanumdrive extends LinearOpMode {
     
     telemetry.addData("Mode", "calibrating...");
     telemetry.update();
-    
-    setWheelMode("power");
+    setWheelMode("position");
     
     //April Tag Testing
     
@@ -188,6 +187,7 @@ public class mechanumdrive extends LinearOpMode {
     if (opModeIsActive()) {
       // Start the loop
       //rotate("", startRobotAngle-90.0);
+      autoDriveHandling(500,500,500,500);
       code_start_time = runtime.seconds();
       while (opModeIsActive()) {
         
@@ -245,10 +245,14 @@ public class mechanumdrive extends LinearOpMode {
         telemetry.addData("firstAngle", imu.getAngularOrientation().firstAngle);
         telemetry.addData("blegh", alignRobot);
         telemetry.update();
+        if (wheelMode == "power") {
+          tankDriveHandling();
         
-        tankDriveHandling();
-        whl_corrections(); // Corrects/Adjusts power for correct results
-        
+          whl_corrections(); // Corrects/Adjusts power for correct results
+        }
+        else if (wheelMode == "position") {
+          
+        }
         //Set power of motors to their corresponding variables when clock is 0
         if (clock_timer <= 0) {
           whl_LB_percent = 0;
@@ -394,6 +398,7 @@ public class mechanumdrive extends LinearOpMode {
   
   public void setWheelMode(String mode){
     if (mode == "position") {
+      wheelMode = "position";
       whl_LB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
       whl_RB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
       whl_LF.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -415,6 +420,7 @@ public class mechanumdrive extends LinearOpMode {
       whl_RF.setVelocity(300);
     }
     else if (mode == "power") {
+      wheelMode = "power"
       whl_LB.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
       whl_RB.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
       whl_LF.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
