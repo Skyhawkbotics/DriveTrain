@@ -165,7 +165,7 @@ public class mechanumdrive extends LinearOpMode {
     
     telemetry.addData("Mode", "calibrating...");
     telemetry.update();
-    setWheelMode("position");
+    setWheelMode("power");
     
     //April Tag Testing
     
@@ -187,7 +187,7 @@ public class mechanumdrive extends LinearOpMode {
     if (opModeIsActive()) {
       // Start the loop
       //rotate("", startRobotAngle-90.0);
-      autoDriveHandling(500,500,500,500);
+      //autoDriveHandling(500,500,500,500);
       code_start_time = runtime.seconds();
       while (opModeIsActive()) {
         
