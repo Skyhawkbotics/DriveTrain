@@ -106,6 +106,7 @@ public class mechanumdrive extends LinearOpMode {
   //Presets
   boolean joystick_active = false;
   boolean rightangle_active = false;
+  boolean code_start_time = 0.0;
 
   //aprilTag setup
   private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
@@ -187,7 +188,7 @@ public class mechanumdrive extends LinearOpMode {
     if (opModeIsActive()) {
       // Start the loop
       //rotate("", startRobotAngle-90.0);
-
+      code_start_time = runtime.seconds();
       while (opModeIsActive()) {
         
         //AprilTag Stuff START
@@ -199,7 +200,7 @@ public class mechanumdrive extends LinearOpMode {
             aprilTagInfos = newAprilTagInfos;
           }
         }
-        double yaw = Help.getAverage_aprilTagInfos(aprilTagInfos, aprilTagInfos[9][0]);
+        double yaw = Help.getAverage_aprilTagInfos(aprilTagInfos, (int) aprilTagInfos[9][0]);
         if ((int) aprilTagInfos[9][0] != 0 && newAprilTagInfos != null && !rightangle_active) {
           desiredRobotAngle = yaw + imu.getAngularOrientation().firstAngle;
         }
@@ -210,6 +211,10 @@ public class mechanumdrive extends LinearOpMode {
           else {
             aprilTagInfos = null;
           }
+        }
+
+        if (runtime.seconds() - code_start_time < 1.8) {
+          servo_ROTATER_power = -0.3;
         }
 
         if (rightangle_active) {
