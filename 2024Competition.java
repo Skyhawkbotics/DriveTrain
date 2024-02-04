@@ -213,9 +213,7 @@ public class mechanumdrive extends LinearOpMode {
           }
         }
 
-        if (runtime.seconds() - code_start_time < 1.8) {
-          servo_ROTATER_power = -0.3;
-        }
+        
 
         if (rightangle_active) {
           if (Math.abs(desiredRobotAngle-imu.getAngularOrientation().firstAngle) > 5){
@@ -232,6 +230,9 @@ public class mechanumdrive extends LinearOpMode {
           gamepadInputHandling(now_time);
         }
         clock(now_time);
+        if (runtime.seconds() - code_start_time < 1.8) {
+          servo_ROTATER_power = -0.3;
+        }
         last_time = now_time; //To find time differentials between loops.
         orientation = imu.getAngularOrientation();
         iterations +=1;
