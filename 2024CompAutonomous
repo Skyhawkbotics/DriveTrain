@@ -191,7 +191,9 @@ public class mechanumdrive extends LinearOpMode {
       while (Math.abs(desiredRobotAngle-imu.getAngularOrientation().firstAngle) > 5) {
         rotate("", desiredRobotAngle);
       }
-      autoDriveHandling(1,1,1,1);
+      autoDriveHandling(48,48,48,48);
+      elapse(5.0);
+      autoDriveHandling();
       code_start_time = runtime.seconds();
       while (opModeIsActive()) {
         
@@ -435,10 +437,10 @@ public class mechanumdrive extends LinearOpMode {
   }
   
   public void autoDriveHandling(double LB, double LF, double RB, double RF) {
-    whl_LB_percent += LB*WHEEL_METER_CONSTANT;
-    whl_LF_percent += LF*WHEEL_METER_CONSTANT;
-    whl_RB_percent += RB*WHEEL_METER_CONSTANT;
-    whl_RF_percent += RF*WHEEL_METER_CONSTANT;
+    whl_LB_percent += LB*WHEEL_INCH_CONSTANT;
+    whl_LF_percent += LF*WHEEL_INCH_CONSTANT;
+    whl_RB_percent += RB*WHEEL_INCH_CONSTANT;
+    whl_RF_percent += RF*WHEEL_INCH_CONSTANT;
   }
   
   public void rotate(String type, double angle) {
