@@ -193,6 +193,8 @@ public class mechanumdrive extends LinearOpMode {
         setPower();
       }
       setWheelMode("position");
+      autoDriveHandling(4,4,4,4);
+      elapse(2.0);
       autoDriveHandling(48,48,48,48);
       setPower();
       elapse(5.0);
