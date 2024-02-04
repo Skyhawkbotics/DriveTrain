@@ -69,6 +69,8 @@ public class mechanumdrive extends LinearOpMode {
   private CRServo servo_ROTATER;
   double servo_ROTATER_power = 0.0;
 
+  private DcMotorEx hook_ELEVATOR;
+  double hook_ELEVATOR_power = 0.0;
   private CRServo servo_CLAW;
   double servo_CLAW_power = 0.0;
   boolean servo_CLAW_closed = false;
@@ -133,13 +135,15 @@ public class mechanumdrive extends LinearOpMode {
     
     claw_ELEVATOR1 = hardwareMap.get(DcMotorEx.class, "Left String Uppy Puller");
     claw_ELEVATOR2 = hardwareMap.get(DcMotorEx.class, "Right String Uppy Puller");
+    
+    hook_ELEVATOR = hardwareMap.get(DcMotorEx.class, "Hook Arm");
 
     servo_ROTATER = hardwareMap.get(CRServo.class, "Claw Flipper");
     servo_CLAW = hardwareMap.get(CRServo.class, "Claw Opener");
     arm_ELEVATOR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     arm_ELEVATOR.setTargetPosition(0);
     arm_ELEVATOR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-    arm_ELEVATOR.setVelocity(10000);
+    arm_ELEVATOR.setVelocity(1000);
 
     claw_ELEVATOR1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     claw_ELEVATOR1.setTargetPosition(0);
@@ -150,6 +154,12 @@ public class mechanumdrive extends LinearOpMode {
     claw_ELEVATOR2.setTargetPosition(0);
     claw_ELEVATOR2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     claw_ELEVATOR2.setVelocity(700);
+    
+    hook_ELEVATOR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    hook_ELEVATOR.setTargetPosition(0);
+    hook_ELEVATOR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    hook_ELEVATOR.setVelocity(700);
+
 
     BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
     parameters.mode                = BNO055IMU.SensorMode.IMU;
@@ -199,7 +209,7 @@ public class mechanumdrive extends LinearOpMode {
             aprilTagInfos = newAprilTagInfos;
           }
         }
-        double yaw = Help.getAverage_aprilTagInfos(aprilTagInfos, aprilTagInfos[9][0]);
+        double yaw = Help.getAverage_aprilTagInfos(aprilTagInfos, (int)aprilTagInfos[9][0]);
         if ((int) aprilTagInfos[9][0] != 0 && newAprilTagInfos != null && !rightangle_active) {
           desiredRobotAngle = yaw + imu.getAngularOrientation().firstAngle;
         }
@@ -280,6 +290,7 @@ public class mechanumdrive extends LinearOpMode {
     claw_ELEVATOR2.setTargetPosition((int)claw_ELEVATOR_position);
     servo_ROTATER.setPower(servo_ROTATER_power);
     servo_CLAW.setPower(servo_CLAW_power);
+    hook_ELEVATOR.setTargetPosition((int)hook_ELEVATOR_power);
 
     //claw_GRIP.setPower(claw_GRIP_angle);
     //telemetry.update();
@@ -308,8 +319,12 @@ public class mechanumdrive extends LinearOpMode {
       desiredRobotAngle = imu.getAngularOrientation().firstAngle - 90;
     }
     
-
-
+ if (gamepad2.y) {
+      hook_ELEVATOR_power += 20;
+    }
+    else if (gamepad2.x) {
+      hook_ELEVATOR_power -= 20;
+    }
     if (gamepad1.y) {
       servo_ROTATER_power = 0.3;
     }
@@ -330,10 +345,10 @@ public class mechanumdrive extends LinearOpMode {
     }
 
     if (gamepad1.dpad_up) {
-      arm_ELEVATOR_speed+= 100 * (now_time-last_time);
+      arm_ELEVATOR_speed+= 500;
     }
     else if (gamepad1.dpad_down){
-      arm_ELEVATOR_speed-= 100* (now_time-last_time);
+      arm_ELEVATOR_speed-= 500;
     }
 
     if (gamepad1.left_bumper && claw_ELEVATOR_position <470) {
