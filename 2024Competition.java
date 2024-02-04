@@ -400,10 +400,10 @@ public class mechanumdrive extends LinearOpMode {
     //1st mult: individual wheel balance
     //2nd mult: better rotation (weaker front wheels)
     //3rd mult: weaker overall wheels
-      whl_RF_percent = (float) (whl_RF_percent * 0.65 * 1 * 0.6);
-      whl_RB_percent = (float) (whl_RB_percent * 0.65 *1* 0.6);
-      whl_LF_percent = (float) (whl_LF_percent * 0.65 *1 * 0.6);
-      whl_LB_percent = (float) (whl_LB_percent * 0.65 *1*0.6);
+      whl_RF_percent = (float) (whl_RF_percent * 0.8 * 1 * 0.6);
+      whl_RB_percent = (float) (whl_RB_percent * 0.8 *1* 0.6);
+      whl_LF_percent = (float) (whl_LF_percent * 0.8 *1 * 0.6);
+      whl_LB_percent = (float) (whl_LB_percent * 0.8 *1*0.6);
       
       /* STRAFE
       whl_RF_percent = (float) (whl_RF_percent * 0.6 * 0.6);
