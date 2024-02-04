@@ -51,7 +51,7 @@ Camera Rotation jittery // needs testing
 
 */
 
-@TeleOp(name = "2024 testing")
+@TeleOp(name = "2024 TEST")
 public class mechanumdrive extends LinearOpMode {
   //Clock Variable
   private ElapsedTime     runtime = new ElapsedTime();
@@ -72,7 +72,7 @@ public class mechanumdrive extends LinearOpMode {
   private CRServo servo_CLAW;
   double servo_CLAW_power = 0.0;
   boolean servo_CLAW_closed = false;
-  boolean left_bumper_DOWN = false;
+  boolean right_bumper_DOWN = false;
 
   private DcMotorEx claw_ELEVATOR1;
   private DcMotorEx claw_ELEVATOR2;
@@ -184,7 +184,7 @@ public class mechanumdrive extends LinearOpMode {
 
     waitForStart();
     
-    if (opModeIsActive()) {
+     if (opModeIsActive()) {
       // Start the loop
       //rotate("", startRobotAngle-90.0);
       //autoDriveHandling(500,500,500,500);
@@ -244,16 +244,16 @@ public class mechanumdrive extends LinearOpMode {
         telemetry.addData("velocity", imu.getVelocity());
         telemetry.addData("acceleration", imu.getAcceleration());
         telemetry.addData("firstAngle", imu.getAngularOrientation().firstAngle);
-        telemetry.addData("blegh", whl_LB_percent);
+        telemetry.addData("blegh", servo_CLAW_closed);
         telemetry.update();
-        if (wheelMode == "power") {
+        
           tankDriveHandling();
         
           whl_corrections(); // Corrects/Adjusts power for correct results
-        }
-        else if (wheelMode == "position") {
+        
+        
           
-        }
+        
         //Set power of motors to their corresponding variables when clock is 0
         if (clock_timer <= 0) {
           whl_LB_percent = 0;
@@ -280,10 +280,10 @@ public class mechanumdrive extends LinearOpMode {
       whl_RF_percent = 0;
     }
     else if (wheelMode == "position") {
-        whl_LB.setTargetPosition((int) -whl_LB_percent);
-        whl_RB.setTargetPosition((int) -whl_RB_percent);
-        whl_LF.setTargetPosition((int) whl_LF_percent);
-        whl_RF.setTargetPosition((int) whl_RF_percent);
+        whl_LB.setTargetPosition((int) whl_LB_percent);
+        whl_RB.setTargetPosition((int) whl_RB_percent);
+        whl_LF.setTargetPosition((int) -whl_LF_percent);
+        whl_RF.setTargetPosition((int) -whl_RF_percent);
     }
     arm_ELEVATOR.setTargetPosition((int)arm_ELEVATOR_speed);
     claw_ELEVATOR1.setTargetPosition((int)claw_ELEVATOR_position);
@@ -308,12 +308,12 @@ public class mechanumdrive extends LinearOpMode {
     }
     //Rotate 90
     // If there are any joystick moveemnts during this, cancel rotation
-    if (gamepad1.dpad_right && !rightangle_active) {
+    if (gamepad1.b && gamepad1.dpad_right) {
       rightangle_active = true;
       desiredRobotAngle = imu.getAngularOrientation().firstAngle + 90;
 
     }
-    else if (gamepad1.dpad_left && !rightangle_active){
+    else if (gamepad1.b && gamepad1.dpad_left){
       rightangle_active = true;
       desiredRobotAngle = imu.getAngularOrientation().firstAngle - 90;
     }
@@ -329,24 +329,24 @@ public class mechanumdrive extends LinearOpMode {
     if (!gamepad2.a&&!gamepad2.y) {
       servo_ROTATER_power = 0;
     }
-    if (gamepad2.left_bumper && !left_bumper_DOWN) {
-      left_bumper_DOWN = true;
+    if (gamepad2.right_bumper && !right_bumper_DOWN) {
+      right_bumper_DOWN = true;
       servo_CLAW_power = (servo_CLAW_closed == false) ? 2 : 0;
       servo_CLAW_closed = !servo_CLAW_closed;
     }
 
-    if (!gamepad2.left_bumper) {
-      left_bumper_DOWN = false;
+    if (!gamepad2.right_bumper) {
+      right_bumper_DOWN = false;
     }
 
-    if (gamepad2.dpad_up) {
+    if (gamepad1.dpad_up) {
       arm_ELEVATOR_speed+= 100 * (now_time-last_time);
     }
-    else if (gamepad2.dpad_down){
+    else if (gamepad1.dpad_down){
       arm_ELEVATOR_speed-= 100* (now_time-last_time);
     }
 
-    if (gamepad2.right_bumper && claw_ELEVATOR_position <470) {
+    if (gamepad2.left_bumper && claw_ELEVATOR_position <470) {
       if (!gamepad1.b) {
          claw_ELEVATOR_position+= 150 * (now_time-last_time);
       }
@@ -354,7 +354,7 @@ public class mechanumdrive extends LinearOpMode {
         claw_ELEVATOR_position = 470;
       }
     }
-    else if (gamepad2.right_trigger > 0.2 && claw_ELEVATOR_position >-35) {
+    else if (gamepad2.left_trigger > 0.2 && claw_ELEVATOR_position >0) {
       if (!gamepad1.b) {
         claw_ELEVATOR_position-= 150 * (now_time-last_time);
       }
@@ -421,7 +421,7 @@ public class mechanumdrive extends LinearOpMode {
       whl_RF.setVelocity(300);
     }
     else if (mode == "power") {
-      wheelMode = "power"
+      wheelMode = "power";
       whl_LB.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
       whl_RB.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
       whl_LF.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -535,13 +535,6 @@ public class mechanumdrive extends LinearOpMode {
       whl_RB_percent += gamepad1.right_stick_y;
       whl_RF_percent += gamepad1.right_stick_y;
     }
-
-    if (gamepad1.right_bumper && gamepad1.left_bumper) {
-      whl_LB_percent += 0.5;
-      whl_LF_percent += 0.5;
-      whl_RB_percent += 0.5;
-      whl_RF_percent += 0.5;
-    }
    }
    
    private void initAprilTag() {
@@ -604,12 +597,6 @@ public class mechanumdrive extends LinearOpMode {
         return aprilTagInfos;
     }   // end method telemetryAprilTag()
    
-   private void elapse(double t) {
-      double start_time = runtime.seconds();
-      while(runtime.seconds() - start_time+t < t){
-
-      }
-   }
    
   }
   
