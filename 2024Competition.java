@@ -230,7 +230,7 @@ public class mechanumdrive extends LinearOpMode {
           gamepadInputHandling(now_time);
         }
         clock(now_time);
-        if (runtime.seconds() - code_start_time < 1.8) {
+        if (runtime.seconds() - code_start_time < 3.5) {
           servo_ROTATER_power = -0.3;
         }
         last_time = now_time; //To find time differentials between loops.
