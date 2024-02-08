@@ -100,6 +100,7 @@ public class mechanumdrive extends LinearOpMode {
   
   double startRobotAngle = 0.0;
   Orientation orientation = null;
+  Acceleration acceleration = null;
 
   int iterations = 0;
   
@@ -161,6 +162,7 @@ public class mechanumdrive extends LinearOpMode {
     parameters.loggingEnabled      = false;
     imu = hardwareMap.get(BNO055IMU.class, "imu");
     imu.initialize(parameters);
+    acceleration = new Acceleration();
     orientation = imu.getAngularOrientation();
     startRobotAngle = orientation.firstAngle;
     
@@ -246,7 +248,10 @@ public class mechanumdrive extends LinearOpMode {
         
         telemetry.addData("orientation", orientation);
         telemetry.addData("velocity", imu.getVelocity());
-        telemetry.addData("acceleration", imu.getAcceleration());
+        telemetry.addData("acceleration_x", imu.getAcceleration().xAccel);
+        telemetry.addData("acceleration_y", imu.getAcceleration().yAccel);
+        telemetry.addData("acceleration_z", imu.getAcceleration().zAccel);
+
         telemetry.addData("firstAngle", imu.getAngularOrientation().firstAngle);
         telemetry.addData("blegh", servo_CLAW_closed);
         telemetry.update();
