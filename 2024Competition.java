@@ -3,6 +3,7 @@ Packages and Imports used for the code.
 */
 package org.firstinspires.ftc;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
@@ -24,6 +25,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 import org.firstinspires.ftc.robotcore.external.navigation.Temperature;
+import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
+
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -109,6 +112,7 @@ public class mechanumdrive extends LinearOpMode {
   boolean rightangle_active = false;
   double code_start_time = 0.0;
   double uncode_start_time = 0.0;
+  boolean left_bumper_DOWN = false;
 
   //aprilTag setup
   private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
@@ -219,7 +223,7 @@ public class mechanumdrive extends LinearOpMode {
         
 
         if (rightangle_active) {
-          if (Math.abs(desiredRobotAngle-imu.getAngularOrientation().firstAngle) > 5){
+          if (Math.abs(Help.trueAngleDif(desiredRobotAngle,imu.getAngularOrientation().firstAngle)) > 5){
             rotate("", desiredRobotAngle);
           }
           else {
@@ -253,7 +257,10 @@ public class mechanumdrive extends LinearOpMode {
         telemetry.addData("acceleration_z", imu.getAcceleration().zAccel);
 
         telemetry.addData("firstAngle", imu.getAngularOrientation().firstAngle);
-        telemetry.addData("blegh", servo_CLAW_closed);
+        telemetry.addData("desiredAngle", desiredRobotAngle);
+        telemetry.addData("trueDif", Help.trueAngleDif(desiredRobotAngle,imu.getAngularOrientation().firstAngle));
+
+        telemetry.addData("active", rightangle_active);
         telemetry.update();
         
           tankDriveHandling();
@@ -319,12 +326,12 @@ public class mechanumdrive extends LinearOpMode {
     // If there are any joystick moveemnts during this, cancel rotation
     if (gamepad1.dpad_right && !rightangle_active) {
       rightangle_active = true;
-      desiredRobotAngle = imu.getAngularOrientation().firstAngle + 90;
+      desiredRobotAngle = Help.angleCorrection(imu.getAngularOrientation().firstAngle, -90);
 
     }
     else if (gamepad1.dpad_left && !rightangle_active){
       rightangle_active = true;
-      desiredRobotAngle = imu.getAngularOrientation().firstAngle - 90;
+      desiredRobotAngle = Help.angleCorrection(imu.getAngularOrientation().firstAngle, 90);
     }
     
 
@@ -459,11 +466,11 @@ public class mechanumdrive extends LinearOpMode {
     //telemetry.update();
     if (angleDif > 0) {
       //Rotate to the LEFT?
-      twoDriveHandling(0, -0.5 * Math.abs(angleDif / 45));
+      twoDriveHandling(0, -0.8 * Math.abs(angleDif / 45));
     }
     else if (angleDif < 0) {
       //Rotate to the RIGHT?
-      twoDriveHandling(0, 0.5 * Math.abs(angleDif / 45));
+      twoDriveHandling(0, 0.8 * Math.abs(angleDif / 45));
     }
     //Goal is reached, function end
     
@@ -588,7 +595,7 @@ public class mechanumdrive extends LinearOpMode {
     private double[][] telemetryAprilTag() {
 
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-        telemetry.addData("# AprilTags Detected", currentDetections.size());
+        //telemetry.addData("# AprilTags Detected", currentDetections.size());
         double[][] aprilTagInfos = new double[10][9];
         // Step through the list of detections and display info for each one.
         int iteration = 0;
@@ -617,11 +624,12 @@ public class mechanumdrive extends LinearOpMode {
         }   // end for() loop
 
         // Add "key" information to telemetry
+        /*
         telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
         telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
         telemetry.addLine("RBE = Range, Bearing & Elevation");
-
-        telemetry.update();
+*/
+        //telemetry.update();
         aprilTagInfos[9][0] = (double) iteration;
         return aprilTagInfos;
     }   // end method telemetryAprilTag()
