@@ -283,16 +283,16 @@ public class mechanumdrive extends LinearOpMode {
     if (wheelMode == "power") {
       whl_LB.setPower(whl_LB_percent);
       whl_RB.setPower(whl_RB_percent);
-      whl_LF.setPower(-whl_LF_percent);
-      whl_RF.setPower(-whl_RF_percent);
+      whl_LF.setPower(whl_LF_percent);
+      whl_RF.setPower(whl_RF_percent);
       whl_LB_percent = 0;
       whl_RB_percent = 0;
       whl_LF_percent = 0;
       whl_RF_percent = 0;
     }
     else if (wheelMode == "position") {
-        whl_LB.setTargetPosition((int) -whl_LB_percent);
-        whl_RB.setTargetPosition((int) -whl_RB_percent);
+        whl_LB.setTargetPosition((int) whl_LB_percent);
+        whl_RB.setTargetPosition((int) whl_RB_percent);
         whl_LF.setTargetPosition((int) whl_LF_percent);
         whl_RF.setTargetPosition((int) whl_RF_percent);
     }
@@ -396,9 +396,9 @@ public class mechanumdrive extends LinearOpMode {
     //2nd mult: better rotation (weaker front wheels)
     //3rd mult: weaker overall wheels
       whl_RF_percent = (float) (whl_RF_percent * 0.65 * 1 * 0.6);
-      whl_RB_percent = (float) (whl_RB_percent * 0.65 *1* 0.6);
+      whl_RB_percent = (float) (-whl_RB_percent * 0.65 *1* 0.6);
       whl_LF_percent = (float) (whl_LF_percent * 0.65 *1 * 0.6);
-      whl_LB_percent = (float) (whl_LB_percent * 0.65 *1*0.6);
+      whl_LB_percent = (float) (-whl_LB_percent * 0.65 *1*0.6);
       
       /* STRAFE
       whl_RF_percent = (float) (whl_RF_percent * 0.6 * 0.6);
@@ -553,6 +553,19 @@ public class mechanumdrive extends LinearOpMode {
       whl_RB_percent += 0.5;
       whl_RF_percent += 0.5;
     }
+
+    if (gamepad1.left_trigger > 0.8) {
+      whl_LB_percent += 1;
+      whl_LF_percent -= 1;
+      whl_RB_percent -= 1;
+      whl_RF_percent += 1;
+    }
+    else if (gamepad1.right_trigger > 0.8) {
+      whl_LB_percent -= 1;
+      whl_LF_percent += 1;
+      whl_RB_percent += 1;
+      whl_RF_percent -= 1;
+    }
    }
    
    private void initAprilTag() {
@@ -618,7 +631,7 @@ public class mechanumdrive extends LinearOpMode {
    private void elapse(double t) {
       double start_time = runtime.seconds();
       while(runtime.seconds() - start_time+t < t){
-
+        
       }
    }
    
