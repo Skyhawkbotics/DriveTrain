@@ -226,7 +226,7 @@ public class mechanumdrive extends LinearOpMode {
             rightangle_active = false;
           }
         }
-      
+        
         //now_time, the time since the start of the program and is used to find time differentials between loop iterations
         double now_time = runtime.seconds();
         if (clock_timer >= 0.0) {
@@ -317,12 +317,12 @@ public class mechanumdrive extends LinearOpMode {
     }
     //Rotate 90
     // If there are any joystick moveemnts during this, cancel rotation
-    if (gamepad1.b && gamepad1.dpad_right) {
+    if (gamepad1.dpad_right && !rightangle_active) {
       rightangle_active = true;
       desiredRobotAngle = imu.getAngularOrientation().firstAngle + 90;
 
     }
-    else if (gamepad1.b && gamepad1.dpad_left){
+    else if (gamepad1.dpad_left && !rightangle_active){
       rightangle_active = true;
       desiredRobotAngle = imu.getAngularOrientation().firstAngle - 90;
     }
@@ -338,14 +338,14 @@ public class mechanumdrive extends LinearOpMode {
     if (!gamepad2.a&&!gamepad2.y) {
       servo_ROTATER_power = 0;
     }
-    if (gamepad2.right_bumper && !right_bumper_DOWN) {
-      right_bumper_DOWN = true;
+    if (gamepad2.left_bumper && !left_bumper_DOWN) {
+      left_bumper_DOWN = true;
       servo_CLAW_power = (servo_CLAW_closed == false) ? 2 : 0;
       servo_CLAW_closed = !servo_CLAW_closed;
     }
 
-    if (!gamepad2.right_bumper) {
-      right_bumper_DOWN = false;
+    if (!gamepad2.left_bumper) {
+      left_bumper_DOWN = false;
     }
 
     if (gamepad2.dpad_up) {
@@ -355,28 +355,16 @@ public class mechanumdrive extends LinearOpMode {
       arm_ELEVATOR_speed-= 100* (now_time-last_time);
     }
 
-    if (gamepad2.b) {
-      if (now_time - code_start_time > 4) {
-       code_start_time = runtime.seconds();
-       claw_ELEVATOR_position = 450;
-      }
-    }
-    else if (gamepad2.x) {
-      if (now_time - uncode_start_time > 4) {
-       uncode_start_time = runtime.seconds();
-      }
-    }
-
-    if (gamepad2.left_bumper && claw_ELEVATOR_position <470) {
-      if (!gamepad2.b) {
+    if (gamepad2.right_bumper && claw_ELEVATOR_position <470) {
+      if (!gamepad1.b) {
          claw_ELEVATOR_position+= 150 * (now_time-last_time);
       }
       else{
         claw_ELEVATOR_position = 470;
       }
     }
-    else if (gamepad2.left_trigger > 0.2 && claw_ELEVATOR_position >0) {
-      if (!gamepad2.b) {
+    else if (gamepad2.right_trigger > 0.2 && claw_ELEVATOR_position >-35) {
+      if (!gamepad1.b) {
         claw_ELEVATOR_position-= 150 * (now_time-last_time);
       }
       else {
@@ -555,6 +543,26 @@ public class mechanumdrive extends LinearOpMode {
       whl_LF_percent += gamepad1.left_stick_y;
       whl_RB_percent += gamepad1.right_stick_y;
       whl_RF_percent += gamepad1.right_stick_y;
+    }
+
+    if (gamepad1.right_bumper && gamepad1.left_bumper) {
+      whl_LB_percent += 0.5;
+      whl_LF_percent += 0.5;
+      whl_RB_percent += 0.5;
+      whl_RF_percent += 0.5;
+    }
+
+    if (gamepad1.left_trigger > 0.8) {
+      whl_LB_percent += 1;
+      whl_LF_percent -= 1;
+      whl_RB_percent -= 1;
+      whl_RF_percent += 1;
+    }
+    else if (gamepad1.right_trigger > 0.8) {
+      whl_LB_percent -= 1;
+      whl_LF_percent += 1;
+      whl_RB_percent += 1;
+      whl_RF_percent -= 1;
     }
    }
    
