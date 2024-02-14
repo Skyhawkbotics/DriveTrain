@@ -101,6 +101,10 @@ public class mechanumdrive extends LinearOpMode {
   boolean alignRobot = false;
   boolean start_down = false;
   
+  boolean isStrafing = false;
+  double strafeStartingAngle = -1000.0;
+  double strafeEndTime =0.0;
+  
   double startRobotAngle = 0.0;
   Orientation orientation = null;
   Acceleration acceleration = null;
@@ -230,9 +234,18 @@ public class mechanumdrive extends LinearOpMode {
             rightangle_active = false;
           }
         }
+        double now_time = runtime.seconds();
+        if (!isStrafing && strafeStartingAngle != -1000.0 && now_time-strafeEndTime > 0.5) {
+          desiredRobotAngle = strafeStartingAngle;
+          if (Math.abs(Help.trueAngleDif(desiredRobotAngle,imu.getAngularOrientation().firstAngle)) > 3){
+            rotate("", desiredRobotAngle);
+          }
+          else {
+            strafeStartingAngle = -1000.0;
+          }
+        }
         
         //now_time, the time since the start of the program and is used to find time differentials between loop iterations
-        double now_time = runtime.seconds();
         if (clock_timer >= 0.0) {
           gamepadInputHandling(now_time);
         }
@@ -258,9 +271,11 @@ public class mechanumdrive extends LinearOpMode {
 
         telemetry.addData("firstAngle", imu.getAngularOrientation().firstAngle);
         telemetry.addData("desiredAngle", desiredRobotAngle);
-        telemetry.addData("trueDif", Help.trueAngleDif(desiredRobotAngle,imu.getAngularOrientation().firstAngle));
+        telemetry.addData("angleDifference", Help.trueAngleDif(desiredRobotAngle,imu.getAngularOrientation().firstAngle));
 
-        telemetry.addData("active", rightangle_active);
+        telemetry.addData("90 degree active", rightangle_active);
+        telemetry.addData("strafeCorrection", strafeStartingAngle);
+        telemetry.addData("strafeEndTimeDifferential", runtime.seconds() - strafeEndTime);
         telemetry.update();
         
           tankDriveHandling();
@@ -466,11 +481,17 @@ public class mechanumdrive extends LinearOpMode {
     //telemetry.update();
     if (angleDif > 0) {
       //Rotate to the LEFT?
-      twoDriveHandling(0, -0.8 * Math.abs(angleDif / 45));
+      double power= -1 * Math.abs(angleDif / 45);
+      power = (power < -1) ? -1 : power;
+      power = (power > -0.5) ? -0.5 : power;
+      twoDriveHandling(0, power);
     }
     else if (angleDif < 0) {
       //Rotate to the RIGHT?
-      twoDriveHandling(0, 0.8 * Math.abs(angleDif / 45));
+      double power = 1 * Math.abs(angleDif / 45);
+      power = (power >1) ? 1 : power;
+      power = (power <0.5) ? 0.5 : power;
+      twoDriveHandling(0, power);
     }
     //Goal is reached, function end
     
@@ -561,15 +582,27 @@ public class mechanumdrive extends LinearOpMode {
 
     if (gamepad1.left_trigger > 0.8) {
       whl_LB_percent += 1;
-      whl_LF_percent -= 1;
+      whl_LF_percent -= 0.9;
       whl_RB_percent -= 1;
-      whl_RF_percent += 1;
+      whl_RF_percent += 0.9;
+      if (!isStrafing){
+        isStrafing = true;
+        strafeStartingAngle = imu.getAngularOrientation().firstAngle;
+      }
     }
     else if (gamepad1.right_trigger > 0.8) {
       whl_LB_percent -= 1;
-      whl_LF_percent += 1;
+      whl_LF_percent += 0.9;
       whl_RB_percent += 1;
-      whl_RF_percent -= 1;
+      whl_RF_percent -= 0.9;
+      if (!isStrafing){
+        isStrafing = true;
+        strafeStartingAngle = imu.getAngularOrientation().firstAngle;
+      }
+    }
+    else if (isStrafing) {
+      isStrafing = false;
+      strafeEndTime = runtime.seconds();
     }
    }
    
