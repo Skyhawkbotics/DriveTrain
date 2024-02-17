@@ -48,7 +48,7 @@ import java.lang.Math;
 
 
 
-@TeleOp(name = "2024 TEST")
+@TeleOp(name = "2024 Blue Prop Code")
 public class mechanumdrive extends LinearOpMode {
   //Clock Variable
   private ElapsedTime     runtime = new ElapsedTime();
@@ -56,6 +56,17 @@ public class mechanumdrive extends LinearOpMode {
   // IMU - Includes Gyroscope / Acceleromotor / Thermometer and a lot lot more random stuff
   private BNO055IMU imu;
 
+  private static final String TFOD_MODEL_FILE = "/sdcard/FIRST/tflitemodels/BlueAiModel.tflite";
+    private static final String[] LABELS = {
+        "BlueLineRightWithObject",
+        "BlueLineCenterWithObject",
+        "BlueLineLeftWithObject"
+    };
+  int LeftObjectDetected = 0;
+  int CenterObjectDetected = 0;
+  int RightObjectDetected = 0;
+
+  private TfodProcessor tfod;
 
   //Create Motor Variables
   private DcMotorEx whl_LB;
@@ -68,15 +79,8 @@ public class mechanumdrive extends LinearOpMode {
   private CRServo servo_ROTATER;
   private CRServo servo_DRONE;
   double servo_ROTATER_power = 0.0;
-<<<<<<< HEAD
-  double arm_HOOKUP_speed = 0.0;
-  double arm_HOOKDOWN_speed = 0.0;
  // private CRServo servo_DRONE2;
  // double servo_DRONE2_power = 0.0;
-=======
- // private CRServo servo_DRONE2;
- // double servo_DRONE2_power = 0.0;
->>>>>>> 31ffd9e073a3849c12a14ae92ad79560266a37dd
 
   private CRServo servo_CLAW;
   double servo_CLAW_power = 0.0;
@@ -127,6 +131,10 @@ public class mechanumdrive extends LinearOpMode {
   double uncode_start_time = 0.0;
   boolean left_bumper_DOWN = false;
 
+  boolean autoInitAction = false;
+  boolean autoFirstAction = false;
+  boolean a2 = false;
+
   //aprilTag setup
   private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
 
@@ -143,6 +151,9 @@ public class mechanumdrive extends LinearOpMode {
   
   @Override
   public void runOpMode() {
+
+    initTfod();
+
     //Initalize Motors and Servos
     whl_LB = hardwareMap.get(DcMotorEx.class, "left/back");
     whl_LF = hardwareMap.get(DcMotorEx.class, "left/front");
@@ -226,29 +237,65 @@ public class mechanumdrive extends LinearOpMode {
       code_start_time = runtime.seconds();
       while (opModeIsActive()) {
         
-        //AprilTag Stuff START
-        int aprilTagsDetected = 0;
-        double[][] newAprilTagInfos = null;
-        if (iterations % 1 == 0 ) {
-          newAprilTagInfos = telemetryAprilTag();
-          if (newAprilTagInfos != null) {
-            aprilTagInfos = newAprilTagInfos;
-          }
+        // Start instructions
+        //Open tfod feed for 5 seconds & drive forward like a bit
+        if (runtime.seconds() - code_start_time < 5) {
+            if (!autoInitAction) {
+                autoInitAction = true;
+                setWheelMode("position");
+                autoDriveHandling(0.5,0.5,0.5,0.5);
+            }
+            telemetryTfod();
+            sleep(20);
         }
-        double yaw = Help.getAverage_aprilTagInfos(aprilTagInfos, (int) aprilTagInfos[9][0]);
-        if ((int) aprilTagInfos[9][0] != 0 && newAprilTagInfos != null && !rightangle_active) {
-          desiredRobotAngle = yaw + imu.getAngularOrientation().firstAngle;
+        //Based on bias, decide on path taken
+        //this is a bad way to choose
+        setWheelMode("power");
+        if (LeftObjectDetected > CenterObjectDetected && LeftObjectDetected > RightObjectDetected) {
+            //Set Angle
+            if (!autoFirstAction) {
+                desiredRobotAngle = Help.angleCorrection(imu.getAngularOrientation().firstAngle, -45);
+                autoFirstAction = true;
+            }
+            if (!a2)
+                rotate("", desiredRobotAngle);
+            if (!a2 && runtime.seconds() - code_start_time < 7) {
+                a2 = true;
+                setWheelMode("position");
+                autoDriveHandling(0.5,0.5,0.5,0.5);
+            } 
         }
-        if (aprilTagInfos != null && alignRobot && !rightangle_active) {
-          if (Math.abs(desiredRobotAngle-imu.getAngularOrientation().firstAngle) > 5) {
-            rotate("", desiredRobotAngle);
-          }
-          else {
-            aprilTagInfos = null;
-          }
+        else if (CenterObjectDetected > LeftObjectDetected && CenterObjectDetected > RightObjectDetected) {
+            //Go Middle
+            //Set Angle
+            if (!autoFirstAction) {
+                desiredRobotAngle = Help.angleCorrection(imu.getAngularOrientation().firstAngle, 0);
+                autoFirstAction = true;
+            }
+            if (!a2)
+                rotate("", desiredRobotAngle);
+            if (!a2 && runtime.seconds() - code_start_time < 7) {
+                a2 = true;
+                setWheelMode("position");
+                autoDriveHandling(0.5,0.5,0.5,0.5);
+            } 
+        }
+        else {
+            //Go Right
+            //Set Angle
+            if (!autoFirstAction) {
+                desiredRobotAngle = Help.angleCorrection(imu.getAngularOrientation().firstAngle, 45);
+                autoFirstAction = true;
+            }
+            if (!a2)
+                rotate("", desiredRobotAngle);
+            if (!a2 && runtime.seconds() - code_start_time < 7) {
+                a2 = true;
+                setWheelMode("position");
+                autoDriveHandling(0.5,0.5,0.5,0.5);
+            } 
         }
 
-        
 
         if (rightangle_active) {
           if (Math.abs(Help.trueAngleDif(desiredRobotAngle,imu.getAngularOrientation().firstAngle)) > 5){
@@ -268,19 +315,6 @@ public class mechanumdrive extends LinearOpMode {
             strafeStartingAngle = -1000.0;
           }
         }
-        
-        //now_time, the time since the start of the program and is used to find time differentials between loop iterations
-        if (clock_timer >= 0.0) {
-          gamepadInputHandling(now_time);
-        }
-        clock(now_time);
-        if (runtime.seconds() - code_start_time < 3.5) {
-          servo_ROTATER_power = -0.3;
-        }
-        else if (runtime.seconds() - uncode_start_time < 2) {
-          servo_ROTATER_power = 0.3;
-        }
-        last_time = now_time; //To find time differentials between loops.
         orientation = imu.getAngularOrientation();
         iterations +=1;
 
@@ -302,20 +336,7 @@ public class mechanumdrive extends LinearOpMode {
         telemetry.addData("strafeEndTimeDifferential", runtime.seconds() - strafeEndTime);
         telemetry.update();
         
-          tankDriveHandling();
         
-          whl_corrections(); // Corrects/Adjusts power for correct results
-        
-        
-          
-        
-        //Set power of motors to their corresponding variables when clock is 0
-        if (clock_timer <= 0) {
-          whl_LB_percent = 0;
-          whl_RB_percent = 0;
-          whl_LF_percent = 0;
-          whl_RF_percent = 0;
-        }
         setPower();
         }
       }
@@ -392,47 +413,6 @@ public class mechanumdrive extends LinearOpMode {
       servo_CLAW_power += -5 * (now_time-last_time);
   
     }
-    else if  (gamepad2.dpad_right) {
-      servo_CLAW_power += 5 * (now_time-last_time);
-  
-    }
-    
-    if (gamepad2.dpad_up) {
-      arm_HOOKUP_speed += 5 * (now_time-last_time);
-  
-    }
-    else if  (gamepad2.dpad_down) {
-      arm_HOOKDOWN_speed += 5 * (now_time-last_time);
-  
-    }
-    
-    if (gamepad2.dpad_up) {
-      arm_HOOKDOWN_speed +=- 5 * (now_time-last_time);
-    }
-    else if  (gamepad2.dpad_down) {
-      arm_HOOKUP_speed +=- 5 * (now_time-last_time);
-    }
-    
-    else {
-    servo_CLAW_power = 0;
-      
-    }
-    if (gamepad1.y) {
-      servo_DRONE_power = 20;
-    }
-    else if (gamepad1.a) {
-      servo_DRONE_power =- 10;
-      
-    }
-    
-    //if (gamepad1.y) {
-      //servo_DRONE2_power = 20;
-    //}
-    //else if (gamepad1.a) {
-      //servo_DRONE2_power =- 10;
-      
-    //}
-    
     else if  (gamepad2.dpad_right) {
       servo_CLAW_power += 5 * (now_time-last_time);
   
@@ -783,6 +763,87 @@ public class mechanumdrive extends LinearOpMode {
         return aprilTagInfos;
     }   // end method telemetryAprilTag()
    
-   
+   private void initTfod() {
+
+        // Create the TensorFlow processor by using a builder.
+        tfod = new TfodProcessor.Builder()
+
+            // With the following lines commented out, the default TfodProcessor Builder
+            // will load the default model for the season. To define a custom model to load, 
+            // choose one of the following:
+            //   Use setModelAssetName() if the custom TF Model is built in as an asset (AS only).
+            //   Use setModelFileName() if you have downloaded a custom team model to the Robot Controller.
+            //.setModelAssetName(TFOD_MODEL_ASSET)
+            .setModelFileName(TFOD_MODEL_FILE)
+
+            // The following default settings are available to un-comment and edit as needed to 
+            // set parameters for custom models.
+            .setModelLabels(LABELS)
+            //.setIsModelTensorFlow2(true)
+            //.setIsModelQuantized(true)
+            //.setModelInputSize(300)
+            //.setModelAspectRatio(16.0 / 9.0)
+
+            .build();
+
+        // Create the vision portal by using a builder.
+        VisionPortal.Builder builder = new VisionPortal.Builder();
+
+        // Set the camera (webcam vs. built-in RC phone camera).
+        builder.setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"));
+
+        // Choose a camera resolution. Not all cameras support all resolutions.
+        //builder.setCameraResolution(new Size(640, 480));
+
+        // Enable the RC preview (LiveView).  Set "false" to omit camera monitoring.
+        //builder.enableLiveView(true);
+
+        // Set the stream format; MJPEG uses less bandwidth than default YUY2.
+        //builder.setStreamFormat(VisionPortal.StreamFormat.YUY2);
+
+        // Choose whether or not LiveView stops if no processors are enabled.
+        // If set "true", monitor shows solid orange screen if no processors enabled.
+        // If set "false", monitor shows camera view without annotations.
+        //builder.setAutoStopLiveView(false);
+
+        // Set and enable the processor.
+        builder.addProcessor(tfod);
+
+        // Build the Vision Portal, using the above settings.
+        visionPortal = builder.build();
+
+        // Set confidence threshold for TFOD recognitions, at any time.
+        //tfod.setMinResultConfidence(0.75f);
+
+        // Disable or re-enable the TFOD processor at any time.
+        //visionPortal.setProcessorEnabled(tfod, true);
+
+    }   // end method initTfod()
+    //Variables needed to be saved: label
+   private void telemetryTfod() {
+
+        List<Recognition> currentRecognitions = tfod.getRecognitions();
+        telemetry.addData("# Objects Detected", currentRecognitions.size());
+
+        // Step through the list of recognitions and display info for each one.
+        for (Recognition recognition : currentRecognitions) {
+            double x = (recognition.getLeft() + recognition.getRight()) / 2 ;
+            double y = (recognition.getTop()  + recognition.getBottom()) / 2 ;
+            if (recognition.getLabel() == "BlueLineRightWithObject") {
+                RightObjectDetected +=1;
+            }
+            else if (recognition.getLabel() == "BlueLineCenterWithObject") {
+                CenterObjectDetected +=1;
+            }
+            else if (recognition.getLabel() == "BlueLineLeftWithObject") {
+                LeftObjectDetected +=1;
+            }
+            telemetry.addData(""," ");
+            telemetry.addData("Image", "%s (%.0f %% Conf.)", recognition.getLabel(), recognition.getConfidence() * 100);
+            telemetry.addData("- Position", "%.0f / %.0f", x, y);
+            telemetry.addData("- Size", "%.0f x %.0f", recognition.getWidth(), recognition.getHeight());
+        }   // end for() loop
+
+    }   // end method telemetryTfod()
   }
   
