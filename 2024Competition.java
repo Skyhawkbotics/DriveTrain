@@ -70,7 +70,10 @@ public class mechanumdrive extends LinearOpMode {
   private DcMotorEx whl_RF;
   private DcMotorEx arm_ELEVATOR;
   private CRServo servo_ROTATER;
+  private CRServo servo_DRONE;
   double servo_ROTATER_power = 0.0;
+ // private CRServo servo_DRONE2;
+ // double servo_DRONE2_power = 0.0;
 
   private CRServo servo_CLAW;
   double servo_CLAW_power = 0.0;
@@ -80,6 +83,7 @@ public class mechanumdrive extends LinearOpMode {
   private DcMotorEx claw_ELEVATOR1;
   private DcMotorEx claw_ELEVATOR2;
   double claw_ELEVATOR_position = 0.0;
+  double servo_DRONE_power = 0.0;
 
   // Max ranges from -1 to 1
   double whl_LB_percent;
@@ -152,6 +156,9 @@ public class mechanumdrive extends LinearOpMode {
     arm_ELEVATOR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     arm_ELEVATOR.setVelocity(10000);
 
+    servo_DRONE = hardwareMap.get(CRServo.class, "Drone Launcher");
+    //servo_DRONE2 = hardwareMap.get(CRServo.class, "Drone Launcher 2");
+    
     claw_ELEVATOR1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     claw_ELEVATOR1.setTargetPosition(0);
     claw_ELEVATOR1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -237,7 +244,7 @@ public class mechanumdrive extends LinearOpMode {
         double now_time = runtime.seconds();
         if (!isStrafing && strafeStartingAngle != -1000.0 && now_time-strafeEndTime > 0.5) {
           desiredRobotAngle = strafeStartingAngle;
-          if (Math.abs(Help.trueAngleDif(desiredRobotAngle,imu.getAngularOrientation().firstAngle)) > 3){
+          if (Math.abs(Help.trueAngleDif(desiredRobotAngle,imu.getAngularOrientation().firstAngle)) > 5){
             rotate("", desiredRobotAngle);
           }
           else {
@@ -321,6 +328,7 @@ public class mechanumdrive extends LinearOpMode {
     claw_ELEVATOR2.setTargetPosition((int)claw_ELEVATOR_position);
     servo_ROTATER.setPower(servo_ROTATER_power);
     servo_CLAW.setPower(servo_CLAW_power);
+    servo_DRONE.setPower(servo_DRONE_power);
 
     //claw_GRIP.setPower(claw_GRIP_angle);
     //telemetry.update();
@@ -360,12 +368,35 @@ public class mechanumdrive extends LinearOpMode {
     if (!gamepad2.a&&!gamepad2.y) {
       servo_ROTATER_power = 0;
     }
-    if (gamepad2.left_bumper && !left_bumper_DOWN) {
-      left_bumper_DOWN = true;
-      servo_CLAW_power = (servo_CLAW_closed == false) ? 2 : 0;
-      servo_CLAW_closed = !servo_CLAW_closed;
+    
+    if (gamepad2.dpad_left) {
+      servo_CLAW_power += -5 * (now_time-last_time);
+  
     }
-
+    else if  (gamepad2.dpad_right) {
+      servo_CLAW_power += 5 * (now_time-last_time);
+  
+    }
+    else {
+    servo_CLAW_power = 0;
+      
+    }
+    if (gamepad1.y) {
+      servo_DRONE_power = 20;
+    }
+    else if (gamepad1.a) {
+      servo_DRONE_power =- 10;
+      
+    }
+    
+    //if (gamepad1.y) {
+      //servo_DRONE2_power = 20;
+    //}
+    //else if (gamepad1.a) {
+      //servo_DRONE2_power =- 10;
+      
+    //}
+    
     if (!gamepad2.left_bumper) {
       left_bumper_DOWN = false;
     }
@@ -483,14 +514,14 @@ public class mechanumdrive extends LinearOpMode {
       //Rotate to the LEFT?
       double power= -1 * Math.abs(angleDif / 45);
       power = (power < -1) ? -1 : power;
-      power = (power > -0.5) ? -0.5 : power;
+      power = (power > -0.7) ? -0.7 : power;
       twoDriveHandling(0, power);
     }
     else if (angleDif < 0) {
       //Rotate to the RIGHT?
       double power = 1 * Math.abs(angleDif / 45);
       power = (power >1) ? 1 : power;
-      power = (power <0.5) ? 0.5 : power;
+      power = (power <0.7) ? 0.7 : power;
       twoDriveHandling(0, power);
     }
     //Goal is reached, function end
@@ -573,11 +604,17 @@ public class mechanumdrive extends LinearOpMode {
       whl_RF_percent += gamepad1.right_stick_y;
     }
 
-    if (gamepad1.right_bumper && gamepad1.left_bumper) {
+    if (gamepad1.right_bumper) {
       whl_LB_percent += 0.5;
       whl_LF_percent += 0.5;
       whl_RB_percent += 0.5;
       whl_RF_percent += 0.5;
+    }
+    else if (gamepad1.left_bumper) {
+      whl_LB_percent -= 0.5;
+      whl_LF_percent -= 0.5;
+      whl_RB_percent -= 0.5;
+      whl_RF_percent -= 0.5;
     }
 
     if (gamepad1.left_trigger > 0.8) {
