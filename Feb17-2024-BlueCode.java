@@ -73,7 +73,7 @@ public class mechanumdrive extends LinearOpMode {
   private DcMotorEx whl_LF;
   private DcMotorEx whl_RB;
   private DcMotorEx whl_RF;
-  private DcMotorEx arm_ELEVATOR;
+  //private DcMotorEx arm_ELEVATOR;
   private DcMotorEx arm_HOOKUP;
   private DcMotorEx arm_HOOKDOWN;
   private CRServo servo_ROTATER;
@@ -104,7 +104,7 @@ public class mechanumdrive extends LinearOpMode {
 
   double last_time = runtime.seconds(); //Used to find how much time has elapsed per iteration in the runtime loop.
   double reset_last_time = runtime.seconds(); //Last time the robot has reset
-  double arm_ELEVATOR_speed = 0.0;
+  //double arm_ELEVATOR_speed = 0.0;
 
   private String wheelMode = "power";
   
@@ -160,7 +160,7 @@ public class mechanumdrive extends LinearOpMode {
     whl_RB = hardwareMap.get(DcMotorEx.class, "right/back");
     whl_RF = hardwareMap.get(DcMotorEx.class, "right/front");
     
-    arm_ELEVATOR = hardwareMap.get(DcMotorEx.class, "Arm Extender");
+    //arm_ELEVATOR = hardwareMap.get(DcMotorEx.class, "Arm Extender");
     
     claw_ELEVATOR1 = hardwareMap.get(DcMotorEx.class, "Left String Uppy Puller");
     claw_ELEVATOR2 = hardwareMap.get(DcMotorEx.class, "Right String Uppy Puller");
@@ -169,10 +169,6 @@ public class mechanumdrive extends LinearOpMode {
     arm_HOOKDOWN = hardwareMap.get(DcMotorEx.class, "Hook Arm Down");
     servo_ROTATER = hardwareMap.get(CRServo.class, "Claw Flipper");
     servo_CLAW = hardwareMap.get(CRServo.class, "Claw Opener");
-    arm_ELEVATOR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-    arm_ELEVATOR.setTargetPosition(0);
-    arm_ELEVATOR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-    arm_ELEVATOR.setVelocity(10000);
 
     servo_DRONE = hardwareMap.get(CRServo.class, "Drone Launcher");
     //servo_DRONE2 = hardwareMap.get(CRServo.class, "Drone Launcher 2");
@@ -243,14 +239,13 @@ public class mechanumdrive extends LinearOpMode {
             if (!autoInitAction) {
                 autoInitAction = true;
                 setWheelMode("position");
-                autoDriveHandling(0.5,0.5,0.5,0.5);
+                autoDriveHandling(-0.5,-0.5,-0.5,-0.5);
             }
             telemetryTfod();
             sleep(20);
         }
         //Based on bias, decide on path taken
         //this is a bad way to choose
-        setWheelMode("power");
         if (LeftObjectDetected > CenterObjectDetected && LeftObjectDetected > RightObjectDetected) {
             //Set Angle
             if (!autoFirstAction) {
@@ -341,6 +336,7 @@ public class mechanumdrive extends LinearOpMode {
         }
       }
     // Save more CPU resources when camera is no longer needed.
+    visionPortal.stopStreaming();
     visionPortal.close();
     }
   
@@ -361,7 +357,7 @@ public class mechanumdrive extends LinearOpMode {
         whl_LF.setTargetPosition((int) -whl_LF_percent);
         whl_RF.setTargetPosition((int) -whl_RF_percent);
     }
-    arm_ELEVATOR.setTargetPosition((int)arm_ELEVATOR_speed);
+    //arm_ELEVATOR.setTargetPosition((int)arm_ELEVATOR_speed);
     claw_ELEVATOR1.setTargetPosition((int)claw_ELEVATOR_position);
     claw_ELEVATOR2.setTargetPosition((int)claw_ELEVATOR_position);
     arm_HOOKUP.setTargetPosition((int)arm_HOOKUP_speed);
@@ -461,10 +457,10 @@ public class mechanumdrive extends LinearOpMode {
     }
 
     if (gamepad2.dpad_up) {
-      arm_ELEVATOR_speed+= 100 * (now_time-last_time);
+      //arm_ELEVATOR_speed+= 100 * (now_time-last_time);
     }
     else if (gamepad2.dpad_down){
-      arm_ELEVATOR_speed-= 100* (now_time-last_time);
+      //arm_ELEVATOR_speed-= 100* (now_time-last_time);
     }
 
     if (gamepad2.right_bumper && claw_ELEVATOR_position <470) {
