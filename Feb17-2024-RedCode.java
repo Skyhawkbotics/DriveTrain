@@ -55,11 +55,12 @@ public class Blue2024 extends LinearOpMode {
   private BNO055IMU imu;
 
   private static final String TFOD_MODEL_FILE = "/sdcard/FIRST/tflitemodels/BlueAiModel.tflite";
+  /*
     private static final String[] LABELS = {
         "BlueLineRightWithObject",
         "BlueLineCenterWithObject",
         "BlueLineLeftWithObject"
-    };
+    };*/
   int LeftObjectDetected = 0;
   int CenterObjectDetected = 0;
   int RightObjectDetected = 0;
@@ -147,11 +148,13 @@ public class Blue2024 extends LinearOpMode {
    private VisionPortal visionPortal;
    double[][] aprilTagInfos;
    double desiredRobotAngle = 0.0;
+   boolean a_left = false;
+   boolean a_right = true;
   
   @Override
   public void runOpMode() {
 
-    initTfod();
+    //initTfod();
 
     //Initalize Motors and Servos
     whl_LB = hardwareMap.get(DcMotorEx.class, "left/back");
@@ -236,21 +239,32 @@ public class Blue2024 extends LinearOpMode {
       code_start_time = runtime.seconds();
       while (opModeIsActive()) {
         
+
+          if (runtime.seconds() - code_start_time < 1 && !autoInitAction) {
+            autoInitAction = true;
+            setWheelMode("position");
+            autoDriveHandling(0.2,-0.2,0.2,-0.2);
+          }
+          else if (runtime.seconds() - code_start_time > 1 && runtime.seconds() - code_start_time < 3.5) {
+            tankDriveHandling();
+          }
+
         // Start instructions
         //Open tfod feed for 5 seconds & drive forward like a bit
+        /*
         if (runtime.seconds() - code_start_time < 5) {
             if (!autoInitAction) {
                 autoInitAction = true;
                 setWheelMode("position");
                 autoDriveHandling(0.5,-0.5,0.5,-0.5);
             }
-            telemetryTfod();
+            //telemetryTfod();
         }
         else {
           if (!cameraClosed) {
             cameraClosed = true;
-           visionPortal.stopStreaming();
-           visionPortal.close();
+           v//isionPortal.stopStreaming();
+           v//isionPortal.close();
           }
           if (LeftObjectDetected > CenterObjectDetected && LeftObjectDetected > RightObjectDetected) {
               //Set Angle
@@ -299,7 +313,7 @@ public class Blue2024 extends LinearOpMode {
                   autoDriveHandling(0.5,0.5,0.5,0.5);
               } 
           }
-        }
+        }*/
 
         if (rightangle_active) {
           if (Math.abs(Help.trueAngleDif(desiredRobotAngle,imu.getAngularOrientation().firstAngle)) > 5){
@@ -488,7 +502,96 @@ public class Blue2024 extends LinearOpMode {
     whl_RF_percent = whl_RF_percent/1.5;
   }
   //Ready
+  public void tankDriveHandling() {
+
+    if (Math.abs(gamepad1.left_stick_y) > 0.2 || Math.abs(gamepad1.right_stick_y) > 0.2){
+      joystick_active = true;
+    }
+    else {
+      joystick_active = false;
+    }
+
+    boolean dif = Math.abs((gamepad1.left_stick_y+gamepad1.left_stick_x))>Math.abs((gamepad1.right_stick_x+gamepad1.right_stick_y));
+    
+    float drv_stick_y2 = gamepad1.right_stick_y;
+    float drv_stick_x2 = gamepad1.right_stick_x;
+    float truth = (Math.abs(gamepad1.right_stick_y) - Math.abs(gamepad1.left_stick_y) > 0) ? gamepad1.right_stick_y : gamepad1.left_stick_y;
   
+    
+
+    /*
+    if (gamepad1.dpad_right) {
+      whl_RF_percent = 2;
+      whl_RB_percent = -1.5f;
+      whl_LF_percent = -2;
+      whl_LB_percent = 1.5f;
+    }
+    
+    else if (gamepad1.dpad_left) {
+      whl_LF_percent = 2;
+      whl_LB_percent = -1.5f;
+      whl_RB_percent = 1.5f;
+      whl_RF_percent = -2;
+    }*/
+    
+    if (gamepad1.left_stick_y > 0.9 && gamepad1.right_stick_y < -0.9) {
+      whl_RF_percent += -1;
+      whl_RB_percent += -1f;
+      whl_LF_percent += 1;
+      whl_LB_percent += 1f;
+    }
+    
+    else if (gamepad1.left_stick_y < -0.9 && gamepad1.right_stick_y > 0.9) {
+      whl_LF_percent += -1;
+      whl_LB_percent += -1f;
+      whl_RB_percent += 1f;
+      whl_RF_percent += 1;
+    }
+    else {
+      whl_LB_percent += gamepad1.left_stick_y;
+      whl_LF_percent += gamepad1.left_stick_y;
+      whl_RB_percent += gamepad1.right_stick_y;
+      whl_RF_percent += gamepad1.right_stick_y;
+    }
+
+    if (gamepad1.right_bumper) {
+      whl_LB_percent += 0.5;
+      whl_LF_percent += 0.5;
+      whl_RB_percent += 0.5;
+      whl_RF_percent += 0.5;
+    }
+    else if (gamepad1.left_bumper) {
+      whl_LB_percent -= 0.5;
+      whl_LF_percent -= 0.5;
+      whl_RB_percent -= 0.5;
+      whl_RF_percent -= 0.5;
+    }
+
+    if (a_left) {
+      whl_LB_percent += 1;
+      whl_LF_percent -= 0.9;
+      whl_RB_percent -= 1;
+      whl_RF_percent += 0.9;
+      if (!isStrafing){
+        isStrafing = true;
+        strafeStartingAngle = imu.getAngularOrientation().firstAngle;
+      }
+    }
+    else if (a_right) {
+      whl_LB_percent -= 1;
+      whl_LF_percent += 0.9;
+      whl_RB_percent += 1;
+      whl_RF_percent -= 0.9;
+      if (!isStrafing){
+        isStrafing = true;
+        strafeStartingAngle = imu.getAngularOrientation().firstAngle;
+      }
+    }
+    else if (isStrafing) {
+      isStrafing = false;
+      strafeEndTime = runtime.seconds();
+    }
+   }
   
    
    private void initAprilTag() {
