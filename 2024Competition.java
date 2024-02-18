@@ -94,7 +94,7 @@ public class mechanumdrive extends LinearOpMode {
 
   double last_time = runtime.seconds(); //Used to find how much time has elapsed per iteration in the runtime loop.
   double reset_last_time = runtime.seconds(); //Last time the robot has reset
-  double arm_ELEVATOR_speed = 0.0;
+  //double arm_ELEVATOR_speed = 0.0;
 
   private String wheelMode = "power";
   
@@ -152,10 +152,10 @@ public class mechanumdrive extends LinearOpMode {
     arm_HOOKDOWN = hardwareMap.get(DcMotorEx.class, "Hook Arm Down");
     servo_ROTATER = hardwareMap.get(CRServo.class, "Claw Flipper");
     servo_CLAW = hardwareMap.get(CRServo.class, "Claw Opener");
-    arm_ELEVATOR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-    arm_ELEVATOR.setTargetPosition(0);
-    arm_ELEVATOR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-    arm_ELEVATOR.setVelocity(10000);
+    //arm_ELEVATOR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+   // arm_ELEVATOR.setTargetPosition(0);
+    //arm_ELEVATOR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    //arm_ELEVATOR.setVelocity(10000);
 
     servo_DRONE = hardwareMap.get(CRServo.class, "Drone Launcher");
     //servo_DRONE2 = hardwareMap.get(CRServo.class, "Drone Launcher 2");
@@ -286,7 +286,7 @@ public class mechanumdrive extends LinearOpMode {
         telemetry.addData("acceleration_x", imu.getAcceleration().xAccel);
         telemetry.addData("acceleration_y", imu.getAcceleration().yAccel);
         telemetry.addData("acceleration_z", imu.getAcceleration().zAccel);
-
+        
         telemetry.addData("firstAngle", imu.getAngularOrientation().firstAngle);
         telemetry.addData("desiredAngle", desiredRobotAngle);
         telemetry.addData("angleDifference", Help.trueAngleDif(desiredRobotAngle,imu.getAngularOrientation().firstAngle));
@@ -431,16 +431,7 @@ public class mechanumdrive extends LinearOpMode {
       
     //}
     
-    else if  (gamepad2.dpad_right) {
-      servo_CLAW_power += 5 * (now_time-last_time);
-  
-    }
-    
-    
-    else {
-    servo_CLAW_power = 0;
-      
-    }
+
     if (gamepad1.y) {
       servo_DRONE_power = 20;
     }
@@ -461,12 +452,12 @@ public class mechanumdrive extends LinearOpMode {
       left_bumper_DOWN = false;
     }
 
-    if (gamepad2.dpad_up) {
+    //if (gamepad2.dpad_up) {
       //arm_ELEVATOR_speed+= 100 * (now_time-last_time);
-    }
-    else if (gamepad2.dpad_down){
+   // }
+   // else if (gamepad2.dpad_down){
       //arm_ELEVATOR_speed-= 100* (now_time-last_time);
-    }
+   // }
 
     if (gamepad2.right_bumper && claw_ELEVATOR_position <470) {
       if (!gamepad1.b) {
