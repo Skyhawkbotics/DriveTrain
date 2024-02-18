@@ -3,6 +3,7 @@ Packages and Imports used for the code.
 */
 package org.firstinspires.ftc;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
@@ -48,8 +49,8 @@ import java.lang.Math;
 
 
 
-@TeleOp(name = "2024 Blue Prop Code")
-public class mechanumdrive extends LinearOpMode {
+@Autonomous(name = "2024 Blue Prop Code")
+public class Blue2024 extends LinearOpMode {
   //Clock Variable
   private ElapsedTime     runtime = new ElapsedTime();
 
@@ -169,6 +170,10 @@ public class mechanumdrive extends LinearOpMode {
     arm_HOOKDOWN = hardwareMap.get(DcMotorEx.class, "Hook Arm Down");
     servo_ROTATER = hardwareMap.get(CRServo.class, "Claw Flipper");
     servo_CLAW = hardwareMap.get(CRServo.class, "Claw Opener");
+    //arm_ELEVATOR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    //arm_ELEVATOR.setTargetPosition(0);
+    //arm_ELEVATOR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    //arm_ELEVATOR.setVelocity(10000);
 
     servo_DRONE = hardwareMap.get(CRServo.class, "Drone Launcher");
     //servo_DRONE2 = hardwareMap.get(CRServo.class, "Drone Launcher 2");
@@ -239,13 +244,14 @@ public class mechanumdrive extends LinearOpMode {
             if (!autoInitAction) {
                 autoInitAction = true;
                 setWheelMode("position");
-                autoDriveHandling(-0.5,-0.5,-0.5,-0.5);
+                autoDriveHandling(0.5,-0.5,0.5,-0.5);
             }
             telemetryTfod();
-            sleep(20);
+            //sleep(20);
         }
         //Based on bias, decide on path taken
         //this is a bad way to choose
+        //setWheelMode("power");
         if (LeftObjectDetected > CenterObjectDetected && LeftObjectDetected > RightObjectDetected) {
             //Set Angle
             if (!autoFirstAction) {
@@ -360,8 +366,8 @@ public class mechanumdrive extends LinearOpMode {
     //arm_ELEVATOR.setTargetPosition((int)arm_ELEVATOR_speed);
     claw_ELEVATOR1.setTargetPosition((int)claw_ELEVATOR_position);
     claw_ELEVATOR2.setTargetPosition((int)claw_ELEVATOR_position);
-    arm_HOOKUP.setTargetPosition((int)arm_HOOKUP_speed);
-    arm_HOOKDOWN.setTargetPosition((int)arm_HOOKDOWN_speed);
+    //arm_HOOKUP.setTargetPosition((int)arm_HOOKUP_speed);
+    //arm_HOOKDOWN.setTargetPosition((int)arm_HOOKDOWN_speed);
     servo_ROTATER.setPower(servo_ROTATER_power);
     servo_CLAW.setPower(servo_CLAW_power);
     servo_DRONE.setPower(servo_DRONE_power);
@@ -415,20 +421,20 @@ public class mechanumdrive extends LinearOpMode {
     }
     
      if (gamepad1.dpad_left) {
-      arm_HOOKUP_speed = 5;
+      //arm_HOOKUP_speed = 5;
   
     }
     else if  (gamepad1.dpad_right) {
-      arm_HOOKDOWN_speed = 5;
+      //arm_HOOKDOWN_speed = 5;
   
     }
     
     if (gamepad1.dpad_left) {
-      arm_HOOKDOWN_speed =- 5;
+      //arm_HOOKDOWN_speed =- 5;
   
     }
     else if  (gamepad1.dpad_right) {
-      arm_HOOKUP_speed =- 5;
+      //arm_HOOKUP_speed =- 5;
   
     }
     
