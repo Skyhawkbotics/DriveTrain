@@ -466,7 +466,27 @@ public class Blue2024 extends LinearOpMode {
     //Goal is reached, function end
     
   }
-  
+  public void twoDriveHandling(double Y, double X) {
+    whl_LB_percent = 0;
+    whl_LF_percent = 0;
+    whl_RB_percent = 0;
+    whl_RF_percent = 0;
+    
+    whl_LB_percent += Y;
+    whl_LF_percent += Y;
+    whl_RB_percent += Y;
+    whl_RF_percent += Y;
+    
+    whl_LB_percent += X;
+    whl_LF_percent += X;
+    whl_RB_percent -= X;
+    whl_RF_percent -= X;
+    
+    whl_LB_percent = whl_LB_percent/1.5;
+    whl_LF_percent = whl_LF_percent/1.5;
+    whl_RB_percent = whl_RB_percent/1.5;
+    whl_RF_percent = whl_RF_percent/1.5;
+  }
   //Ready
   
   
