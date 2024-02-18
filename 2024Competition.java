@@ -396,16 +396,17 @@ public class mechanumdrive extends LinearOpMode {
       servo_CLAW_power += 5 * (now_time-last_time);
   
     }
-    
+    else {
+    servo_CLAW_power = 0;
+      
+    }
     if (gamepad2.dpad_up) {
       arm_HOOKUP_speed += 5 * (now_time-last_time);
   
     }
     else if  (gamepad2.dpad_down) {
       arm_HOOKDOWN_speed += 5 * (now_time-last_time);
-  
     }
-    
     if (gamepad2.dpad_up) {
       arm_HOOKDOWN_speed +=- 5 * (now_time-last_time);
     }
@@ -413,10 +414,13 @@ public class mechanumdrive extends LinearOpMode {
       arm_HOOKUP_speed +=- 5 * (now_time-last_time);
     }
     
-    else {
-    servo_CLAW_power = 0;
-      
+    if (gamepad2.left_bumper) {
+      arm_HOOKDOWN_speed +=- 5 * (now_time-last_time);
     }
+    else if (gamepad2.left_trigger > 0.7) {
+      arm_HOOKDOWN_speed += 5 * (now_time-last_time);
+    }
+
     if (gamepad1.y) {
       servo_DRONE_power = 20;
     }
@@ -438,23 +442,6 @@ public class mechanumdrive extends LinearOpMode {
   
     }
     
-     if (gamepad1.dpad_left) {
-      arm_HOOKUP_speed = 5;
-  
-    }
-    else if  (gamepad1.dpad_right) {
-      arm_HOOKDOWN_speed = 5;
-  
-    }
-    
-    if (gamepad1.dpad_left) {
-      arm_HOOKDOWN_speed =- 5;
-  
-    }
-    else if  (gamepad1.dpad_right) {
-      arm_HOOKUP_speed =- 5;
-  
-    }
     
     else {
     servo_CLAW_power = 0;

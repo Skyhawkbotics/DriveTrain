@@ -132,6 +132,7 @@ public class Blue2024 extends LinearOpMode {
   boolean autoInitAction = false;
   boolean autoFirstAction = false;
   boolean a2 = false;
+  boolean cameraClosed = false;
 
   //aprilTag setup
   private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
@@ -246,8 +247,11 @@ public class Blue2024 extends LinearOpMode {
             telemetryTfod();
         }
         else {
-          visionPortal.stopStreaming();
-          visionPortal.close();
+          if (!cameraClosed) {
+            cameraClosed = true;
+           visionPortal.stopStreaming();
+           visionPortal.close();
+          }
           if (LeftObjectDetected > CenterObjectDetected && LeftObjectDetected > RightObjectDetected) {
               //Set Angle
               if (!autoFirstAction) {
@@ -257,7 +261,7 @@ public class Blue2024 extends LinearOpMode {
               }
               if (!a2)
                   rotate("", desiredRobotAngle);
-              if (!a2 && runtime.seconds() - code_start_time < 7) {
+              if (!a2 && runtime.seconds() - code_start_time > 7) {
                   a2 = true;
                   setWheelMode("position");
                   autoDriveHandling(0.5,0.5,0.5,0.5);
@@ -273,7 +277,7 @@ public class Blue2024 extends LinearOpMode {
               }
               if (!a2)
                   rotate("", desiredRobotAngle);
-              if (!a2 && runtime.seconds() - code_start_time < 7) {
+              if (!a2 && runtime.seconds() - code_start_time > 7) {
                   a2 = true;
                   setWheelMode("position");
                   autoDriveHandling(0.5,0.5,0.5,0.5);
@@ -289,7 +293,7 @@ public class Blue2024 extends LinearOpMode {
               }
               if (!a2)
                   rotate("", desiredRobotAngle);
-              if (!a2 && runtime.seconds() - code_start_time < 7) {
+              if (!a2 && runtime.seconds() - code_start_time > 7) {
                   a2 = true;
                   setWheelMode("position");
                   autoDriveHandling(0.5,0.5,0.5,0.5);
@@ -341,8 +345,8 @@ public class Blue2024 extends LinearOpMode {
         }
       }
     // Save more CPU resources when camera is no longer needed.
-    visionPortal.stopStreaming();
-    visionPortal.close();
+    //visionPortal.stopStreaming();
+    //visionPortal.close();
     }
   
   public void setPower() {
