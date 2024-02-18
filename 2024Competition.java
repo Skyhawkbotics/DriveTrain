@@ -62,22 +62,16 @@ public class mechanumdrive extends LinearOpMode {
   private DcMotorEx whl_LF;
   private DcMotorEx whl_RB;
   private DcMotorEx whl_RF;
-  private DcMotorEx arm_ELEVATOR;
+  //private DcMotorEx arm_ELEVATOR;
   private DcMotorEx arm_HOOKUP;
   private DcMotorEx arm_HOOKDOWN;
   private CRServo servo_ROTATER;
   private CRServo servo_DRONE;
   double servo_ROTATER_power = 0.0;
-<<<<<<< HEAD
-  double arm_HOOKUP_speed = 0.0;
+ // private CRServo servo_DRONE2;
+ // double servo_DRONE2_power = 0.0;
   double arm_HOOKDOWN_speed = 0.0;
- // private CRServo servo_DRONE2;
- // double servo_DRONE2_power = 0.0;
-=======
- // private CRServo servo_DRONE2;
- // double servo_DRONE2_power = 0.0;
->>>>>>> 31ffd9e073a3849c12a14ae92ad79560266a37dd
-
+  double arm_HOOKUP_speed =0.0;
   private CRServo servo_CLAW;
   double servo_CLAW_power = 0.0;
   boolean servo_CLAW_closed = false;
@@ -149,7 +143,7 @@ public class mechanumdrive extends LinearOpMode {
     whl_RB = hardwareMap.get(DcMotorEx.class, "right/back");
     whl_RF = hardwareMap.get(DcMotorEx.class, "right/front");
     
-    arm_ELEVATOR = hardwareMap.get(DcMotorEx.class, "Arm Extender");
+    //arm_ELEVATOR = hardwareMap.get(DcMotorEx.class, "Arm Extender");
     
     claw_ELEVATOR1 = hardwareMap.get(DcMotorEx.class, "Left String Uppy Puller");
     claw_ELEVATOR2 = hardwareMap.get(DcMotorEx.class, "Right String Uppy Puller");
@@ -340,7 +334,7 @@ public class mechanumdrive extends LinearOpMode {
         whl_LF.setTargetPosition((int) -whl_LF_percent);
         whl_RF.setTargetPosition((int) -whl_RF_percent);
     }
-    arm_ELEVATOR.setTargetPosition((int)arm_ELEVATOR_speed);
+    //arm_ELEVATOR.setTargetPosition((int)arm_ELEVATOR_speed);
     claw_ELEVATOR1.setTargetPosition((int)claw_ELEVATOR_position);
     claw_ELEVATOR2.setTargetPosition((int)claw_ELEVATOR_position);
     arm_HOOKUP.setTargetPosition((int)arm_HOOKUP_speed);
@@ -468,10 +462,10 @@ public class mechanumdrive extends LinearOpMode {
     }
 
     if (gamepad2.dpad_up) {
-      arm_ELEVATOR_speed+= 100 * (now_time-last_time);
+      //arm_ELEVATOR_speed+= 100 * (now_time-last_time);
     }
     else if (gamepad2.dpad_down){
-      arm_ELEVATOR_speed-= 100* (now_time-last_time);
+      //arm_ELEVATOR_speed-= 100* (now_time-last_time);
     }
 
     if (gamepad2.right_bumper && claw_ELEVATOR_position <470) {
