@@ -2,8 +2,6 @@
 Packages and Imports used for the code.
 */
 package org.firstinspires.ftc;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
 import com.qualcomm.hardware.bosch.BNO055IMU;
@@ -39,14 +37,22 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import org.firstinspires.ftc.teamcode.Help;
 
-import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
-import org.firstinspires.ftc.vision.tfod.TfodProcessor;
-
 import java.util.List;
 
 import java.lang.Math;
 
+/*Todo:
+Coding presets
+  High elevator rotation + low // needs testing
+    on up input + a
+    down input + a
+  Rotate 90 // needs testing
+    d + dpad right / left
+Camera Rotation jittery // needs testing
+  Check if the power is incorrectly set
+  Check the IF statement for rotation for consistency
 
+*/
 
 @TeleOp(name = "2024 TEST")
 public class mechanumdrive extends LinearOpMode {
@@ -62,21 +68,16 @@ public class mechanumdrive extends LinearOpMode {
   private DcMotorEx whl_LF;
   private DcMotorEx whl_RB;
   private DcMotorEx whl_RF;
-  private DcMotorEx arm_ELEVATOR;
+  //private DcMotorEx arm_ELEVATOR;
   private DcMotorEx arm_HOOKUP;
   private DcMotorEx arm_HOOKDOWN;
   private CRServo servo_ROTATER;
   private CRServo servo_DRONE;
+  private double arm_HOOKUP_speed;
+  private double arm_HOOKDOWN_speed;
   double servo_ROTATER_power = 0.0;
-<<<<<<< HEAD
-  double arm_HOOKUP_speed = 0.0;
-  double arm_HOOKDOWN_speed = 0.0;
  // private CRServo servo_DRONE2;
  // double servo_DRONE2_power = 0.0;
-=======
- // private CRServo servo_DRONE2;
- // double servo_DRONE2_power = 0.0;
->>>>>>> 31ffd9e073a3849c12a14ae92ad79560266a37dd
 
   private CRServo servo_CLAW;
   double servo_CLAW_power = 0.0;
@@ -94,10 +95,8 @@ public class mechanumdrive extends LinearOpMode {
   double whl_RB_percent;
   double whl_RF_percent;
 
-  final double WHEEL_METER_CONSTANT = 578.97;
-  final double WHEEL_INCH_CONSTANT = (1 / 34) * 500;  
-
-
+  final double WHEEL_METER_CONSTANT = 1;
+  
   double last_time = runtime.seconds(); //Used to find how much time has elapsed per iteration in the runtime loop.
   double reset_last_time = runtime.seconds(); //Last time the robot has reset
   double arm_ELEVATOR_speed = 0.0;
@@ -149,7 +148,7 @@ public class mechanumdrive extends LinearOpMode {
     whl_RB = hardwareMap.get(DcMotorEx.class, "right/back");
     whl_RF = hardwareMap.get(DcMotorEx.class, "right/front");
     
-    arm_ELEVATOR = hardwareMap.get(DcMotorEx.class, "Arm Extender");
+    //arm_ELEVATOR = hardwareMap.get(DcMotorEx.class, "Arm Extender");
     
     claw_ELEVATOR1 = hardwareMap.get(DcMotorEx.class, "Left String Uppy Puller");
     claw_ELEVATOR2 = hardwareMap.get(DcMotorEx.class, "Right String Uppy Puller");
@@ -158,10 +157,10 @@ public class mechanumdrive extends LinearOpMode {
     arm_HOOKDOWN = hardwareMap.get(DcMotorEx.class, "Hook Arm Down");
     servo_ROTATER = hardwareMap.get(CRServo.class, "Claw Flipper");
     servo_CLAW = hardwareMap.get(CRServo.class, "Claw Opener");
-    arm_ELEVATOR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-    arm_ELEVATOR.setTargetPosition(0);
-    arm_ELEVATOR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-    arm_ELEVATOR.setVelocity(10000);
+    //arm_ELEVATOR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    //arm_ELEVATOR.setTargetPosition(0);
+    //arm_ELEVATOR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    //arm_ELEVATOR.setVelocity(10000);
 
     servo_DRONE = hardwareMap.get(CRServo.class, "Drone Launcher");
     //servo_DRONE2 = hardwareMap.get(CRServo.class, "Drone Launcher 2");
@@ -340,7 +339,7 @@ public class mechanumdrive extends LinearOpMode {
         whl_LF.setTargetPosition((int) -whl_LF_percent);
         whl_RF.setTargetPosition((int) -whl_RF_percent);
     }
-    arm_ELEVATOR.setTargetPosition((int)arm_ELEVATOR_speed);
+    //arm_ELEVATOR.setTargetPosition((int)arm_ELEVATOR_speed);
     claw_ELEVATOR1.setTargetPosition((int)claw_ELEVATOR_position);
     claw_ELEVATOR2.setTargetPosition((int)claw_ELEVATOR_position);
     arm_HOOKUP.setTargetPosition((int)arm_HOOKUP_speed);
@@ -397,62 +396,21 @@ public class mechanumdrive extends LinearOpMode {
   
     }
     
-    if (gamepad2.dpad_up) {
-      arm_HOOKUP_speed += 5 * (now_time-last_time);
+     if (gamepad1.dpad_up) {
+      arm_HOOKUP_speed += 100;
   
     }
-    else if  (gamepad2.dpad_down) {
-      arm_HOOKDOWN_speed += 5 * (now_time-last_time);
-  
-    }
-    
-    if (gamepad2.dpad_up) {
-      arm_HOOKDOWN_speed +=- 5 * (now_time-last_time);
-    }
-    else if  (gamepad2.dpad_down) {
-      arm_HOOKUP_speed +=- 5 * (now_time-last_time);
-    }
-    
-    else {
-    servo_CLAW_power = 0;
-      
-    }
-    if (gamepad1.y) {
-      servo_DRONE_power = 20;
-    }
-    else if (gamepad1.a) {
-      servo_DRONE_power =- 10;
-      
-    }
-    
-    //if (gamepad1.y) {
-      //servo_DRONE2_power = 20;
-    //}
-    //else if (gamepad1.a) {
-      //servo_DRONE2_power =- 10;
-      
-    //}
-    
-    else if  (gamepad2.dpad_right) {
-      servo_CLAW_power += 5 * (now_time-last_time);
+    else if  (gamepad1.dpad_down) {
+      arm_HOOKDOWN_speed += 200;
   
     }
     
-     if (gamepad1.dpad_left) {
-      arm_HOOKUP_speed = 5;
+    if (gamepad1.dpad_up) {
+      arm_HOOKDOWN_speed +=- 200;
   
     }
-    else if  (gamepad1.dpad_right) {
-      arm_HOOKDOWN_speed = 5;
-  
-    }
-    
-    if (gamepad1.dpad_left) {
-      arm_HOOKDOWN_speed =- 5;
-  
-    }
-    else if  (gamepad1.dpad_right) {
-      arm_HOOKUP_speed =- 5;
+    else if  (gamepad1.dpad_down) {
+      arm_HOOKUP_speed +=- 300;
   
     }
     
@@ -481,10 +439,10 @@ public class mechanumdrive extends LinearOpMode {
     }
 
     if (gamepad2.dpad_up) {
-      arm_ELEVATOR_speed+= 100 * (now_time-last_time);
+      //arm_ELEVATOR_speed+= 100 * (now_time-last_time);
     }
     else if (gamepad2.dpad_down){
-      arm_ELEVATOR_speed-= 100* (now_time-last_time);
+      //arm_ELEVATOR_speed-= 100* (now_time-last_time);
     }
 
     if (gamepad2.right_bumper && claw_ELEVATOR_position <470) {
