@@ -133,6 +133,7 @@ public class Blue2024 extends LinearOpMode {
   boolean autoFirstAction = false;
   boolean a2 = false;
   boolean cameraClosed = false;
+  int cameraCaptures = 0;
 
   //aprilTag setup
   private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
@@ -220,7 +221,7 @@ public class Blue2024 extends LinearOpMode {
     //);
 
     //AprilTag
-    initAprilTag();
+    //initAprilTag();
     // Wait for the DS start button to be touched.
     telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
     telemetry.addData(">", "Touch Play to start OpMode");
@@ -242,10 +243,20 @@ public class Blue2024 extends LinearOpMode {
             if (!autoInitAction) {
                 autoInitAction = true;
                 setWheelMode("position");
-                autoDriveHandling(0.5,-0.5,0.5,-0.5);
+                //autoDriveHandling(-0.15,-0.15,-0.15,-0.15); //drive forward 15cm
             }
-            telemetryTfod();
+            if ((runtime.seconds() - code_start_time) - (cameraCaptures/4) > 0){
+              telemetryTfod();
+              cameraCaptures+=1;
+            }
         }
+        else {
+          if (!cameraClosed) {
+            cameraClosed=true;
+            visionPortal.close();
+          }
+        }
+        /*
         else {
           if (!cameraClosed) {
             cameraClosed = true;
@@ -299,7 +310,7 @@ public class Blue2024 extends LinearOpMode {
                   autoDriveHandling(0.5,0.5,0.5,0.5);
               } 
           }
-        }
+        }*/
 
         if (rightangle_active) {
           if (Math.abs(Help.trueAngleDif(desiredRobotAngle,imu.getAngularOrientation().firstAngle)) > 5){
@@ -327,9 +338,9 @@ public class Blue2024 extends LinearOpMode {
         
         telemetry.addData("orientation", orientation);
         telemetry.addData("velocity", imu.getVelocity());
-        telemetry.addData("acceleration_x", imu.getAcceleration().xAccel);
-        telemetry.addData("acceleration_y", imu.getAcceleration().yAccel);
-        telemetry.addData("acceleration_z", imu.getAcceleration().zAccel);
+        telemetry.addData("left", LeftObjectDetected);
+        telemetry.addData("cent", CenterObjectDetected);
+        telemetry.addData("right", RightObjectDetected);
 
         telemetry.addData("firstAngle", imu.getAngularOrientation().firstAngle);
         telemetry.addData("desiredAngle", desiredRobotAngle);
@@ -346,7 +357,6 @@ public class Blue2024 extends LinearOpMode {
       }
     // Save more CPU resources when camera is no longer needed.
     //visionPortal.stopStreaming();
-    //visionPortal.close();
     }
   
   public void setPower() {
@@ -416,10 +426,10 @@ public class Blue2024 extends LinearOpMode {
       whl_LF.setMode(DcMotor.RunMode.RUN_TO_POSITION);
       whl_RF.setMode(DcMotor.RunMode.RUN_TO_POSITION);
   
-      whl_LB.setVelocity(300);
-      whl_RB.setVelocity(300);
-      whl_LF.setVelocity(300);
-      whl_RF.setVelocity(300);
+      whl_LB.setVelocity(500);
+      whl_RB.setVelocity(500);
+      whl_LF.setVelocity(500);
+      whl_RF.setVelocity(500);
     }
     else if (mode == "power") {
       wheelMode = "power";
@@ -602,7 +612,7 @@ public class Blue2024 extends LinearOpMode {
         visionPortal = builder.build();
 
         // Set confidence threshold for TFOD recognitions, at any time.
-        //tfod.setMinResultConfidence(0.75f);
+        tfod.setMinResultConfidence(0.5f);
 
         // Disable or re-enable the TFOD processor at any time.
         //visionPortal.setProcessorEnabled(tfod, true);
