@@ -3,6 +3,7 @@ Packages and Imports used for the code.
 */
 package org.firstinspires.ftc;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
@@ -68,8 +69,8 @@ public class mechanumdrive extends LinearOpMode {
   private CRServo servo_ROTATER;
   private CRServo servo_DRONE;
   double servo_ROTATER_power = 0.0;
- // private CRServo servo_DRONE2;
- // double servo_DRONE2_power = 0.0;
+  private CRServo servo_DRONE2;
+  double servo_DRONE2_power = 0.0;
   double arm_HOOKDOWN_speed = 0.0;
   double arm_HOOKUP_speed =0.0;
   private CRServo servo_CLAW;
@@ -148,8 +149,8 @@ public class mechanumdrive extends LinearOpMode {
     claw_ELEVATOR1 = hardwareMap.get(DcMotorEx.class, "Left String Uppy Puller");
     claw_ELEVATOR2 = hardwareMap.get(DcMotorEx.class, "Right String Uppy Puller");
 
-    arm_HOOKUP = hardwareMap.get(DcMotorEx.class, "Hook Arm Up");
-    arm_HOOKDOWN = hardwareMap.get(DcMotorEx.class, "Hook Arm Down");
+    //arm_HOOKUP = hardwareMap.get(DcMotorEx.class, "Hook Arm Up");
+    //arm_HOOKDOWN = hardwareMap.get(DcMotorEx.class, "Hook Arm Down");
     servo_ROTATER = hardwareMap.get(CRServo.class, "Claw Flipper");
     servo_CLAW = hardwareMap.get(CRServo.class, "Claw Opener");
     //arm_ELEVATOR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -158,7 +159,7 @@ public class mechanumdrive extends LinearOpMode {
     //arm_ELEVATOR.setVelocity(10000);
 
     servo_DRONE = hardwareMap.get(CRServo.class, "Drone Launcher");
-    //servo_DRONE2 = hardwareMap.get(CRServo.class, "Drone Launcher 2");
+    servo_DRONE2 = hardwareMap.get(CRServo.class, "Drone Launcher 2");
     
     claw_ELEVATOR1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     claw_ELEVATOR1.setTargetPosition(0);
@@ -169,7 +170,7 @@ public class mechanumdrive extends LinearOpMode {
     claw_ELEVATOR2.setTargetPosition(0);
     claw_ELEVATOR2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     claw_ELEVATOR2.setVelocity(700);
-    
+    /*
     arm_HOOKUP.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     arm_HOOKUP.setTargetPosition(0);
     arm_HOOKUP.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -178,8 +179,8 @@ public class mechanumdrive extends LinearOpMode {
     arm_HOOKDOWN.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     arm_HOOKDOWN.setTargetPosition(0);
     arm_HOOKDOWN.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-    arm_HOOKDOWN.setVelocity(700);
-
+    arm_HOOKDOWN.setVelocity(850);
+*/
     BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
     parameters.mode                = BNO055IMU.SensorMode.IMU;
     parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
@@ -286,7 +287,7 @@ public class mechanumdrive extends LinearOpMode {
         telemetry.addData("acceleration_x", imu.getAcceleration().xAccel);
         telemetry.addData("acceleration_y", imu.getAcceleration().yAccel);
         telemetry.addData("acceleration_z", imu.getAcceleration().zAccel);
-        
+        telemetry.addData("Hook", arm_HOOKUP_speed);
         telemetry.addData("firstAngle", imu.getAngularOrientation().firstAngle);
         telemetry.addData("desiredAngle", desiredRobotAngle);
         telemetry.addData("angleDifference", Help.trueAngleDif(desiredRobotAngle,imu.getAngularOrientation().firstAngle));
@@ -319,10 +320,10 @@ public class mechanumdrive extends LinearOpMode {
   
   public void setPower() {
     if (wheelMode == "power") {
-      whl_LB.setPower(whl_LB_percent);
-      whl_RB.setPower(whl_RB_percent);
+      whl_LB.setPower(-whl_LB_percent);
+      whl_RB.setPower(-whl_RB_percent);
       whl_LF.setPower(-whl_LF_percent);
-      whl_RF.setPower(-whl_RF_percent);
+      whl_RF.setPower(whl_RF_percent);
       whl_LB_percent = 0;
       whl_RB_percent = 0;
       whl_LF_percent = 0;
@@ -337,11 +338,11 @@ public class mechanumdrive extends LinearOpMode {
     //arm_ELEVATOR.setTargetPosition((int)arm_ELEVATOR_speed);
     claw_ELEVATOR1.setTargetPosition((int)claw_ELEVATOR_position);
     claw_ELEVATOR2.setTargetPosition((int)claw_ELEVATOR_position);
-    arm_HOOKUP.setTargetPosition((int)arm_HOOKUP_speed);
-    arm_HOOKDOWN.setTargetPosition((int)arm_HOOKDOWN_speed);
+    //arm_HOOKUP.setTargetPosition((int)arm_HOOKUP_speed);
+    //arm_HOOKDOWN.setTargetPosition((int)arm_HOOKDOWN_speed);
     servo_ROTATER.setPower(servo_ROTATER_power);
     servo_CLAW.setPower(servo_CLAW_power);
-    servo_DRONE.setPower(servo_DRONE_power);
+    //servo_DRONE.setPower(servo_DRONE_power);
 
     //claw_GRIP.setPower(claw_GRIP_angle);
     //telemetry.update();
@@ -394,22 +395,23 @@ public class mechanumdrive extends LinearOpMode {
     servo_CLAW_power = 0;
       
     }
-    if (gamepad2.dpad_up) {
-      arm_HOOKUP_speed += 5 * (now_time-last_time);
+    if (gamepad2.dpad_up && arm_HOOKUP_speed <710) {
+      arm_HOOKUP_speed += 200 * (now_time-last_time);
   
     }
-    else if  (gamepad2.dpad_down) {
-      arm_HOOKDOWN_speed += 5 * (now_time-last_time);
+    else if  (gamepad2.dpad_down && arm_HOOKDOWN_speed <700) {
+      arm_HOOKDOWN_speed += 450 * (now_time-last_time);
     }
-    if (gamepad2.dpad_up) {
-      arm_HOOKDOWN_speed +=- 5 * (now_time-last_time);
+    if (gamepad2.dpad_up && arm_HOOKDOWN_speed <700) {
+      arm_HOOKDOWN_speed += -450 * (now_time-last_time);
     }
-    else if  (gamepad2.dpad_down) {
-      arm_HOOKUP_speed +=- 5 * (now_time-last_time);
+    
+    else if  (gamepad2.dpad_down && arm_HOOKUP_speed <700) {
+      arm_HOOKUP_speed += -200 * (now_time-last_time);
     }
     
     if (gamepad2.left_bumper) {
-      arm_HOOKDOWN_speed +=- 5 * (now_time-last_time);
+      arm_HOOKDOWN_speed += -5 * (now_time-last_time);
     }
     else if (gamepad2.left_trigger > 0.7) {
       arm_HOOKDOWN_speed += 5 * (now_time-last_time);
@@ -422,31 +424,16 @@ public class mechanumdrive extends LinearOpMode {
       servo_DRONE_power =- 10;
       
     }
+    else servo_DRONE_power = 0.0;
     
-    //if (gamepad1.y) {
-      //servo_DRONE2_power = 20;
-    //}
-    //else if (gamepad1.a) {
-      //servo_DRONE2_power =- 10;
-      
-    //}
-    
-
     if (gamepad1.y) {
-      servo_DRONE_power = 20;
+      servo_DRONE2_power = 20;
     }
     else if (gamepad1.a) {
-      servo_DRONE_power =- 10;
+      servo_DRONE2_power =- 10;
       
     }
-    
-    //if (gamepad1.y) {
-      //servo_DRONE2_power = 20;
-    //}
-    //else if (gamepad1.a) {
-      //servo_DRONE2_power =- 10;
-      
-    //}
+    else servo_DRONE2_power = 0.0;
     
     if (!gamepad2.left_bumper) {
       left_bumper_DOWN = false;
