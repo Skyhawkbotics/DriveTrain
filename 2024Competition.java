@@ -278,6 +278,7 @@ public class mechanumdrive extends LinearOpMode {
           }
           if (delta > 0.8) {
             servo_DRONE_power = 0;
+            y_last_held = -1.0;
           }
 
         }
@@ -427,11 +428,11 @@ public class mechanumdrive extends LinearOpMode {
     }
 
     if (gamepad1.y) {
-      servo_DRONE_power = 20;
+      y_down = true;
+      y_last_held = runtime.seconds();
     }
-    else if (gamepad1.a) {
-      servo_DRONE_power =- 10;
-      
+    else {
+      y_down = false;
     }
     
     //if (gamepad1.y) {
