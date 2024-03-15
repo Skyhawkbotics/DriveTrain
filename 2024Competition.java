@@ -76,6 +76,8 @@ public class mechanumdrive extends LinearOpMode {
   double servo_CLAW_power = 0.0;
   boolean servo_CLAW_closed = false;
   boolean right_bumper_DOWN = false;
+  boolean y_down = false;
+  double y_last_held = -1.0;
 
   private DcMotorEx claw_ELEVATOR1;
   private DcMotorEx claw_ELEVATOR2;
@@ -157,8 +159,8 @@ public class mechanumdrive extends LinearOpMode {
     //arm_ELEVATOR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     //arm_ELEVATOR.setVelocity(10000);
 
-    servo_DRONE = hardwareMap.get(CRServo.class, "Drone Launcher");
-    //servo_DRONE2 = hardwareMap.get(CRServo.class, "Drone Launcher 2");
+    servo_DRONE = hardwareMap.get(CRServo.class, "Drone Launcher 1");
+    servo_DRONE2 = hardwareMap.get(CRServo.class, "Drone Launcher 2");
     
     claw_ELEVATOR1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     claw_ELEVATOR1.setTargetPosition(0);
@@ -204,7 +206,7 @@ public class mechanumdrive extends LinearOpMode {
     //);
 
     //AprilTag
-    initAprilTag();
+    //initAprilTag();
     // Wait for the DS start button to be touched.
     telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
     telemetry.addData(">", "Touch Play to start OpMode");
@@ -262,18 +264,36 @@ public class mechanumdrive extends LinearOpMode {
             strafeStartingAngle = -1000.0;
           }
         }
+
+        if (y_last_held != -1.0) {
+          double delta = runtime.seconds()-y_last_held;
+          if (delta < 0.1) {
+            servo_DRONE_power = -0.5;
+          }
+          else if (delta > 0.1 && delta < 0.4) {
+            servo_DRONE_power = 0;
+          }
+          else if (delta > 0.4) {
+            servo_DRONE_power = 1;
+          }
+          if (delta > 0.8) {
+            servo_DRONE_power = 0;
+          }
+
+        }
         
         //now_time, the time since the start of the program and is used to find time differentials between loop iterations
         if (clock_timer >= 0.0) {
           gamepadInputHandling(now_time);
         }
         clock(now_time);
+        /*
         if (runtime.seconds() - code_start_time < 3.5) {
           servo_ROTATER_power = -0.3;
         }
         else if (runtime.seconds() - uncode_start_time < 2) {
           servo_ROTATER_power = 0.3;
-        }
+        }*/
         last_time = now_time; //To find time differentials between loops.
         orientation = imu.getAngularOrientation();
         iterations +=1;
@@ -320,7 +340,7 @@ public class mechanumdrive extends LinearOpMode {
   public void setPower() {
     if (wheelMode == "power") {
       whl_LB.setPower(whl_LB_percent);
-      whl_RB.setPower(whl_RB_percent);
+      whl_RB.setPower(-whl_RB_percent);
       whl_LF.setPower(-whl_LF_percent);
       whl_RF.setPower(-whl_RF_percent);
       whl_LB_percent = 0;
@@ -342,7 +362,7 @@ public class mechanumdrive extends LinearOpMode {
     servo_ROTATER.setPower(servo_ROTATER_power);
     servo_CLAW.setPower(servo_CLAW_power);
     servo_DRONE.setPower(servo_DRONE_power);
-
+    servo_DRONE2.setPower(-servo_DRONE_power);
     //claw_GRIP.setPower(claw_GRIP_angle);
     //telemetry.update();
   }
@@ -372,15 +392,6 @@ public class mechanumdrive extends LinearOpMode {
     
 
 
-    if (gamepad2.y) {
-      servo_ROTATER_power = 0.3;
-    }
-    else if (gamepad2.a) {
-      servo_ROTATER_power =- 0.3;
-    }
-    if (!gamepad2.a&&!gamepad2.y) {
-      servo_ROTATER_power = 0;
-    }
     
     if (gamepad2.dpad_left) {
       servo_CLAW_power += -5 * (now_time-last_time);
