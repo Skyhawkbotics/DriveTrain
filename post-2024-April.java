@@ -65,7 +65,7 @@ public class post2024April extends LinearOpMode {
   private DcMotorEx arm_Rotater;
   private CRServo servo_Claw;
   double arm_Rotater_power = 0.0;
-  double servo_CLAW_power = 0.0;
+  double servo_Claw_power = 0.0;
   boolean servo_CLAW_closed = false;
   boolean right_bumper_down = false;
 
@@ -186,29 +186,25 @@ public class post2024April extends LinearOpMode {
         whl_LF.setTargetPosition((int) -whl_LF_percent);
         whl_RF.setTargetPosition((int) -whl_RF_percent);
     }
-    //arm_ELEVATOR.setTargetPosition((int)arm_ELEVATOR_speed);
-    claw_ELEVATOR1.setTargetPosition((int)claw_ELEVATOR_position);
-    claw_ELEVATOR2.setTargetPosition((int)claw_ELEVATOR_position);
-    arm_HOOKUP.setTargetPosition((int)arm_HOOKUP_speed);
-    arm_HOOKDOWN.setTargetPosition((int)arm_HOOKDOWN_speed);
-    servo_ROTATER.setPower(servo_ROTATER_power);
-    servo_CLAW.setPower(servo_CLAW_power);
-    servo_DRONE.setPower(servo_DRONE_power);
-    servo_DRONE2.setPower(-servo_DRONE_power);
+    arm_Rotater.setTargetPosition((int)arm_Rotater_speed);
+    servo_Claw.setPower(servo_Claw_power);
     //claw_GRIP.setPower(claw_GRIP_angle);
     //telemetry.update();
   }
   
   public void gamepadInputHandling(double now_time) {
     
-    if (gamepad1.right_bumper) {
-      servo_CLAW_power += -5 * (now_time-last_time);
+    if (gamepad1.right_bumper && !right_bumper_down) {
+      right_bumper_down = true;
       
+    }
+    else if (!gamepad1.right_bumper) {
+      right_bumper_down = false;
     }
     if (gamepad1.dpad_up) {
       arm_HOOKUP_speed += 5 * (now_time-last_time);
     }
-    
+
   }
   
   public void clock(double now_time) {
