@@ -49,7 +49,7 @@ import java.lang.Math;
 
 
 @TeleOp(name = "post-2024-April")
-public class post2024April extends LinearOpMode {
+public class Post2024April extends LinearOpMode {
   //Clock Variable
   private ElapsedTime     runtime = new ElapsedTime();
 
@@ -67,9 +67,11 @@ public class post2024April extends LinearOpMode {
   double arm_Rotater_power = 0.0;
   double servo_Claw_power = 0.0;
   boolean servo_CLAW_closed = false;
-  boolean right_bumper_down = false;
+  boolean left_bumper_down = false;
+  double startRobotAngle = 0.0;
 
-
+  Orientation orientation = null;
+  Acceleration acceleration = null;
   // Max ranges from -1 to 1
   double whl_LB_percent;
   double whl_LF_percent;
@@ -82,7 +84,8 @@ public class post2024April extends LinearOpMode {
 
   double last_time = runtime.seconds(); //Used to find how much time has elapsed per iteration in the runtime loop.
   double reset_last_time = runtime.seconds(); //Last time the robot has reset (N/A feature)
-
+  double code_start_time = 0.0;
+  double now_time = 0.0;
   private String wheelMode = "power";
   
   double clock_timer_MAX = 900000.0;
@@ -104,7 +107,7 @@ public class post2024April extends LinearOpMode {
     arm_Rotater.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     arm_Rotater.setVelocity(1000);
 
-    servo_Claw = hardwareMap.get(CRServo.class, "Drone Launcher 1");
+    servo_Claw = hardwareMap.get(CRServo.class, "claw");
 
     BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
     parameters.mode                = BNO055IMU.SensorMode.IMU;
@@ -133,19 +136,21 @@ public class post2024April extends LinearOpMode {
      if (opModeIsActive()) {
       code_start_time = runtime.seconds();
       while (opModeIsActive()) {
-        
-        
+                double now_time = runtime.seconds();
+
         //now_time, the time since the start of the program and is used to find time differentials between loop iterations
         if (clock_timer >= 0.0) {
           gamepadInputHandling(now_time);
         }
+        gamepadInputHandling(now_time);
+
         clock(now_time);
         last_time = now_time; //To find time differentials between loops.
         orientation = imu.getAngularOrientation();
         
         ////----VARIABLE MONITORING----////
         
-        telemetry.addData("orientation", orientation);
+        telemetry.addData("armRotaterPosition", arm_Rotater_power);
         telemetry.update();
         
           tankDriveHandling();
@@ -165,8 +170,6 @@ public class post2024April extends LinearOpMode {
         setPower();
         }
       }
-    // Save more CPU resources when camera is no longer needed.
-    visionPortal.close();
     }
   
   public void setPower() {
@@ -186,7 +189,7 @@ public class post2024April extends LinearOpMode {
         whl_LF.setTargetPosition((int) -whl_LF_percent);
         whl_RF.setTargetPosition((int) -whl_RF_percent);
     }
-    arm_Rotater.setTargetPosition((int)arm_Rotater_speed);
+    arm_Rotater.setTargetPosition((int)arm_Rotater_power);
     servo_Claw.setPower(servo_Claw_power);
     //claw_GRIP.setPower(claw_GRIP_angle);
     //telemetry.update();
@@ -194,15 +197,19 @@ public class post2024April extends LinearOpMode {
   
   public void gamepadInputHandling(double now_time) {
     
-    if (gamepad1.right_bumper && !right_bumper_down) {
-      right_bumper_down = true;
-      
+    if (gamepad1.left_bumper && !left_bumper_down) {
+      left_bumper_down = true;
+      servo_Claw_power = (servo_Claw_power == 1.0) ? -1.0 : 1.0;
     }
-    else if (!gamepad1.right_bumper) {
-      right_bumper_down = false;
+    
+    else if (!gamepad1.left_bumper) {
+      left_bumper_down = false;
     }
-    if (gamepad1.dpad_up) {
-      arm_HOOKUP_speed += 5 * (now_time-last_time);
+    if (gamepad1.dpad_up && arm_Rotater_power < 1000000) {
+      arm_Rotater_power += 100 * (now_time-last_time);
+    }
+    else if (gamepad1.dpad_down && arm_Rotater_power > 0) {
+      arm_Rotater_power -= 100 * (now_time-last_time);
     }
 
   }
@@ -336,10 +343,10 @@ public class post2024April extends LinearOpMode {
   public void tankDriveHandling() {
 
     if (Math.abs(gamepad1.left_stick_y) > 0.2 || Math.abs(gamepad1.right_stick_y) > 0.2){
-      joystick_active = true;
+     // joystick_active = true;
     }
     else {
-      joystick_active = false;
+      //joystick_active = false;
     }
 
     boolean dif = Math.abs((gamepad1.left_stick_y+gamepad1.left_stick_x))>Math.abs((gamepad1.right_stick_x+gamepad1.right_stick_y));
@@ -391,13 +398,13 @@ public class post2024April extends LinearOpMode {
       whl_RB_percent += 0.5;
       whl_RF_percent += 0.5;
     }
-    else if (gamepad1.left_bumper) {
+    else if (gamepad1.right_trigger > 0.8) {
       whl_LB_percent -= 0.5;
       whl_LF_percent -= 0.5;
       whl_RB_percent -= 0.5;
       whl_RF_percent -= 0.5;
     }
-
+/*
     if (gamepad1.left_trigger > 0.8) {
       whl_LB_percent += 1;
       whl_LF_percent -= 0.9;
@@ -421,9 +428,9 @@ public class post2024April extends LinearOpMode {
     else if (isStrafing) {
       isStrafing = false;
       strafeEndTime = runtime.seconds();
-    }
+    }*/
    }
-   
+   /*
    private void initAprilTag() {
 
         // Create the AprilTag processor the easy way.
@@ -438,11 +445,12 @@ public class post2024April extends LinearOpMode {
                 BuiltinCameraDirection.BACK, aprilTag);
         }
 
-    }   // end method initAprilTag()
+    }   */// end method initAprilTag()
 
     /**
      * Add telemetry about AprilTag detections.
      */
+     /*
     private double[][] telemetryAprilTag() {
 
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
@@ -475,16 +483,16 @@ public class post2024April extends LinearOpMode {
         }   // end for() loop
 
         // Add "key" information to telemetry
-        /*
+        
         telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
         telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
         telemetry.addLine("RBE = Range, Bearing & Elevation");
-*/
+
         //telemetry.update();
         aprilTagInfos[9][0] = (double) iteration;
         return aprilTagInfos;
     }   // end method telemetryAprilTag()
    
-   
+   */
   }
   
