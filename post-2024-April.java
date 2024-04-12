@@ -174,10 +174,10 @@ public class Post2024April extends LinearOpMode {
   
   public void setPower() {
     if (wheelMode == "power") {
-      whl_LB.setPower(whl_LB_percent);
+      whl_LB.setPower(-whl_LB_percent);
       whl_RB.setPower(-whl_RB_percent);
       whl_LF.setPower(-whl_LF_percent);
-      whl_RF.setPower(-whl_RF_percent);
+      whl_RF.setPower(whl_RF_percent);
       whl_LB_percent = 0;
       whl_RB_percent = 0;
       whl_LF_percent = 0;
@@ -205,10 +205,10 @@ public class Post2024April extends LinearOpMode {
     else if (!gamepad1.left_bumper) {
       left_bumper_down = false;
     }
-    if (gamepad1.dpad_up && arm_Rotater_power < 1000000) {
+    if (gamepad1.dpad_down && arm_Rotater_power < 130) {
       arm_Rotater_power += 100 * (now_time-last_time);
     }
-    else if (gamepad1.dpad_down && arm_Rotater_power > 0) {
+    else if (gamepad1.dpad_up && arm_Rotater_power > -1035) {
       arm_Rotater_power -= 100 * (now_time-last_time);
     }
 
@@ -234,10 +234,10 @@ public class Post2024April extends LinearOpMode {
     //1st mult: individual wheel balance
     //2nd mult: better rotation (weaker front wheels)
     //3rd mult: weaker overall wheels
-      whl_RF_percent = (float) (whl_RF_percent * 0.8 * 1 * 0.6);
-      whl_RB_percent = (float) (whl_RB_percent * 0.8 *1* 0.6);
-      whl_LF_percent = (float) (whl_LF_percent * 0.8 *1 * 0.6);
-      whl_LB_percent = (float) (whl_LB_percent * 0.8 *1*0.6);
+      whl_RF_percent = (float) (whl_RF_percent * 0.55 * 1 * 0.6);
+      whl_RB_percent = (float) (whl_RB_percent * 0.55 *1* 0.6);
+      whl_LF_percent = (float) (whl_LF_percent * 0.55 *1 * 0.6);
+      whl_LB_percent = (float) (whl_LB_percent * 0.55 *1*0.6);
       
       /* STRAFE
       whl_RF_percent = (float) (whl_RF_percent * 0.6 * 0.6);
