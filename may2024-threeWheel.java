@@ -68,7 +68,7 @@ public class ThreeWheelTest extends LinearOpMode {
   //boolean servo_CLAW_closed = false;
   boolean left_bumper_down = false;
   boolean right_bumper_down = false;
-  //double startRobotAngle = 0.0;
+  double robot_desiredAngle = 0.0;
 
   Orientation orientation = null;
   Acceleration acceleration = null;
@@ -124,7 +124,7 @@ public class ThreeWheelTest extends LinearOpMode {
     
     telemetry.addData("Mode", "calibrating...");
     telemetry.update();
-    setWheelMode("position");
+    setWheelMode("power");
     
 
     //AprilTag
@@ -137,41 +137,21 @@ public class ThreeWheelTest extends LinearOpMode {
      if (opModeIsActive()) {
       code_start_time = runtime.seconds();
       while (opModeIsActive()) {
-                double now_time = runtime.seconds();
-
-        //now_time, the time since the start of the program and is used to find time differentials between loop iterations
-        /*if (clock_timer >= 0.0) {
-        gamepadInputHandling(now_time);
-        }
-        gamepadInputHandling(now_time);
-*/
+        double now_time = runtime.seconds();
         gamepadInputHandling(now_time);
 
-        //clock(now_time);
         orientation = imu.getAngularOrientation();
         
         ////----VARIABLE MONITORING----////
         
         //telemetry.addData("armRotaterPosition", arm_Rotater_power);
         //telemetry.update();
-        
-          tankDriveHandling(now_time);
-          last_time = now_time; //To find time differentials between loops.
-
-          //whl_corrections(); // Corrects/Adjusts power for correct results
-        
-        
-          
-        
-        //Set power of motors to their corresponding variables when clock is 0
-        /*
-        if (clock_timer <= 0) {
-          whl_1_percent = 0;
-          whl_2_percent = 0;
-          whl_3_percent = 0;
-          whl_RF_percent = 0;
-        }
-        */
+      
+        tankDriveHandling(now_time);
+        rotate()
+        last_time = now_time; //To find time differentials between loops.
+        //whl_corrections(); // Corrects/Adjusts power for correct results
+    
         setPower();
         }
       }
@@ -179,13 +159,12 @@ public class ThreeWheelTest extends LinearOpMode {
   
   public void setPower() {
     if (wheelMode == "power") {
-      whl_1.setPower(-whl_1_percent);
-      whl_2.setPower(-whl_2_percent);
-      whl_3.setPower(-whl_3_percent);
+      whl_1.setPower(whl_1_percent);
+      whl_2.setPower(whl_2_percent);
+      whl_3.setPower(whl_3_percent);
       whl_1_percent = 0;
       whl_2_percent = 0;
       whl_3_percent = 0;
-      telemetry.addData("Bruh", 100);
     }
     else if (wheelMode == "position") {
         whl_1.setTargetPosition((int) whl_1_percent);
@@ -220,24 +199,6 @@ public class ThreeWheelTest extends LinearOpMode {
     }
   }
   
-/*
-  public void clock(double now_time) {
-    if (gamepad2.start) {
-      clock_active = false;
-      clock_timer = clock_timer_MAX;
-    }
-    else if (!clock_active && !gamepad1.atRest()) {
-      clock_active = true;
-    }
-    
-    if (clock_active) {
-      clock_timer -= (now_time-last_time);
-      if (clock_timer < 0.0)
-        clock_timer = 0.0;
-    }
-  }
-  
-  */
   
   
   public void setWheelMode(String mode){
@@ -268,51 +229,15 @@ public class ThreeWheelTest extends LinearOpMode {
     
   }
   
+  public void rotateDriveHandling(double now_time, double input) {
+    double multiplier = input;
+    whl_1_percent += 1 * multiplier;
+    whl_2_percent += 1 * multiplier;
+    whl_3_percent += 1 * multiplier;
+  }
+
   public void tankDriveHandling(double now_time) {
-    /*
-    if (Math.abs(gamepad1.left_stick_y) > 0.2 || Math.abs(gamepad1.right_stick_y) > 0.2){
-     // joystick_active = true;
-    }
-    else {
-      //joystick_active = false;
-    }
-
-    boolean dif = Math.abs((gamepad1.left_stick_y+gamepad1.left_stick_x))>Math.abs((gamepad1.right_stick_x+gamepad1.right_stick_y));
     
-    float drv_stick_y2 = gamepad1.right_stick_y;
-    float drv_stick_x2 = gamepad1.right_stick_x;
-    float truth = (Math.abs(gamepad1.right_stick_y) - Math.abs(gamepad1.left_stick_y) > 0) ? gamepad1.right_stick_y : gamepad1.left_stick_y;
-  */
-    
-
-    /*
-    if (gamepad1.dpad_right) {
-      whl_RF_percent = 2;
-      whl_2_percent = -1.5f;
-      whl_3_percent = -2;
-      whl_1_percent = 1.5f;
-    }
-    
-    else if (gamepad1.dpad_left) {
-      whl_3_percent = 2;
-      whl_1_percent = -1.5f;
-      whl_2_percent = 1.5f;
-      whl_RF_percent = -2;
-    }*/
-    
-    /*if (gamepad1.left_stick_y > 0.9 && gamepad1.right_stick_y < -0.9) {
-      whl_RF_percent += -1;
-      whl_2_percent += -1f;
-      whl_3_percent += 1;
-      whl_1_percent += 1f;
-    }
-    
-    else if (gamepad1.left_stick_y < -0.9 && gamepad1.right_stick_y > 0.9) {
-      whl_3_percent += -1;
-      whl_1_percent += -1f;
-      whl_2_percent += 1f;
-      whl_RF_percent += 1;
-    }*/
     if (gamepad1.left_stick_y > 0.1 || gamepad1.left_stick_y < -0.1) {
       drive_last_time = (drive_down == false) ? runtime.seconds() : drive_last_time;
       double multiplier = (gamepad1.left_stick_y);
@@ -324,7 +249,7 @@ public class ThreeWheelTest extends LinearOpMode {
     else {
       if (drive_down)
         drive_end_time = runtime.seconds();
-      drive
+    }
     /*
     double b = (runtime.seconds() - drive_last_time > 0.5) ? 1 : 1;
     double c= (runtime.seconds() - drive_last_time > 1.5) ? 1 : 1;
@@ -352,116 +277,25 @@ public class ThreeWheelTest extends LinearOpMode {
     telemetry.addData("a", a);
     telemetry.addData("b", b);
 */
-    /*
-    else if (gamepad1.left_stick_y < 0) {
-      whl_1_percent = 0;
-      whl_2_percent = 0;
-      whl_3_percent = 0;
-    }*/
-    }
-/*
-    if (gamepad1.right_bumper) {
-      whl_1_percent += 0.5;
-      whl_3_percent += 0.5;
-      whl_2_percent += 0.5;
-      whl_RF_percent += 0.5;
-    }
-    else if (gamepad1.right_trigger > 0.8) {
-      whl_1_percent -= 0.5;
-      whl_3_percent -= 0.5;
-      whl_2_percent -= 0.5;
-      whl_RF_percent -= 0.5;
-    }
-    */
-/*
-    if (gamepad1.left_trigger > 0.8) {
-      whl_1_percent += 1;
-      whl_3_percent -= 0.9;
-      whl_2_percent -= 1;
-      whl_RF_percent += 0.9;
-      if (!isStrafing){
-        isStrafing = true;
-        strafeStartingAngle = imu.getAngularOrientation().firstAngle;
-      }
-    }
-    else if (gamepad1.right_trigger > 0.8) {
-      whl_1_percent -= 1;
-      whl_3_percent += 0.9;
-      whl_2_percent += 1;
-      whl_RF_percent -= 0.9;
-      if (!isStrafing){
-        isStrafing = true;
-        strafeStartingAngle = imu.getAngularOrientation().firstAngle;
-      }
-    }
-    else if (isStrafing) {
-      isStrafing = false;
-      strafeEndTime = runtime.seconds();
-    }*/
-   }
-   /*
-   private void initAprilTag() {
+  }
 
-        // Create the AprilTag processor the easy way.
-        aprilTag = AprilTagProcessor.easyCreateWithDefaults();
-
-        // Create the vision portal the easy way.
-        if (USE_WEBCAM) {
-            visionPortal = VisionPortal.easyCreateWithDefaults(
-                hardwareMap.get(WebcamName.class, "Webcam 1"), aprilTag);
-        } else {
-            visionPortal = VisionPortal.easyCreateWithDefaults(
-                BuiltinCameraDirection.BACK, aprilTag);
-        }
-
-    }   */// end method initAprilTag()
-
-    /**
-     * Add telemetry about AprilTag detections.
-     */
-     /*
-    private double[][] telemetryAprilTag() {
-
-        List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-        //telemetry.addData("# AprilTags Detected", currentDetections.size());
-        double[][] aprilTagInfos = new double[10][9];
-        // Step through the list of detections and display info for each one.
-        int iteration = 0;
-        for (AprilTagDetection detection : currentDetections) {
-            if (detection.metadata != null) {
-                telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
-                telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
-                telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
-                telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
-                aprilTagInfos[iteration][0] = detection.ftcPose.x;
-                aprilTagInfos[iteration][1] = detection.ftcPose.y;
-                aprilTagInfos[iteration][2] = detection.ftcPose.z;
-                aprilTagInfos[iteration][3] = detection.ftcPose.pitch;
-                aprilTagInfos[iteration][4] = detection.ftcPose.roll;
-                aprilTagInfos[iteration][5] = detection.ftcPose.yaw;
-                aprilTagInfos[iteration][6] = detection.ftcPose.range;
-                aprilTagInfos[iteration][7] = detection.ftcPose.bearing;
-                aprilTagInfos[iteration][8] = detection.ftcPose.elevation;
-                iteration+=1;
-            } else {
-                telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
-                telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
-                
-                telemetry.update();
-            }
-        }   // end for() loop
-
-        // Add "key" information to telemetry
-        
-        telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
-        telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
-        telemetry.addLine("RBE = Range, Bearing & Elevation");
-
-        //telemetry.update();
-        aprilTagInfos[9][0] = (double) iteration;
-        return aprilTagInfos;
-    }   // end method telemetryAprilTag()
-   
-   */
+  public void rotate(String type, double angle) {
+    //set whl mode to power
+    //setWheelMode("power");
+    
+    //Based on angle difference, rotate left / right
+    double angleDif = Help.trueAngleDif(angle, imu.getAngularOrientation().firstAngle);
+    
+    angleDif = Help.trueAngleDif(angle, imu.getAngularOrientation().firstAngle);
+    //telemetry.addData("a", angleDif);
+    //telemetry.addData("b", imu.getAngularOrientation().firstAngle);
+    //telemetry.update();
+    //Rotate to the LEFT?
+    double power = Math.clamp(Math.abs(angleDif / 45), 0.3, 1) * Math.signum(angleDif);
+    rotateDriveHandling(0.0, power);
+    //Goal is reached, function end
+    
+  }
+}
 
   
