@@ -276,6 +276,13 @@ public class ThreeWheelTest extends LinearOpMode {
       }
       drive_down = true;
     }
+    else if (Math.abs(gamepad1.right_stick_y) > 0.2) {
+        double multiplier = gamepad1.right_stick_y;
+        whl_1_percent += 1 * multiplier;
+        whl_2_percent += 1 * multiplier;
+        whl_3_percent += 1 * multiplier;
+        whl_4_percent += 1 * multiplier;
+    }
     else {
       if (drive_down)
         drive_end_time = runtime.seconds();
