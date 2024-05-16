@@ -48,8 +48,8 @@ import java.lang.Math;
 
 
 
-@TeleOp(name = "ThreeWheelTest")
-public class ThreeWheelTest extends LinearOpMode {
+@TeleOp(name = "FourWheelTest")
+public class FourWheelTest extends LinearOpMode {
   //Clock Variable
   private ElapsedTime     runtime = new ElapsedTime();
 
@@ -70,6 +70,7 @@ public class ThreeWheelTest extends LinearOpMode {
   boolean left_bumper_down = false;
   boolean right_bumper_down = false;
   double robot_desiredAngle = 0.0;
+  double drive_Angle = 0.0;
 
   Orientation orientation = null;
   Acceleration acceleration = null;
@@ -164,7 +165,7 @@ public class ThreeWheelTest extends LinearOpMode {
     if (wheelMode == "power") {
       whl_1.setPower(whl_1_percent);
       whl_2.setPower(whl_2_percent);
-      whl_3.setPower(whl_3_percent);
+      whl_3.setPower(-whl_3_percent);
       whl_4.setPower(whl_4_percent);
       whl_1_percent = 0;
       whl_2_percent = 0;
@@ -174,7 +175,7 @@ public class ThreeWheelTest extends LinearOpMode {
     else if (wheelMode == "position") {
         whl_1.setTargetPosition((int) whl_1_percent);
         whl_2.setTargetPosition((int) whl_2_percent);
-        whl_3.setTargetPosition((int) whl_3_percent);
+        whl_3.setTargetPosition((int) -whl_3_percent);
         whl_4.setTargetPosition((int) whl_4_percent);
     }
     telemetry.update();
@@ -223,10 +224,10 @@ public class ThreeWheelTest extends LinearOpMode {
       whl_3.setMode(DcMotor.RunMode.RUN_TO_POSITION);
       whl_4.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-      whl_1.setVelocity(200);
-      whl_2.setVelocity(100);
-      whl_3.setVelocity(100);
-      whl_4.setVelocity(100);
+      whl_1.setVelocity(800);
+      whl_2.setVelocity(800);
+      whl_3.setVelocity(800);
+      whl_4.setVelocity(800);
     }
     else if (mode == "power") {
       wheelMode = "power";
@@ -249,71 +250,72 @@ public class ThreeWheelTest extends LinearOpMode {
   public void tankDriveHandling(double now_time) {
     
     //Get Predominant Stick Position
-    boolean planeIsY = (Math.abs(gamepad1.left_stick_y) > Math.abs(gamepad1.left_stick_x)) ? true : false;
+    float l_y = gamepad1.left_stick_y;
+    float l_x = gamepad1.left_stick_x;
+    int planeIsY = (Math.abs(gamepad1.left_stick_y) > Math.abs(gamepad1.left_stick_x)) ? 1 : 0;
     int sign = 1;
-    if (planeIsY && Math.abs(gamepad1.left_stick_y) > gamepad1.left_stick_y) {
+    if (planeIsY == 1 && Math.abs(gamepad1.left_stick_y) > gamepad1.left_stick_y) {
         sign = -1;
     }
-    else if (!planeIsY && Math.abs(gamepad1.left_stick_x) > gamepad1.left_stick_x) {
+    else if (planeIsY != 1 && Math.abs(gamepad1.left_stick_x) > gamepad1.left_stick_x) {
         sign = -1;
     }
-
+    telemetry.addData("plane", planeIsY);
+    telemetry.addData("sign", sign);
 
     if (Math.abs(gamepad1.left_stick_y) > 0.1 || Math.abs(gamepad1.left_stick_x) > 0.1) {
       drive_last_time = (drive_down == false) ? runtime.seconds() : drive_last_time;
       double multiplier = (gamepad1.left_stick_y);
-      if (planeIsY) {
-        whl_1_percent += 1 * planeIsY * sign;
-        whl_2_percent += 1 * -planeIsY * sign;
-        whl_3_percent += 1 * -planeIsY * sign;
-        whl_4_percent += 1 * planeIsY * sign;
-      }
-      else if (!planeIsY) {
-        whl_1_percent += 1 * -planeIsY * sign;
-        whl_2_percent += 1 * -planeIsY * sign;
-        whl_3_percent += 1 * planeIsY * sign;
-        whl_4_percent += 1 * planeIsY * sign;
-      }
+      drive_Angle = (drive_down == false) ? imu.getAngularOrientation().firstAngle : drive_Angle;
       drive_down = true;
+      if (planeIsY == 1) {
+        double adjustment = Math.pow(Help.trueAngleDif(drive_Angle, imu.getAngularOrientation().firstAngle) / 40, 2);
+        adjustment = (adjustment > 0.6) ? 0.6 : adjustment;
+        adjustment = (adjustment < -0.6) ? -0.6 : adjustment;
+        double l = 1.0 + (adjustment);
+        double r = 1.0 - (adjustment);
+        //l = 1.0;
+      // r = 1.0;
+        telemetry.addData("adjustment", adjustment);
+        telemetry.addData("l", l);
+        telemetry.addData("r", r);
+        whl_1_percent += 1 * l_y * 0.4 * l;
+        whl_2_percent += 1 * l_y * 0.4 * l;
+        whl_3_percent += -1 * l_y * 0.4 * r;
+        whl_4_percent += -1 * l_y * 0.4 * r;
+
+        /*
+        double mult = 100*l_y*2*(now_time-last_time);
+        whl_1_percent += mult;
+        whl_2_percent += mult;
+        whl_3_percent -= mult;
+        whl_4_percent -= mult;
+        */
+      }
+      else if (planeIsY != 1) {
+        /*
+        whl_1_percent += -1  * l_x * 0.5;
+        whl_2_percent += -1  * l_x * 0.5;
+        whl_3_percent += 1* l_x * 0.5;
+        whl_4_percent += 1 * l_x * 0.5;
+        */
+      }
     }
     else if (Math.abs(gamepad1.right_stick_y) > 0.2) {
         double multiplier = gamepad1.right_stick_y;
-        whl_1_percent += 1 * multiplier;
-        whl_2_percent += 1 * multiplier;
-        whl_3_percent += 1 * multiplier;
-        whl_4_percent += 1 * multiplier;
+        whl_1_percent += 0.3 * multiplier;
+        whl_2_percent += 0.3 * multiplier;
+        whl_3_percent += 0.3 * multiplier;
+        whl_4_percent += 0.3 * multiplier;
     }
     else {
-      if (drive_down)
+      if (drive_down) {
         drive_end_time = runtime.seconds();
+        drive_down = false;
+      }
     }
-    /*
-    double b = (runtime.seconds() - drive_last_time > 0.5) ? 1 : 1;
-    double c= (runtime.seconds() - drive_last_time > 1.5) ? 1 : 1;
-
-    if (gamepad1.left_stick_y > 0.1 || gamepad1.left_stick_y < -0.1) {
-      drive_last_time = (drive_down == false) ? runtime.seconds() : drive_last_time;
-      double multiplier = (gamepad1.left_stick_y * (now_time-last_time) * 400*b);
-      whl_1_percent += -1 * multiplier;
-      whl_2_percent += 0.5 * multiplier;
-      whl_3_percent += 0.5 * multiplier;
-      drive_down = true;
-    }
-    else {
-      if (drive_down)
-        drive_end_time = runtime.seconds();
-      drive_down = false;
-    }
-    double t = runtime.seconds()-drive_end_time;
-    if (!drive_down && t > 1) {
-      c = c*2*a;
-    }
-    whl_1.setVelocity(200 * Math.max(Math.abs(gamepad1.left_stick_y), 0.4) * 2.2 * c);
-    whl_2.setVelocity(100 * Math.max(Math.abs(gamepad1.left_stick_y), 0.4) * 2.2 * c);
-    whl_3.setVelocity(100 * Math.max(Math.abs(gamepad1.left_stick_y), 0.4) * 2.2 * c);
-    telemetry.addData("a", a);
-    telemetry.addData("b", b);
-*/
+    
+    
   }
 
   public void rotate(String type, double angle) {
@@ -328,8 +330,8 @@ public class ThreeWheelTest extends LinearOpMode {
     //telemetry.addData("b", imu.getAngularOrientation().firstAngle);
     //telemetry.update();
     //Rotate to the LEFT?
-    double power = Math.clamp(Math.abs(angleDif / 45), 0.3, 1) * Math.signum(angleDif);
-    rotateDriveHandling(0.0, power);
+    //double power = Math.clamp(Math.abs(angleDif / 45), 0.3, 1.0) * Math.signum(angleDif);
+    //rotateDriveHandling(0.0, power);
     //Goal is reached, function end
     
   }
