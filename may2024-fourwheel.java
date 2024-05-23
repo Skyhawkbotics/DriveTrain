@@ -62,10 +62,12 @@ public class FourWheelTest extends LinearOpMode {
   private DcMotorEx whl_2;
   private DcMotorEx whl_3;
   private DcMotorEx whl_4;
+  private DcMotorEx claw_ELEVATOR1;
   //private DcMotorEx arm_Rotater;
-  //private CRServo servo_Claw;
+  private CRServo servo_CLAW;
   //double arm_Rotater_power = 0.0;
-  //double servo_Claw_power = 0.0;
+  double servo_CLAW_power = 0.0;
+  double claw_ELEVATOR_position = 0.0;
   //boolean servo_CLAW_closed = false;
   boolean left_bumper_down = false;
   boolean right_bumper_down = false;
@@ -105,6 +107,12 @@ public class FourWheelTest extends LinearOpMode {
     whl_2 = hardwareMap.get(DcMotorEx.class, "whl-2");
     whl_3 = hardwareMap.get(DcMotorEx.class, "whl-3");
     whl_4 = hardwareMap.get(DcMotorEx.class, "whl-4");
+    claw_ELEVATOR1 = hardwareMap.get(DcMotorEx.class, "elevate");
+    servo_CLAW = hardwareMap.get(CRServo.class, "claw");
+    claw_ELEVATOR1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    claw_ELEVATOR1.setTargetPosition(0);
+    claw_ELEVATOR1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    claw_ELEVATOR1.setVelocity(700);
 
     /*
     *arm_Rotater = hardwareMap.get(DcMotorEx.class, "armRotater");
@@ -178,6 +186,9 @@ public class FourWheelTest extends LinearOpMode {
         whl_3.setTargetPosition((int) -whl_3_percent);
         whl_4.setTargetPosition((int) whl_4_percent);
     }
+        claw_ELEVATOR1.setTargetPosition((int)claw_ELEVATOR_position);
+    servo_CLAW.setPower(servo_CLAW_power);
+
     telemetry.update();
   }
   
@@ -200,6 +211,37 @@ public class FourWheelTest extends LinearOpMode {
     else if (!gamepad1.right_bumper) {
       right_bumper_down = false;
     }
+
+    if (gamepad2.dpad_left) {
+      servo_CLAW_power += -5 * (now_time-last_time);
+  
+    }
+    else if  (gamepad2.dpad_right) {
+      servo_CLAW_power += 5 * (now_time-last_time);
+  
+    }
+    else {
+    servo_CLAW_power = 0;
+    }
+
+    if (gamepad2.right_bumper) {
+      if (!gamepad1.b) {
+         claw_ELEVATOR_position+= 150 * (now_time-last_time);
+      }
+      else{
+        claw_ELEVATOR_position = 470;
+      }
+    }
+    else if (gamepad2.right_trigger > 0.2) {
+      if (!gamepad1.b) {
+        claw_ELEVATOR_position-= 150 * (now_time-last_time);
+      }
+      else {
+        claw_ELEVATOR_position=-35;
+      }
+    }
+
+  }
   }
   
   
